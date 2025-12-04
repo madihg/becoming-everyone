@@ -16,13 +16,6 @@ interface DetectedBody {
   height: number;
 }
 
-interface DodgeDot {
-  x: number;
-  y: number;
-  speed: number;
-  active: boolean;
-}
-
 const MAX_STRIKES = 5;
 
 export default function Module3({ expanded, onExpand, onComplete }: Props) {
@@ -31,12 +24,17 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
   const modelRef = useRef<any>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationRef = useRef<number>();
-  const dotRef = useRef<DodgeDot>({ x: 0.5, y: -0.1, speed: 0.012, active: true });
+  const detectionIntervalRef = useRef<NodeJS.Timeout>();
   const bodiesRef = useRef<DetectedBody[]>([]);
   const startTimeRef = useRef<number>(0);
-  const isCompleteRef = useRef(false);
-  const strikesRef = useRef(0);
-  const lastHitTimeRef = useRef(0);
+  const gameStateRef = useRef({
+    dotX: 0.5,
+    dotY: -0.1,
+    dotSpeed: 0.01,
+    strikes: 0,
+    lastHitTime: 0,
+    isComplete: false
+  });
   
   const [isActive, setIsActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,44 +49,45 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
 
   // Calculate modal based on time to get 5 strikes
   const calculateTargetModal = useCallback((timeTaken: number): { modalId: string; modalNum: number } => {
-    // Longer time = higher modal numbers (they evaded well)
-    // < 10 seconds = modals 1-2 (got hit fast)
-    // 10-25 seconds = modals 3-5 
-    // 25-45 seconds = modals 5-7
-    // > 45 seconds = modals 7-8 (great evasion)
     let minModal: number, maxModal: number;
     
     if (timeTaken < 10) {
-      minModal = 1;
-      maxModal = 2;
+      minModal = 1; maxModal = 2;
     } else if (timeTaken < 25) {
-      minModal = 3;
-      maxModal = 5;
+      minModal = 3; maxModal = 5;
     } else if (timeTaken < 45) {
-      minModal = 5;
-      maxModal = 7;
+      minModal = 5; maxModal = 7;
     } else {
-      minModal = 7;
-      maxModal = 8;
+      minModal = 7; maxModal = 8;
     }
     
     const modalNum = Math.floor(Math.random() * (maxModal - minModal + 1)) + minModal;
     return { modalId: `modal${modalNum}`, modalNum };
   }, []);
 
-  // Check if dot collides with any body
-  const checkCollision = useCallback((dot: DodgeDot, bodies: DetectedBody[], canvasWidth: number, canvasHeight: number): boolean => {
-    const dotX = dot.x * canvasWidth;
-    const dotY = dot.y * canvasHeight;
-    const dotRadius = 15;
+  // Reset dot to new random position
+  const resetDot = useCallback(() => {
+    const state = gameStateRef.current;
+    state.dotX = Math.random() * 0.7 + 0.15;
+    state.dotY = -0.1;
+    state.dotSpeed = 0.008 + Math.random() * 0.006;
+  }, []);
+
+  // Check collision
+  const checkCollision = useCallback((dotX: number, dotY: number, bodies: DetectedBody[], canvasWidth: number, canvasHeight: number): boolean => {
+    const pixelX = dotX * canvasWidth;
+    const pixelY = dotY * canvasHeight;
 
     for (const body of bodies) {
-      const padding = 10;
+      // Mirror the body X position
+      const mirroredX = canvasWidth - body.x - body.width;
+      const padding = 15;
+      
       if (
-        dotX > body.x - padding &&
-        dotX < body.x + body.width + padding &&
-        dotY > body.y - padding &&
-        dotY < body.y + body.height + padding
+        pixelX > mirroredX - padding &&
+        pixelX < mirroredX + body.width + padding &&
+        pixelY > body.y - padding &&
+        pixelY < body.y + body.height + padding
       ) {
         return true;
       }
@@ -96,15 +95,21 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
     return false;
   }, []);
 
-  // Reset dot to new random position at top
-  const resetDot = useCallback((): DodgeDot => {
-    return {
-      x: Math.random() * 0.7 + 0.15, // Random X (15%-85%)
-      y: -0.05, // Start just above screen
-      speed: 0.008 + Math.random() * 0.006, // Varying speed
-      active: true
-    };
-  }, []);
+  // Handle game over
+  const handleGameOver = useCallback(() => {
+    const state = gameStateRef.current;
+    if (state.isComplete) return;
+    
+    state.isComplete = true;
+    setIsComplete(true);
+    
+    const timeTaken = (Date.now() - startTimeRef.current) / 1000;
+    const targetResult = { ...calculateTargetModal(timeTaken), time: timeTaken };
+    setResult(targetResult);
+    
+    setTimeout(() => setShowExplanation(true), 500);
+    setTimeout(() => onComplete(targetResult.modalId), 3000);
+  }, [calculateTargetModal, onComplete]);
 
   // Start detection
   const startDetection = useCallback(async () => {
@@ -112,7 +117,16 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
 
     setIsLoading(true);
     setError(null);
-    strikesRef.current = 0;
+    
+    // Reset game state
+    gameStateRef.current = {
+      dotX: 0.5,
+      dotY: -0.1,
+      dotSpeed: 0.01,
+      strikes: 0,
+      lastHitTime: 0,
+      isComplete: false
+    };
     setStrikes(0);
 
     try {
@@ -131,7 +145,7 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
       });
       await videoRef.current.play();
 
-      // Try to get preloaded model, or load it
+      // Get model
       setLoadingStatus('Loading body detection...');
       let model = getPreloadedModel();
       if (!model) {
@@ -140,42 +154,47 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
       modelRef.current = model;
 
       setLoadingStatus('Ready!');
-      
-      // Initialize dot
-      dotRef.current = resetDot();
-
+      resetDot();
       startTimeRef.current = Date.now();
       setIsActive(true);
       setIsLoading(false);
 
-      // Animation and detection loop
-      const animate = async () => {
-        if (isCompleteRef.current || !videoRef.current || !canvasRef.current || !modelRef.current) return;
+      // SEPARATE detection loop (runs independently, non-blocking)
+      const runDetection = async () => {
+        if (gameStateRef.current.isComplete) return;
+        if (!videoRef.current || !modelRef.current) return;
+        
+        try {
+          const predictions = await modelRef.current.detect(videoRef.current);
+          bodiesRef.current = predictions
+            .filter((p: any) => p.class === 'person' && p.score > 0.5)
+            .map((p: any) => ({
+              x: p.bbox[0],
+              y: p.bbox[1],
+              width: p.bbox[2],
+              height: p.bbox[3]
+            }));
+          setBodyCount(bodiesRef.current.length);
+        } catch (e) {
+          console.warn('Detection error:', e);
+        }
+      };
+      
+      // Run detection every 150ms (separate from animation)
+      detectionIntervalRef.current = setInterval(runDetection, 150);
+      runDetection(); // Initial detection
+
+      // ANIMATION loop (synchronous, smooth)
+      const animate = () => {
+        const state = gameStateRef.current;
+        if (state.isComplete) return;
+        if (!canvasRef.current || !videoRef.current) return;
 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        // Detect bodies (throttled - not every frame)
         const now = Date.now();
-        if (now - lastHitTimeRef.current > 100) { // Detect every 100ms
-          try {
-            const predictions = await modelRef.current.detect(videoRef.current);
-            const bodies: DetectedBody[] = predictions
-              .filter((p: any) => p.class === 'person' && p.score > 0.5)
-              .map((p: any) => ({
-                x: p.bbox[0],
-                y: p.bbox[1],
-                width: p.bbox[2],
-                height: p.bbox[3]
-              }));
-            
-            bodiesRef.current = bodies;
-            setBodyCount(bodies.length);
-          } catch (e) {
-            // Continue even if detection fails
-          }
-        }
 
         // Draw video (mirrored, grayscale)
         ctx.save();
@@ -192,94 +211,77 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
           ctx.strokeRect(mirroredX, body.y, body.width, body.height);
         });
 
-        // Update dot position - always falling down
-        const dot = dotRef.current;
-        dot.y += dot.speed;
+        // Update dot position
+        state.dotY += state.dotSpeed;
 
-        // Check if dot went off bottom of screen - reset it
-        if (dot.y > 1.1) {
-          dotRef.current = resetDot();
+        // Reset dot if it goes off bottom
+        if (state.dotY > 1.15) {
+          resetDot();
         }
 
         // Draw dot
-        const dotX = dot.x * canvas.width;
-        const dotY = dot.y * canvas.height;
+        const dotPixelX = state.dotX * canvas.width;
+        const dotPixelY = state.dotY * canvas.height;
 
         ctx.fillStyle = '#FF3333';
         ctx.shadowColor = '#FF0000';
         ctx.shadowBlur = 20;
         ctx.beginPath();
-        ctx.arc(dotX, dotY, 12, 0, Math.PI * 2);
+        ctx.arc(dotPixelX, dotPixelY, 12, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = '#FFFFFF';
         ctx.beginPath();
-        ctx.arc(dotX, dotY, 5, 0, Math.PI * 2);
+        ctx.arc(dotPixelX, dotPixelY, 5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Check collision (with mirrored body positions)
-        const mirroredBodies = bodiesRef.current.map(body => ({
-          ...body,
-          x: canvas.width - body.x - body.width
-        }));
-        
-        // Only check collision if dot is on screen and enough time since last hit
-        if (dot.y > 0 && dot.y < 1 && now - lastHitTimeRef.current > 500) {
-          if (checkCollision(dot, mirroredBodies, canvas.width, canvas.height)) {
-            // HIT! Add a strike
-            strikesRef.current += 1;
-            setStrikes(strikesRef.current);
-            lastHitTimeRef.current = now;
+        // Check collision (only if dot is on screen and cooldown passed)
+        if (state.dotY > 0.05 && state.dotY < 0.95 && now - state.lastHitTime > 600) {
+          if (checkCollision(state.dotX, state.dotY, bodiesRef.current, canvas.width, canvas.height)) {
+            // HIT!
+            state.strikes += 1;
+            state.lastHitTime = now;
+            setStrikes(state.strikes);
             
-            // Flash effect at hit location
-            ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+            console.log(`Strike ${state.strikes}/${MAX_STRIKES}`);
+            
+            // Flash effect
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
             ctx.beginPath();
-            ctx.arc(dotX, dotY, 50, 0, Math.PI * 2);
+            ctx.arc(dotPixelX, dotPixelY, 60, 0, Math.PI * 2);
             ctx.fill();
             
-            // Reset dot to new position
-            dotRef.current = resetDot();
+            // Reset dot
+            resetDot();
             
-            // Check if game over (5 strikes)
-            if (strikesRef.current >= MAX_STRIKES) {
-              isCompleteRef.current = true;
-              setIsComplete(true);
-              
-              const timeTaken = (Date.now() - startTimeRef.current) / 1000;
-              const targetResult = { ...calculateTargetModal(timeTaken), time: timeTaken };
-              setResult(targetResult);
-              
-              // Full screen flash
+            // Check game over
+            if (state.strikes >= MAX_STRIKES) {
               ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
               ctx.fillRect(0, 0, canvas.width, canvas.height);
-              
-              setTimeout(() => setShowExplanation(true), 500);
-              setTimeout(() => onComplete(targetResult.modalId), 3000);
-              
+              handleGameOver();
               return;
             }
           }
         }
 
-        // Draw strike indicators
-        const strikeY = 30;
+        // Draw strike indicators on canvas
         for (let i = 0; i < MAX_STRIKES; i++) {
-          const strikeX = canvas.width - 30 - (i * 25);
+          const strikeX = canvas.width - 25 - (i * 22);
           ctx.beginPath();
-          ctx.arc(strikeX, strikeY, 8, 0, Math.PI * 2);
-          if (i < strikesRef.current) {
+          ctx.arc(strikeX, 25, 7, 0, Math.PI * 2);
+          if (i < state.strikes) {
             ctx.fillStyle = '#FF3333';
             ctx.fill();
           } else {
-            ctx.strokeStyle = '#666';
+            ctx.strokeStyle = '#555';
             ctx.lineWidth = 2;
             ctx.stroke();
           }
         }
 
         // Update elapsed time
-        setElapsedTime((Date.now() - startTimeRef.current) / 1000);
+        setElapsedTime((now - startTimeRef.current) / 1000);
 
         animationRef.current = requestAnimationFrame(animate);
       };
@@ -291,12 +293,16 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
       setError(err.message || 'Failed to start');
       setIsLoading(false);
     }
-  }, [calculateTargetModal, checkCollision, resetDot, onComplete]);
+  }, [checkCollision, resetDot, handleGameOver]);
 
   // Cleanup
   const stopDetection = useCallback(() => {
+    gameStateRef.current.isComplete = true;
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
+    }
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current);
     }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
