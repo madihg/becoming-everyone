@@ -95,7 +95,7 @@ export default function Home() {
           <Module3 
             expanded={moduleExpanded} 
             onExpand={handleModuleExpand}
-            onNext={() => handleModuleChange(1)}
+            onComplete={handleModuleComplete}
           />
         )}
       </div>
