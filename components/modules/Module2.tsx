@@ -401,40 +401,52 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
                       ACCUMULATING
                     </div>
                     
-                    {/* Vertical meter - glass filling with water */}
+                    {/* Vertical meter - glass filling with yellow water */}
                     <div className="flex flex-col items-center mb-4">
                       {/* Threshold label */}
                       <div className="text-xs text-gray-500 mb-1">threshold</div>
                       
                       {/* Glass container */}
                       <div 
-                        className="relative overflow-hidden rounded"
                         style={{ 
+                          position: 'relative',
                           width: '80px', 
                           height: '150px',
                           border: '2px solid #4B5563',
-                          backgroundColor: '#111'
+                          backgroundColor: '#0a0a0a',
+                          borderRadius: '4px',
+                          overflow: 'hidden'
                         }}
                       >
-                        {/* Yellow fill - rises from bottom */}
+                        {/* YELLOW fill - rises from bottom like water */}
                         <div 
                           style={{ 
                             position: 'absolute',
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
+                            bottom: '0px',
+                            left: '0px',
+                            right: '0px',
                             height: `${progressPercent}%`,
-                            backgroundColor: '#FFE600',
-                            transition: 'height 0.1s linear'
+                            background: '#FFE600',
+                            zIndex: 1
                           }}
                         />
                         
                         {/* Percentage text overlay */}
                         <div 
-                          className="absolute inset-0 flex items-center justify-center font-mono font-bold text-xl"
                           style={{ 
-                            color: progressPercent > 40 ? '#000' : '#FFE600',
-                            textShadow: progressPercent > 40 ? 'none' : '0 0 10px rgba(255,230,0,0.5)'
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontFamily: 'monospace',
+                            fontWeight: 'bold',
+                            fontSize: '20px',
+                            color: progressPercent > 40 ? '#000000' : '#FFE600',
+                            zIndex: 2
                           }}
                         >
                           {Math.floor(progressPercent)}%
