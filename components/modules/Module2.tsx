@@ -418,8 +418,12 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
                         
                         {/* Fill */}
                         <div 
-                          className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#FFE600] to-[#FFE600aa] transition-all duration-150 rounded-b"
-                          style={{ height: `${progressPercent}%` }}
+                          className="absolute bottom-0 left-0 right-0 transition-all duration-150 rounded-b"
+                          style={{ 
+                            height: `${progressPercent}%`,
+                            backgroundColor: '#FFE600',
+                            minHeight: progressPercent > 0 ? '2px' : '0'
+                          }}
                         />
                         
                         {/* Percentage */}
