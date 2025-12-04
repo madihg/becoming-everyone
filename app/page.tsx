@@ -65,9 +65,9 @@ export default function Home() {
     setModuleExpanded(prev => !prev);
   }, []);
 
-  // Handle Module 1 completion - triggers slime movement
-  const handleModule1Complete = useCallback((targetModalId: string) => {
-    console.log('Module 1 complete, target:', targetModalId);
+  // Handle Module completion - triggers slime movement
+  const handleModuleComplete = useCallback((targetModalId: string) => {
+    console.log('Module complete, target:', targetModalId);
     setTargetModal(targetModalId);
     // Collapse the module
     setModuleExpanded(false);
@@ -81,14 +81,14 @@ export default function Home() {
           <Module1 
             expanded={moduleExpanded} 
             onExpand={handleModuleExpand}
-            onComplete={handleModule1Complete}
+            onComplete={handleModuleComplete}
           />
         )}
         {currentModule === 2 && (
           <Module2 
             expanded={moduleExpanded} 
             onExpand={handleModuleExpand}
-            onNext={() => handleModuleChange(3)}
+            onComplete={handleModuleComplete}
           />
         )}
         {currentModule === 3 && (
