@@ -2,6 +2,13 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 
+// Extend Window for webkitAudioContext
+declare global {
+  interface Window {
+    webkitAudioContext: typeof AudioContext;
+  }
+}
+
 interface Props {
   expanded: boolean;
   onExpand: () => void;
@@ -153,10 +160,23 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
       streamRef.current = stream;
 
       // Create audio context and analyser
-      const audioContext = new AudioContext();
+      // Use webkitAudioContext for older browsers
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const audioContext = new AudioContextClass();
       
-      // Resume audio context (required by browser autoplay policy)
+      // Resume audio context (required by Chrome's autoplay policy)
+      // Chrome keeps AudioContext suspended until user interaction
       if (audioContext.state === 'suspended') {
+        console.log('AudioContext suspended, attempting resume...');
+        await audioContext.resume();
+        console.log('AudioContext resumed:', audioContext.state);
+      }
+      
+      // Double-check it's running
+      if (audioContext.state !== 'running') {
+        console.warn('AudioContext not running, state:', audioContext.state);
+        // Try resume again after a small delay
+        await new Promise(resolve => setTimeout(resolve, 100));
         await audioContext.resume();
       }
       
