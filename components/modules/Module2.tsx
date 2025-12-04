@@ -88,7 +88,7 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
   }, []);
 
   // Draw waveform visualization
-  const drawWaveform = useCallback((analyser: AnalyserNode, dataArray: Uint8Array) => {
+  const drawWaveform = useCallback((analyser: AnalyserNode, dataArray: Uint8Array<ArrayBuffer>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
