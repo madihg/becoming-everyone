@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import PhysarumVisualization from '@/components/PhysarumVisualization';
 import Module1 from '@/components/modules/Module1';
 import Module2 from '@/components/modules/Module2';
@@ -9,12 +9,42 @@ import Modal from '@/components/Modal';
 import modalsConfig from '@/config/modals.json';
 import type { ModalConfig } from '@/types';
 
+// Global model cache for preloading
+let preloadedModel: any = null;
+let modelLoadPromise: Promise<any> | null = null;
+
+export function getPreloadedModel() {
+  return preloadedModel;
+}
+
+export function preloadBodyModel() {
+  if (modelLoadPromise) return modelLoadPromise;
+  if (preloadedModel) return Promise.resolve(preloadedModel);
+  
+  modelLoadPromise = (async () => {
+    console.log('Preloading body detection model...');
+    const tf = await import('@tensorflow/tfjs');
+    await tf.ready();
+    const cocoSsd = await import('@tensorflow-models/coco-ssd');
+    preloadedModel = await cocoSsd.load();
+    console.log('Body detection model preloaded!');
+    return preloadedModel;
+  })();
+  
+  return modelLoadPromise;
+}
+
 export default function Home() {
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [revealedModals, setRevealedModals] = useState<string[]>([]);
   const [currentModule, setCurrentModule] = useState<1 | 2 | 3>(1);
   const [moduleExpanded, setModuleExpanded] = useState(false);
   const [targetModal, setTargetModal] = useState<string | null>(null);
+
+  // Preload the body detection model on mount
+  useEffect(() => {
+    preloadBodyModel();
+  }, []);
 
   // Keyboard controls for testing
   useEffect(() => {

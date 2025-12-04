@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { getPreloadedModel, preloadBodyModel } from '@/app/page';
 
 interface Props {
   expanded: boolean;
@@ -18,10 +19,11 @@ interface DetectedBody {
 interface DodgeDot {
   x: number;
   y: number;
-  targetY: number;
   speed: number;
-  direction: 'down' | 'up';
+  active: boolean;
 }
+
+const MAX_STRIKES = 5;
 
 export default function Module3({ expanded, onExpand, onComplete }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -29,10 +31,12 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
   const modelRef = useRef<any>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationRef = useRef<number>();
-  const dotRef = useRef<DodgeDot>({ x: 0.5, y: 0, targetY: 1, speed: 0.008, direction: 'down' });
+  const dotRef = useRef<DodgeDot>({ x: 0.5, y: -0.1, speed: 0.012, active: true });
   const bodiesRef = useRef<DetectedBody[]>([]);
   const startTimeRef = useRef<number>(0);
   const isCompleteRef = useRef(false);
+  const strikesRef = useRef(0);
+  const lastHitTimeRef = useRef(0);
   
   const [isActive, setIsActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,23 +47,24 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
   const [result, setResult] = useState<{ modalId: string; modalNum: number; time: number } | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [bodyCount, setBodyCount] = useState(0);
+  const [strikes, setStrikes] = useState(0);
 
-  // Calculate modal based on survival time
-  const calculateTargetModal = useCallback((timeSurvived: number): { modalId: string; modalNum: number } => {
-    // Longer survival = higher modal numbers
-    // < 5 seconds = modals 1-2
-    // 5-15 seconds = modals 3-5
-    // 15-30 seconds = modals 5-7
-    // > 30 seconds = modals 7-8
+  // Calculate modal based on time to get 5 strikes
+  const calculateTargetModal = useCallback((timeTaken: number): { modalId: string; modalNum: number } => {
+    // Longer time = higher modal numbers (they evaded well)
+    // < 10 seconds = modals 1-2 (got hit fast)
+    // 10-25 seconds = modals 3-5 
+    // 25-45 seconds = modals 5-7
+    // > 45 seconds = modals 7-8 (great evasion)
     let minModal: number, maxModal: number;
     
-    if (timeSurvived < 5) {
+    if (timeTaken < 10) {
       minModal = 1;
       maxModal = 2;
-    } else if (timeSurvived < 15) {
+    } else if (timeTaken < 25) {
       minModal = 3;
       maxModal = 5;
-    } else if (timeSurvived < 30) {
+    } else if (timeTaken < 45) {
       minModal = 5;
       maxModal = 7;
     } else {
@@ -78,7 +83,6 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
     const dotRadius = 15;
 
     for (const body of bodies) {
-      // Check if dot center is inside body bounding box (with some padding)
       const padding = 10;
       if (
         dotX > body.x - padding &&
@@ -92,30 +96,14 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
     return false;
   }, []);
 
-  // Update dot position
-  const updateDot = useCallback((dot: DodgeDot): DodgeDot => {
-    let newY = dot.y;
-    let newDirection = dot.direction;
-    let newX = dot.x;
-    let newTargetY = dot.targetY;
-
-    if (dot.direction === 'down') {
-      newY += dot.speed;
-      if (newY >= dot.targetY) {
-        newDirection = 'up';
-        newTargetY = Math.random() * 0.3; // Random top position
-        newX = Math.random() * 0.8 + 0.1; // Random X position (10%-90%)
-      }
-    } else {
-      newY -= dot.speed;
-      if (newY <= dot.targetY) {
-        newDirection = 'down';
-        newTargetY = 0.7 + Math.random() * 0.25; // Random bottom position (70%-95%)
-        newX = Math.random() * 0.8 + 0.1; // Random X position
-      }
-    }
-
-    return { ...dot, x: newX, y: newY, targetY: newTargetY, direction: newDirection };
+  // Reset dot to new random position at top
+  const resetDot = useCallback((): DodgeDot => {
+    return {
+      x: Math.random() * 0.7 + 0.15, // Random X (15%-85%)
+      y: -0.05, // Start just above screen
+      speed: 0.008 + Math.random() * 0.006, // Varying speed
+      active: true
+    };
   }, []);
 
   // Start detection
@@ -124,6 +112,8 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
 
     setIsLoading(true);
     setError(null);
+    strikesRef.current = 0;
+    setStrikes(0);
 
     try {
       // Get camera
@@ -141,25 +131,18 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
       });
       await videoRef.current.play();
 
-      // Load TensorFlow.js and COCO-SSD model
-      setLoadingStatus('Loading body detection model...');
-      const tf = await import('@tensorflow/tfjs');
-      await tf.ready();
-      
-      const cocoSsd = await import('@tensorflow-models/coco-ssd');
-      const model = await cocoSsd.load();
+      // Try to get preloaded model, or load it
+      setLoadingStatus('Loading body detection...');
+      let model = getPreloadedModel();
+      if (!model) {
+        model = await preloadBodyModel();
+      }
       modelRef.current = model;
 
       setLoadingStatus('Ready!');
       
-      // Initialize dot at random top position
-      dotRef.current = {
-        x: Math.random() * 0.6 + 0.2,
-        y: 0,
-        targetY: 0.8,
-        speed: 0.006,
-        direction: 'down'
-      };
+      // Initialize dot
+      dotRef.current = resetDot();
 
       startTimeRef.current = Date.now();
       setIsActive(true);
@@ -173,22 +156,25 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        // Detect bodies
-        try {
-          const predictions = await modelRef.current.detect(videoRef.current);
-          const bodies: DetectedBody[] = predictions
-            .filter((p: any) => p.class === 'person' && p.score > 0.5)
-            .map((p: any) => ({
-              x: p.bbox[0],
-              y: p.bbox[1],
-              width: p.bbox[2],
-              height: p.bbox[3]
-            }));
-          
-          bodiesRef.current = bodies;
-          setBodyCount(bodies.length);
-        } catch (e) {
-          // Continue even if detection fails
+        // Detect bodies (throttled - not every frame)
+        const now = Date.now();
+        if (now - lastHitTimeRef.current > 100) { // Detect every 100ms
+          try {
+            const predictions = await modelRef.current.detect(videoRef.current);
+            const bodies: DetectedBody[] = predictions
+              .filter((p: any) => p.class === 'person' && p.score > 0.5)
+              .map((p: any) => ({
+                x: p.bbox[0],
+                y: p.bbox[1],
+                width: p.bbox[2],
+                height: p.bbox[3]
+              }));
+            
+            bodiesRef.current = bodies;
+            setBodyCount(bodies.length);
+          } catch (e) {
+            // Continue even if detection fails
+          }
         }
 
         // Draw video (mirrored, grayscale)
@@ -202,17 +188,23 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
         ctx.strokeStyle = 'rgba(255, 230, 0, 0.5)';
         ctx.lineWidth = 2;
         bodiesRef.current.forEach(body => {
-          // Mirror the x coordinate
           const mirroredX = canvas.width - body.x - body.width;
           ctx.strokeRect(mirroredX, body.y, body.width, body.height);
         });
 
-        // Update and draw dot
-        dotRef.current = updateDot(dotRef.current);
-        const dotX = dotRef.current.x * canvas.width;
-        const dotY = dotRef.current.y * canvas.height;
+        // Update dot position - always falling down
+        const dot = dotRef.current;
+        dot.y += dot.speed;
 
-        // Draw dot with glow
+        // Check if dot went off bottom of screen - reset it
+        if (dot.y > 1.1) {
+          dotRef.current = resetDot();
+        }
+
+        // Draw dot
+        const dotX = dot.x * canvas.width;
+        const dotY = dot.y * canvas.height;
+
         ctx.fillStyle = '#FF3333';
         ctx.shadowColor = '#FF0000';
         ctx.shadowBlur = 20;
@@ -221,7 +213,6 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Draw dot core
         ctx.fillStyle = '#FFFFFF';
         ctx.beginPath();
         ctx.arc(dotX, dotY, 5, 0, Math.PI * 2);
@@ -233,23 +224,58 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
           x: canvas.width - body.x - body.width
         }));
         
-        if (checkCollision(dotRef.current, mirroredBodies, canvas.width, canvas.height)) {
-          // HIT! Game over
-          isCompleteRef.current = true;
-          setIsComplete(true);
-          
-          const timeSurvived = (Date.now() - startTimeRef.current) / 1000;
-          const targetResult = { ...calculateTargetModal(timeSurvived), time: timeSurvived };
-          setResult(targetResult);
-          
-          // Flash effect
-          ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          
-          setTimeout(() => setShowExplanation(true), 500);
-          setTimeout(() => onComplete(targetResult.modalId), 3000);
-          
-          return;
+        // Only check collision if dot is on screen and enough time since last hit
+        if (dot.y > 0 && dot.y < 1 && now - lastHitTimeRef.current > 500) {
+          if (checkCollision(dot, mirroredBodies, canvas.width, canvas.height)) {
+            // HIT! Add a strike
+            strikesRef.current += 1;
+            setStrikes(strikesRef.current);
+            lastHitTimeRef.current = now;
+            
+            // Flash effect at hit location
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+            ctx.beginPath();
+            ctx.arc(dotX, dotY, 50, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Reset dot to new position
+            dotRef.current = resetDot();
+            
+            // Check if game over (5 strikes)
+            if (strikesRef.current >= MAX_STRIKES) {
+              isCompleteRef.current = true;
+              setIsComplete(true);
+              
+              const timeTaken = (Date.now() - startTimeRef.current) / 1000;
+              const targetResult = { ...calculateTargetModal(timeTaken), time: timeTaken };
+              setResult(targetResult);
+              
+              // Full screen flash
+              ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              
+              setTimeout(() => setShowExplanation(true), 500);
+              setTimeout(() => onComplete(targetResult.modalId), 3000);
+              
+              return;
+            }
+          }
+        }
+
+        // Draw strike indicators
+        const strikeY = 30;
+        for (let i = 0; i < MAX_STRIKES; i++) {
+          const strikeX = canvas.width - 30 - (i * 25);
+          ctx.beginPath();
+          ctx.arc(strikeX, strikeY, 8, 0, Math.PI * 2);
+          if (i < strikesRef.current) {
+            ctx.fillStyle = '#FF3333';
+            ctx.fill();
+          } else {
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
         }
 
         // Update elapsed time
@@ -265,7 +291,7 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
       setError(err.message || 'Failed to start');
       setIsLoading(false);
     }
-  }, [calculateTargetModal, checkCollision, updateDot, onComplete]);
+  }, [calculateTargetModal, checkCollision, resetDot, onComplete]);
 
   // Cleanup
   const stopDetection = useCallback(() => {
@@ -298,7 +324,7 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
         <div className="text-gray-400 font-mono text-sm flex justify-between items-center">
           <span>Module 3 — dodge the signal</span>
           {isActive && !isComplete && (
-            <span className="text-[#FFE600]">{elapsedTime.toFixed(1)}s</span>
+            <span className="text-[#FFE600]">{strikes}/{MAX_STRIKES} strikes</span>
           )}
         </div>
         
@@ -352,7 +378,24 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
                         <div className="text-4xl font-bold text-[#FFE600]">
                           {elapsedTime.toFixed(1)}s
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">survival time</div>
+                        <div className="text-xs text-gray-500 mt-1">elapsed time</div>
+                      </div>
+                      
+                      {/* Strike counter */}
+                      <div className="flex justify-center gap-2 my-4">
+                        {Array.from({ length: MAX_STRIKES }).map((_, i) => (
+                          <div 
+                            key={i}
+                            className="w-4 h-4 rounded-full border-2"
+                            style={{
+                              backgroundColor: i < strikes ? '#FF3333' : 'transparent',
+                              borderColor: i < strikes ? '#FF3333' : '#666'
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <div className="text-center text-xs text-gray-500">
+                        {strikes}/{MAX_STRIKES} strikes
                       </div>
                       
                       <div className="flex justify-between text-xs">
@@ -361,19 +404,19 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
                       </div>
                       
                       <div className="text-xs text-gray-600 mt-4 leading-relaxed">
-                        Avoid the red signal. Move together as one organism.
+                        Avoid the red signal. 5 strikes and you're out.
                       </div>
                     </div>
                   </>
                 ) : (
                   <div className="animate-fade-in">
                     <div className="text-gray-400 mb-3 border-b border-gray-700 pb-2">
-                      CONTACT
+                      5 STRIKES
                     </div>
                     
                     <div className="space-y-2 text-gray-400 mb-4">
                       <div className="flex justify-between">
-                        <span>survived:</span>
+                        <span>total time:</span>
                         <span className="text-[#FFE600]">{result?.time.toFixed(1)}s</span>
                       </div>
                       <div className="flex justify-between">
@@ -384,11 +427,13 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
 
                     {showExplanation && (
                       <div className="text-gray-500 text-xs leading-relaxed animate-fade-in border-t border-gray-700 pt-3">
-                        {result && result.time > 20 
+                        {result && result.time > 45 
                           ? "Exceptional evasion. The organism demonstrated remarkable collective awareness..."
+                          : result && result.time > 25
+                          ? "Solid coordination. The collective moved as one..."
                           : result && result.time > 10
-                          ? "Solid coordination. The collective moved as one for a time..."
-                          : "Brief contact. The signal found its mark quickly..."
+                          ? "Brief resistance. The signals found their marks..."
+                          : "Swift contact. The collective was quickly tagged..."
                         }
                       </div>
                     )}
