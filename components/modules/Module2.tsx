@@ -284,7 +284,7 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
         onClick={!expanded ? onExpand : undefined}
       >
         <div className="text-gray-400 font-mono text-sm flex justify-between items-center">
-          <span>Module 2 — fill the vessel</span>
+          <span>Module 2 — fill the vessel with sound</span>
           {isActive && !isComplete && (
             <span className="text-[#FFE600]">{elapsedTime.toFixed(1)}s</span>
           )}
