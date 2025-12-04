@@ -27,8 +27,8 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
   const [result, setResult] = useState<{ modalId: string; modalNum: number; time: number } | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
 
-  const THRESHOLD = 100; // Accumulation threshold to reach
-  const DECAY_RATE = 0.2; // How fast accumulation decays without sound
+  const THRESHOLD = 50; // Accumulation threshold to reach (lowered for easier testing)
+  const DECAY_RATE = 0.1; // How fast accumulation decays without sound
 
   // Calculate weighted modal selection based on time
   // Faster = higher modal numbers (more spread), Slower = lower (focused)
@@ -153,9 +153,15 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
 
       // Create audio context and analyser
       const audioContext = new AudioContext();
+      
+      // Resume audio context (required by browser autoplay policy)
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+      
       const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 2048;
-      analyser.smoothingTimeConstant = 0.8;
+      analyser.fftSize = 256; // Smaller for faster response
+      analyser.smoothingTimeConstant = 0.5; // Less smoothing for more responsiveness
 
       const source = audioContext.createMediaStreamSource(stream);
       source.connect(analyser);
@@ -179,15 +185,22 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
 
         // Get frequency data for volume
         analyser.getByteFrequencyData(freqArray);
-        const avgVolume = freqArray.reduce((a, b) => a + b, 0) / freqArray.length;
-        const normalizedVolume = avgVolume / 128; // 0-2 range roughly
+        
+        // Calculate RMS volume (more accurate than average)
+        let sum = 0;
+        for (let i = 0; i < freqArray.length; i++) {
+          sum += freqArray[i] * freqArray[i];
+        }
+        const rms = Math.sqrt(sum / freqArray.length);
+        const normalizedVolume = rms / 128; // 0-2 range roughly
 
         setCurrentVolume(normalizedVolume);
 
-        // Update accumulation
-        // Add volume contribution, subtract decay
-        currentAccumulation += normalizedVolume * 0.5;
-        currentAccumulation -= DECAY_RATE;
+        // Update accumulation - more sensitive
+        // Add volume contribution (multiplied for sensitivity), subtract small decay
+        const volumeContribution = normalizedVolume * 2; // Increased sensitivity
+        currentAccumulation += volumeContribution;
+        currentAccumulation -= DECAY_RATE * 0.5; // Slower decay
         currentAccumulation = Math.max(0, Math.min(currentAccumulation, THRESHOLD + 10));
         
         setAccumulation(currentAccumulation);
