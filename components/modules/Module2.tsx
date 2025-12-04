@@ -197,10 +197,9 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
 
         setCurrentVolume(normalizedVolume);
 
-        // Update accumulation - calibrated for ~10-15 second fill time
-        // At 60fps, 600 frames = 10 seconds
-        // Target: reach 100 in ~600 frames with moderate sound
-        const volumeContribution = normalizedVolume * 0.25; // Slow accumulation
+        // Update accumulation - calibrated for ~3-5 second fill time
+        // At 60fps, 200 frames = ~3 seconds
+        const volumeContribution = normalizedVolume * 0.75; // 3x faster
         currentAccumulation += volumeContribution;
         currentAccumulation -= DECAY_RATE; // Gentle decay during silence
         currentAccumulation = Math.max(0, Math.min(currentAccumulation, THRESHOLD + 10));
