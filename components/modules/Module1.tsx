@@ -138,94 +138,95 @@ export default function Module1({ expanded, onExpand, onComplete }: Props) {
       
       await videoRef.current.play();
       console.log('Video playing');
-
-      // Dynamically import MediaPipe Hands
-      console.log('Loading MediaPipe Hands...');
-      const { Hands } = await import('@mediapipe/hands');
-      
-      const hands = new Hands({
-        locateFile: (file: string) => {
-          return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-        },
-      });
-
-      hands.setOptions({
-        maxNumHands: 10,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
-      });
-
-      hands.onResults((results: any) => {
-        if (isCompleteRef.current) return;
-        
-        const numHands = results.multiHandLandmarks?.length || 0;
-        const avgConfidence = results.multiHandedness?.reduce(
-          (sum: number, h: any) => sum + (h.score || 0), 0
-        ) / Math.max(numHands, 1);
-
-        setHandCount(numHands);
-        setConfidence(avgConfidence || 0);
-
-        // Add sync log
-        setSyncLogs(prev => {
-          const newLog: SyncData = {
-            timestamp: Date.now(),
-            hands: numHands,
-            confidence: avgConfidence || 0,
-            syncId: generateSyncId(),
-          };
-          return [...prev.slice(-15), newLog];
-        });
-
-        // Draw to canvas
-        if (videoRef.current) {
-          drawToCanvas(videoRef.current, results.multiHandLandmarks);
-        }
-      });
-
-      handsRef.current = hands;
-      console.log('MediaPipe Hands initialized');
       
       setIsActive(true);
       setIsLoading(false);
 
-      // Start detection loop
-      const detectFrame = async () => {
-        if (videoRef.current && handsRef.current && !isCompleteRef.current) {
-          try {
-            await handsRef.current.send({ image: videoRef.current });
-          } catch (e) {
-            console.error('Detection error:', e);
-          }
+      // Store latest landmarks for drawing
+      let latestLandmarks: any[] | null = null;
+
+      // Start video draw loop IMMEDIATELY (don't wait for MediaPipe)
+      const drawLoop = () => {
+        if (videoRef.current && canvasRef.current && !isCompleteRef.current) {
+          drawToCanvas(videoRef.current, latestLandmarks);
         }
         if (!isCompleteRef.current) {
-          animationRef.current = requestAnimationFrame(detectFrame);
+          animationRef.current = requestAnimationFrame(drawLoop);
         }
       };
+      drawLoop();
 
-      // Start the detection loop
-      detectFrame();
-      
-    } catch (err: any) {
-      console.error('Camera/detection error:', err);
-      setError(err.message || 'Failed to access camera');
-      setIsLoading(false);
-      
-      // Fallback: just show video without hand detection
-      if (streamRef.current && videoRef.current) {
-        setIsActive(true);
-        // Simple video draw loop without hand detection
-        const drawLoop = () => {
-          if (videoRef.current && canvasRef.current && !isCompleteRef.current) {
-            drawToCanvas(videoRef.current, null);
+      // Load MediaPipe Hands in background
+      console.log('Loading MediaPipe Hands...');
+      try {
+        const { Hands } = await import('@mediapipe/hands');
+        
+        const hands = new Hands({
+          locateFile: (file: string) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+          },
+        });
+
+        hands.setOptions({
+          maxNumHands: 10,
+          modelComplexity: 1,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+        });
+
+        hands.onResults((results: any) => {
+          if (isCompleteRef.current) return;
+          
+          const numHands = results.multiHandLandmarks?.length || 0;
+          const avgConfidence = results.multiHandedness?.reduce(
+            (sum: number, h: any) => sum + (h.score || 0), 0
+          ) / Math.max(numHands, 1);
+
+          setHandCount(numHands);
+          setConfidence(avgConfidence || 0);
+          
+          // Update landmarks for draw loop
+          latestLandmarks = results.multiHandLandmarks || null;
+
+          // Add sync log
+          setSyncLogs(prev => {
+            const newLog: SyncData = {
+              timestamp: Date.now(),
+              hands: numHands,
+              confidence: avgConfidence || 0,
+              syncId: generateSyncId(),
+            };
+            return [...prev.slice(-15), newLog];
+          });
+        });
+
+        handsRef.current = hands;
+        console.log('MediaPipe Hands initialized');
+
+        // Start detection loop (separate from draw loop)
+        const detectLoop = async () => {
+          if (videoRef.current && handsRef.current && !isCompleteRef.current) {
+            try {
+              await handsRef.current.send({ image: videoRef.current });
+            } catch (e) {
+              // Silently handle detection errors
+            }
           }
           if (!isCompleteRef.current) {
-            animationRef.current = requestAnimationFrame(drawLoop);
+            setTimeout(detectLoop, 100); // Run detection at ~10fps to save CPU
           }
         };
-        drawLoop();
+        detectLoop();
+        
+      } catch (mpError) {
+        console.warn('MediaPipe failed to load, continuing without hand detection:', mpError);
+        // Video will still show, just no hand detection
       }
+      
+    } catch (err: any) {
+      console.error('Camera error:', err);
+      setError(err.message || 'Failed to access camera');
+      setIsLoading(false);
     }
   }, [drawToCanvas]);
 
