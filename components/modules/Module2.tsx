@@ -14,6 +14,7 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationRef = useRef<number>();
+  const idleAnimationRef = useRef<number>();
   const startTimeRef = useRef<number>(0);
   const isCompleteRef = useRef(false);
   
@@ -173,16 +174,22 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
       const dataArray = new Uint8Array(bufferLength);
       const freqArray = new Uint8Array(bufferLength);
 
+      console.log('Audio context state:', audioContext.state);
+      console.log('Starting audio animation loop');
+      
       startTimeRef.current = Date.now();
       setIsActive(true);
       setIsLoading(false);
 
       let currentAccumulation = 0;
+      let frameCount = 0;
 
       // Animation loop
       const animate = () => {
         if (isCompleteRef.current) return;
 
+        frameCount++;
+        
         // Get frequency data for volume
         analyser.getByteFrequencyData(freqArray);
         
@@ -193,6 +200,11 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
         }
         const rms = Math.sqrt(sum / freqArray.length);
         const normalizedVolume = rms / 128; // 0-2 range roughly
+
+        // Log every 60 frames (about once per second)
+        if (frameCount % 60 === 0) {
+          console.log('Audio stats - RMS:', rms.toFixed(2), 'Volume:', normalizedVolume.toFixed(2), 'Accum:', currentAccumulation.toFixed(2));
+        }
 
         setCurrentVolume(normalizedVolume);
 
@@ -259,18 +271,20 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
   useEffect(() => {
     if (expanded && !isActive && !isComplete) {
       let time = 0;
+      let running = true;
+      
       const idleAnimation = () => {
+        if (!running) return;
         time += 16;
         drawIdleWaveform(time);
-        if (!isActive && !isComplete) {
-          animationRef.current = requestAnimationFrame(idleAnimation);
-        }
+        idleAnimationRef.current = requestAnimationFrame(idleAnimation);
       };
       idleAnimation();
       
       return () => {
-        if (animationRef.current) {
-          cancelAnimationFrame(animationRef.current);
+        running = false;
+        if (idleAnimationRef.current) {
+          cancelAnimationFrame(idleAnimationRef.current);
         }
       };
     }
