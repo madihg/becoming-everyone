@@ -1,0 +1,13 @@
+{
+  "modals": [
+    { "id": "modal1", "name": "Modal 1", "x": 0.2, "y": 0.25 },
+    { "id": "modal2", "name": "Modal 2", "x": 0.75, "y": 0.2 },
+    { "id": "modal3", "name": "Modal 3", "x": 0.5, "y": 0.65 },
+    { "id": "modal4", "name": "Modal 4", "x": 0.15, "y": 0.7 },
+    { "id": "modal5", "name": "Modal 5", "x": 0.85, "y": 0.55 },
+    { "id": "modal6", "name": "Modal 6", "x": 0.35, "y": 0.15 },
+    { "id": "modal7", "name": "Modal 7", "x": 0.65, "y": 0.8 },
+    { "id": "modal8", "name": "Modal 8", "x": 0.9, "y": 0.35 }
+  ]
+}
+
