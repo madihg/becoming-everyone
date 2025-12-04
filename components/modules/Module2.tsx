@@ -28,8 +28,8 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
   const [result, setResult] = useState<{ modalId: string; modalNum: number; time: number } | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
 
-  const THRESHOLD = 50; // Accumulation threshold to reach (lowered for easier testing)
-  const DECAY_RATE = 0.1; // How fast accumulation decays without sound
+  const THRESHOLD = 100; // Accumulation threshold to reach
+  const DECAY_RATE = 0.03; // Slow decay during silence
 
   // Calculate weighted modal selection based on time
   // Faster = higher modal numbers (more spread), Slower = lower (focused)
@@ -174,22 +174,16 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
       const dataArray = new Uint8Array(bufferLength);
       const freqArray = new Uint8Array(bufferLength);
 
-      console.log('Audio context state:', audioContext.state);
-      console.log('Starting audio animation loop');
-      
       startTimeRef.current = Date.now();
       setIsActive(true);
       setIsLoading(false);
 
       let currentAccumulation = 0;
-      let frameCount = 0;
 
       // Animation loop
       const animate = () => {
         if (isCompleteRef.current) return;
 
-        frameCount++;
-        
         // Get frequency data for volume
         analyser.getByteFrequencyData(freqArray);
         
@@ -201,18 +195,14 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
         const rms = Math.sqrt(sum / freqArray.length);
         const normalizedVolume = rms / 128; // 0-2 range roughly
 
-        // Log every 60 frames (about once per second)
-        if (frameCount % 60 === 0) {
-          console.log('Audio stats - RMS:', rms.toFixed(2), 'Volume:', normalizedVolume.toFixed(2), 'Accum:', currentAccumulation.toFixed(2));
-        }
-
         setCurrentVolume(normalizedVolume);
 
-        // Update accumulation - more sensitive
-        // Add volume contribution (multiplied for sensitivity), subtract small decay
-        const volumeContribution = normalizedVolume * 2; // Increased sensitivity
+        // Update accumulation - calibrated for ~10-15 second fill time
+        // At 60fps, 600 frames = 10 seconds
+        // Target: reach 100 in ~600 frames with moderate sound
+        const volumeContribution = normalizedVolume * 0.25; // Slow accumulation
         currentAccumulation += volumeContribution;
-        currentAccumulation -= DECAY_RATE * 0.5; // Slower decay
+        currentAccumulation -= DECAY_RATE; // Gentle decay during silence
         currentAccumulation = Math.max(0, Math.min(currentAccumulation, THRESHOLD + 10));
         
         setAccumulation(currentAccumulation);
