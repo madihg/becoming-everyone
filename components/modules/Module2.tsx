@@ -194,26 +194,45 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
       const dataArray = new Uint8Array(bufferLength);
       const freqArray = new Uint8Array(bufferLength);
 
+      console.log('Audio setup complete. Context state:', audioContext.state);
+      console.log('Stream tracks:', stream.getAudioTracks().map(t => ({ enabled: t.enabled, muted: t.muted, readyState: t.readyState })));
+      
       startTimeRef.current = Date.now();
       setIsActive(true);
       setIsLoading(false);
 
       let currentAccumulation = 0;
+      let frameCount = 0;
 
       // Animation loop
       const animate = () => {
         if (isCompleteRef.current) return;
+
+        frameCount++;
 
         // Get frequency data for volume
         analyser.getByteFrequencyData(freqArray);
         
         // Calculate RMS volume (more accurate than average)
         let sum = 0;
+        let maxVal = 0;
         for (let i = 0; i < freqArray.length; i++) {
           sum += freqArray[i] * freqArray[i];
+          if (freqArray[i] > maxVal) maxVal = freqArray[i];
         }
         const rms = Math.sqrt(sum / freqArray.length);
         const normalizedVolume = rms / 128; // 0-2 range roughly
+
+        // Debug log every second
+        if (frameCount % 60 === 0) {
+          console.log('Audio debug:', { 
+            rms: rms.toFixed(2), 
+            maxVal, 
+            normalizedVolume: normalizedVolume.toFixed(3),
+            accumulation: currentAccumulation.toFixed(2),
+            contextState: audioContext.state 
+          });
+        }
 
         setCurrentVolume(normalizedVolume);
 
