@@ -53,6 +53,40 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
     return { modalId: `modal${modalNum}`, modalNum };
   }, []);
 
+  // Draw idle waveform (flat line with subtle animation)
+  const drawIdleWaveform = useCallback((time: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Clear canvas
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw subtle animated flat line
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#FFE600';
+    ctx.beginPath();
+
+    const centerY = canvas.height / 2;
+    for (let x = 0; x < canvas.width; x++) {
+      const wave = Math.sin(x * 0.02 + time * 0.002) * 5;
+      if (x === 0) {
+        ctx.moveTo(x, centerY + wave);
+      } else {
+        ctx.lineTo(x, centerY + wave);
+      }
+    }
+    ctx.stroke();
+
+    // Draw glow effect
+    ctx.strokeStyle = 'rgba(255, 230, 0, 0.3)';
+    ctx.lineWidth = 6;
+    ctx.stroke();
+  }, []);
+
   // Draw waveform visualization
   const drawWaveform = useCallback((analyser: AnalyserNode, dataArray: Uint8Array) => {
     const canvas = canvasRef.current;
@@ -207,6 +241,27 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
       audioContextRef.current.close();
     }
   }, []);
+
+  // Draw idle animation when expanded but not yet active
+  useEffect(() => {
+    if (expanded && !isActive && !isComplete) {
+      let time = 0;
+      const idleAnimation = () => {
+        time += 16;
+        drawIdleWaveform(time);
+        if (!isActive && !isComplete) {
+          animationRef.current = requestAnimationFrame(idleAnimation);
+        }
+      };
+      idleAnimation();
+      
+      return () => {
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+        }
+      };
+    }
+  }, [expanded, isActive, isComplete, drawIdleWaveform]);
 
   // Start audio when expanded
   useEffect(() => {
