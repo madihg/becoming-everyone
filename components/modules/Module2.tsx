@@ -402,33 +402,34 @@ export default function Module2({ expanded, onExpand, onComplete }: Props) {
                     </div>
                     
                     {/* Vertical meter */}
-                    <div className="flex items-end justify-center h-40 mb-4">
-                      <div className="relative w-16 h-full bg-gray-900 rounded border border-gray-700">
+                    <div className="flex items-end justify-center mb-4" style={{ height: '160px' }}>
+                      <div className="relative bg-gray-900 rounded border border-gray-700" style={{ width: '64px', height: '100%' }}>
                         {/* Threshold line */}
                         <div 
                           className="absolute left-0 right-0 border-t-2 border-dashed border-gray-500"
-                          style={{ bottom: '100%', transform: 'translateY(2px)' }}
+                          style={{ top: '0' }}
                         />
                         <div 
-                          className="absolute -right-16 text-xs text-gray-500 whitespace-nowrap"
-                          style={{ bottom: '96%' }}
+                          className="absolute text-xs text-gray-500 whitespace-nowrap"
+                          style={{ top: '-20px', left: '50%', transform: 'translateX(-50%)' }}
                         >
                           threshold
                         </div>
                         
-                        {/* Fill */}
+                        {/* Fill - grows from bottom */}
                         <div 
-                          className="absolute bottom-0 left-0 right-0 transition-all duration-150 rounded-b"
+                          className="absolute left-0 right-0 bottom-0 rounded-b"
                           style={{ 
                             height: `${progressPercent}%`,
                             backgroundColor: '#FFE600',
-                            minHeight: progressPercent > 0 ? '2px' : '0'
+                            transition: 'height 0.15s ease-out'
                           }}
                         />
                         
                         {/* Percentage */}
-                        <div className="absolute inset-0 flex items-center justify-center text-black font-bold text-lg"
-                          style={{ mixBlendMode: 'difference' }}
+                        <div 
+                          className="absolute inset-0 flex items-center justify-center font-bold text-lg"
+                          style={{ color: progressPercent > 50 ? '#000' : '#FFE600' }}
                         >
                           {Math.floor(progressPercent)}%
                         </div>
