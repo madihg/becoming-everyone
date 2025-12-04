@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { getPreloadedModel, preloadBodyModel } from '@/app/page';
+import { getPreloadedModel, preloadBodyModel } from '@/lib/model-preloader';
 
 interface Props {
   expanded: boolean;
