@@ -17,23 +17,28 @@ interface DetectedBody {
 }
 
 const MAX_STRIKES = 5;
+const PAUSE_DURATION = 2000; // 2 seconds pause at top
 
 export default function Module3({ expanded, onExpand, onComplete }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const modelRef = useRef<any>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const animationRef = useRef<number>();
-  const detectionIntervalRef = useRef<NodeJS.Timeout>();
+  const animationRef = useRef<number | null>(null);
+  const detectionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const bodiesRef = useRef<DetectedBody[]>([]);
   const startTimeRef = useRef<number>(0);
-  const gameStateRef = useRef({
+  
+  // Game state - all in one ref to avoid stale closures
+  const gameRef = useRef({
     dotX: 0.5,
     dotY: -0.1,
     dotSpeed: 0.01,
     strikes: 0,
     lastHitTime: 0,
-    isComplete: false
+    isComplete: false,
+    isPaused: true,
+    pauseStartTime: 0
   });
   
   const [isActive, setIsActive] = useState(false);
@@ -47,7 +52,7 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
   const [bodyCount, setBodyCount] = useState(0);
   const [strikes, setStrikes] = useState(0);
 
-  // Calculate modal based on time to get 5 strikes
+  // Calculate modal based on time
   const calculateTargetModal = useCallback((timeTaken: number): { modalId: string; modalNum: number } => {
     let minModal: number, maxModal: number;
     
@@ -65,69 +70,37 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
     return { modalId: `modal${modalNum}`, modalNum };
   }, []);
 
-  // Reset dot to new random position
-  const resetDot = useCallback(() => {
-    const state = gameStateRef.current;
-    state.dotX = Math.random() * 0.7 + 0.15;
-    state.dotY = -0.1;
-    state.dotSpeed = 0.008 + Math.random() * 0.006;
+  // Spawn new dot at random X position, paused at top
+  const spawnNewDot = useCallback(() => {
+    const game = gameRef.current;
+    game.dotX = Math.random() * 0.7 + 0.15; // 15% to 85%
+    game.dotY = 0.02; // Just below top
+    game.dotSpeed = 0.006 + Math.random() * 0.004; // Random speed
+    game.isPaused = true;
+    game.pauseStartTime = Date.now();
+    console.log('New dot spawned at X:', game.dotX.toFixed(2), '- pausing for 2 seconds');
   }, []);
 
-  // Check collision
-  const checkCollision = useCallback((dotX: number, dotY: number, bodies: DetectedBody[], canvasWidth: number, canvasHeight: number): boolean => {
-    const pixelX = dotX * canvasWidth;
-    const pixelY = dotY * canvasHeight;
-
-    for (const body of bodies) {
-      // Mirror the body X position
-      const mirroredX = canvasWidth - body.x - body.width;
-      const padding = 15;
-      
-      if (
-        pixelX > mirroredX - padding &&
-        pixelX < mirroredX + body.width + padding &&
-        pixelY > body.y - padding &&
-        pixelY < body.y + body.height + padding
-      ) {
-        return true;
-      }
-    }
-    return false;
-  }, []);
-
-  // Handle game over
-  const handleGameOver = useCallback(() => {
-    const state = gameStateRef.current;
-    if (state.isComplete) return;
-    
-    state.isComplete = true;
-    setIsComplete(true);
-    
-    const timeTaken = (Date.now() - startTimeRef.current) / 1000;
-    const targetResult = { ...calculateTargetModal(timeTaken), time: timeTaken };
-    setResult(targetResult);
-    
-    setTimeout(() => setShowExplanation(true), 500);
-    setTimeout(() => onComplete(targetResult.modalId), 3000);
-  }, [calculateTargetModal, onComplete]);
-
-  // Start detection
+  // Start the game
   const startDetection = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current) return;
 
     setIsLoading(true);
     setError(null);
     
-    // Reset game state
-    gameStateRef.current = {
+    // Reset everything
+    gameRef.current = {
       dotX: 0.5,
-      dotY: -0.1,
-      dotSpeed: 0.01,
+      dotY: 0.02,
+      dotSpeed: 0.008,
       strikes: 0,
       lastHitTime: 0,
-      isComplete: false
+      isComplete: false,
+      isPaused: true,
+      pauseStartTime: Date.now()
     };
     setStrikes(0);
+    setIsComplete(false);
 
     try {
       // Get camera
@@ -154,14 +127,16 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
       modelRef.current = model;
 
       setLoadingStatus('Ready!');
-      resetDot();
       startTimeRef.current = Date.now();
+      gameRef.current.pauseStartTime = Date.now();
       setIsActive(true);
       setIsLoading(false);
 
-      // SEPARATE detection loop (runs independently, non-blocking)
-      const runDetection = async () => {
-        if (gameStateRef.current.isComplete) return;
+      console.log('Game started! First dot pausing...');
+
+      // Body detection interval (separate from animation)
+      detectionIntervalRef.current = setInterval(async () => {
+        if (gameRef.current.isComplete) return;
         if (!videoRef.current || !modelRef.current) return;
         
         try {
@@ -176,23 +151,31 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
             }));
           setBodyCount(bodiesRef.current.length);
         } catch (e) {
-          console.warn('Detection error:', e);
+          // Ignore detection errors
         }
-      };
-      
-      // Run detection every 150ms (separate from animation)
-      detectionIntervalRef.current = setInterval(runDetection, 150);
-      runDetection(); // Initial detection
+      }, 150);
 
-      // ANIMATION loop (synchronous, smooth)
+      // Animation loop
       const animate = () => {
-        const state = gameStateRef.current;
-        if (state.isComplete) return;
-        if (!canvasRef.current || !videoRef.current) return;
+        const game = gameRef.current;
+        
+        // Check if game is over
+        if (game.isComplete) {
+          console.log('Game complete, stopping animation');
+          return;
+        }
+        
+        if (!canvasRef.current || !videoRef.current) {
+          animationRef.current = requestAnimationFrame(animate);
+          return;
+        }
 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+        if (!ctx) {
+          animationRef.current = requestAnimationFrame(animate);
+          return;
+        }
 
         const now = Date.now();
 
@@ -203,7 +186,7 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
         ctx.drawImage(videoRef.current, -canvas.width, 0, canvas.width, canvas.height);
         ctx.restore();
 
-        // Draw body bounding boxes
+        // Draw body boxes
         ctx.strokeStyle = 'rgba(255, 230, 0, 0.5)';
         ctx.lineWidth = 2;
         bodiesRef.current.forEach(body => {
@@ -211,23 +194,29 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
           ctx.strokeRect(mirroredX, body.y, body.width, body.height);
         });
 
-        // Update dot position
-        state.dotY += state.dotSpeed;
-
-        // Reset dot if it goes off bottom
-        if (state.dotY > 1.15) {
-          resetDot();
+        // Handle dot pause
+        if (game.isPaused) {
+          if (now - game.pauseStartTime >= PAUSE_DURATION) {
+            game.isPaused = false;
+            console.log('Dot dropping!');
+          }
+        } else {
+          // Move dot DOWN only
+          game.dotY += game.dotSpeed;
         }
 
         // Draw dot
-        const dotPixelX = state.dotX * canvas.width;
-        const dotPixelY = state.dotY * canvas.height;
+        const dotPixelX = game.dotX * canvas.width;
+        const dotPixelY = game.dotY * canvas.height;
+
+        // Pulsing effect while paused
+        const dotSize = game.isPaused ? 12 + Math.sin(now * 0.01) * 3 : 12;
 
         ctx.fillStyle = '#FF3333';
         ctx.shadowColor = '#FF0000';
         ctx.shadowBlur = 20;
         ctx.beginPath();
-        ctx.arc(dotPixelX, dotPixelY, 12, 0, Math.PI * 2);
+        ctx.arc(dotPixelX, dotPixelY, dotSize, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
 
@@ -236,41 +225,73 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
         ctx.arc(dotPixelX, dotPixelY, 5, 0, Math.PI * 2);
         ctx.fill();
 
-        // Check collision (only if dot is on screen and cooldown passed)
-        if (state.dotY > 0.05 && state.dotY < 0.95 && now - state.lastHitTime > 600) {
-          if (checkCollision(state.dotX, state.dotY, bodiesRef.current, canvas.width, canvas.height)) {
-            // HIT!
-            state.strikes += 1;
-            state.lastHitTime = now;
-            setStrikes(state.strikes);
-            
-            console.log(`Strike ${state.strikes}/${MAX_STRIKES}`);
-            
-            // Flash effect
-            ctx.fillStyle = 'rgba(255, 0, 0, 0.4)';
-            ctx.beginPath();
-            ctx.arc(dotPixelX, dotPixelY, 60, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Reset dot
-            resetDot();
-            
-            // Check game over
-            if (state.strikes >= MAX_STRIKES) {
-              ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-              handleGameOver();
-              return;
+        // Check collision (only when dot is moving and on screen)
+        if (!game.isPaused && game.dotY > 0.1 && game.dotY < 0.95) {
+          const hitCooldown = now - game.lastHitTime > 500;
+          
+          if (hitCooldown) {
+            // Check against mirrored body positions
+            for (const body of bodiesRef.current) {
+              const mirroredX = canvas.width - body.x - body.width;
+              const padding = 15;
+              
+              if (
+                dotPixelX > mirroredX - padding &&
+                dotPixelX < mirroredX + body.width + padding &&
+                dotPixelY > body.y - padding &&
+                dotPixelY < body.y + body.height + padding
+              ) {
+                // HIT!
+                game.strikes += 1;
+                game.lastHitTime = now;
+                setStrikes(game.strikes);
+                
+                console.log(`>>> STRIKE ${game.strikes}/${MAX_STRIKES} <<<`);
+                
+                // Flash effect
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+                ctx.beginPath();
+                ctx.arc(dotPixelX, dotPixelY, 60, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Check if game over
+                if (game.strikes >= MAX_STRIKES) {
+                  console.log('GAME OVER - 5 strikes!');
+                  game.isComplete = true;
+                  setIsComplete(true);
+                  
+                  const timeTaken = (now - startTimeRef.current) / 1000;
+                  const targetResult = { ...calculateTargetModal(timeTaken), time: timeTaken };
+                  setResult(targetResult);
+                  
+                  ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+                  ctx.fillRect(0, 0, canvas.width, canvas.height);
+                  
+                  setTimeout(() => setShowExplanation(true), 500);
+                  setTimeout(() => onComplete(targetResult.modalId), 3000);
+                  return; // Stop animation
+                }
+                
+                // Spawn new dot (not game over yet)
+                spawnNewDot();
+                break; // Exit collision loop
+              }
             }
           }
         }
 
-        // Draw strike indicators on canvas
+        // If dot went off bottom without hitting anyone, spawn new one
+        if (game.dotY > 1.1) {
+          console.log('Dot missed, spawning new one');
+          spawnNewDot();
+        }
+
+        // Draw strike indicators
         for (let i = 0; i < MAX_STRIKES; i++) {
           const strikeX = canvas.width - 25 - (i * 22);
           ctx.beginPath();
           ctx.arc(strikeX, 25, 7, 0, Math.PI * 2);
-          if (i < state.strikes) {
+          if (i < game.strikes) {
             ctx.fillStyle = '#FF3333';
             ctx.fill();
           } else {
@@ -280,32 +301,39 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
           }
         }
 
-        // Update elapsed time
+        // Update UI
         setElapsedTime((now - startTimeRef.current) / 1000);
 
+        // Continue animation
         animationRef.current = requestAnimationFrame(animate);
       };
 
-      animate();
+      // Start animation
+      animationRef.current = requestAnimationFrame(animate);
 
     } catch (err: any) {
-      console.error('Detection error:', err);
+      console.error('Error:', err);
       setError(err.message || 'Failed to start');
       setIsLoading(false);
     }
-  }, [checkCollision, resetDot, handleGameOver]);
+  }, [calculateTargetModal, spawnNewDot, onComplete]);
 
   // Cleanup
   const stopDetection = useCallback(() => {
-    gameStateRef.current.isComplete = true;
+    console.log('Stopping detection...');
+    gameRef.current.isComplete = true;
+    
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
     }
     if (detectionIntervalRef.current) {
       clearInterval(detectionIntervalRef.current);
+      detectionIntervalRef.current = null;
     }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
     }
   }, []);
 
@@ -337,15 +365,9 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
         {expanded && (
           <div className="mt-4 animate-expand">
             <div className="flex gap-4" style={{ minHeight: '300px' }}>
-              {/* Left: Camera with dot game */}
+              {/* Left: Camera */}
               <div className="flex-1 relative bg-black rounded overflow-hidden">
-                <video
-                  ref={videoRef}
-                  className="hidden"
-                  playsInline
-                  muted
-                  autoPlay
-                />
+                <video ref={videoRef} className="hidden" playsInline muted autoPlay />
                 <canvas
                   ref={canvasRef}
                   width={640}
@@ -357,72 +379,45 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
                   <div className="absolute inset-0 flex items-center justify-center text-gray-400 bg-black bg-opacity-70">
                     <div className="text-center">
                       <div className="animate-pulse">{loadingStatus}</div>
-                      <div className="text-xs mt-2 text-gray-500">This may take a moment</div>
                     </div>
                   </div>
                 )}
                 {error && (
-                  <div className="absolute inset-0 flex items-center justify-center text-red-400 bg-black bg-opacity-70 p-4">
-                    <div className="text-center">
-                      <div>Error</div>
-                      <div className="text-xs mt-2 text-gray-500">{error}</div>
-                    </div>
+                  <div className="absolute inset-0 flex items-center justify-center text-red-400 bg-black bg-opacity-70">
+                    <div>{error}</div>
                   </div>
                 )}
               </div>
 
-              {/* Right: Status panel */}
-              <div className="w-64 bg-black bg-opacity-50 rounded p-4 font-mono text-sm overflow-hidden">
+              {/* Right: Status */}
+              <div className="w-64 bg-black bg-opacity-50 rounded p-4 font-mono text-sm">
                 {!isComplete ? (
                   <>
-                    <div className="text-gray-400 mb-3 border-b border-gray-700 pb-2">
-                      EVADING
+                    <div className="text-gray-400 mb-3 border-b border-gray-700 pb-2">EVADING</div>
+                    <div className="text-center mb-4">
+                      <div className="text-4xl font-bold text-[#FFE600]">{elapsedTime.toFixed(1)}s</div>
                     </div>
-                    
-                    <div className="space-y-3 text-gray-400">
-                      <div className="text-center">
-                        <div className="text-4xl font-bold text-[#FFE600]">
-                          {elapsedTime.toFixed(1)}s
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">elapsed time</div>
-                      </div>
-                      
-                      {/* Strike counter */}
-                      <div className="flex justify-center gap-2 my-4">
-                        {Array.from({ length: MAX_STRIKES }).map((_, i) => (
-                          <div 
-                            key={i}
-                            className="w-4 h-4 rounded-full border-2"
-                            style={{
-                              backgroundColor: i < strikes ? '#FF3333' : 'transparent',
-                              borderColor: i < strikes ? '#FF3333' : '#666'
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <div className="text-center text-xs text-gray-500">
-                        {strikes}/{MAX_STRIKES} strikes
-                      </div>
-                      
-                      <div className="flex justify-between text-xs">
-                        <span>bodies detected:</span>
-                        <span className="text-gray-300">{bodyCount}</span>
-                      </div>
-                      
-                      <div className="text-xs text-gray-600 mt-4 leading-relaxed">
-                        Avoid the red signal. 5 strikes and you're out.
-                      </div>
+                    <div className="flex justify-center gap-2 mb-2">
+                      {Array.from({ length: MAX_STRIKES }).map((_, i) => (
+                        <div 
+                          key={i}
+                          className="w-4 h-4 rounded-full border-2"
+                          style={{
+                            backgroundColor: i < strikes ? '#FF3333' : 'transparent',
+                            borderColor: i < strikes ? '#FF3333' : '#666'
+                          }}
+                        />
+                      ))}
                     </div>
+                    <div className="text-center text-xs text-gray-500 mb-4">{strikes}/{MAX_STRIKES} strikes</div>
+                    <div className="text-xs text-gray-500">Bodies: {bodyCount}</div>
                   </>
                 ) : (
                   <div className="animate-fade-in">
-                    <div className="text-gray-400 mb-3 border-b border-gray-700 pb-2">
-                      5 STRIKES
-                    </div>
-                    
+                    <div className="text-gray-400 mb-3 border-b border-gray-700 pb-2">5 STRIKES</div>
                     <div className="space-y-2 text-gray-400 mb-4">
                       <div className="flex justify-between">
-                        <span>total time:</span>
+                        <span>time:</span>
                         <span className="text-[#FFE600]">{result?.time.toFixed(1)}s</span>
                       </div>
                       <div className="flex justify-between">
@@ -430,16 +425,13 @@ export default function Module3({ expanded, onExpand, onComplete }: Props) {
                         <span className="text-[#FFE600]">{result?.modalId}</span>
                       </div>
                     </div>
-
                     {showExplanation && (
-                      <div className="text-gray-500 text-xs leading-relaxed animate-fade-in border-t border-gray-700 pt-3">
-                        {result && result.time > 45 
-                          ? "Exceptional evasion. The organism demonstrated remarkable collective awareness..."
-                          : result && result.time > 25
-                          ? "Solid coordination. The collective moved as one..."
-                          : result && result.time > 10
-                          ? "Brief resistance. The signals found their marks..."
-                          : "Swift contact. The collective was quickly tagged..."
+                      <div className="text-gray-500 text-xs leading-relaxed border-t border-gray-700 pt-3">
+                        {result && result.time > 30 
+                          ? "Exceptional evasion..."
+                          : result && result.time > 15
+                          ? "Solid coordination..."
+                          : "Swift contact..."
                         }
                       </div>
                     )}
