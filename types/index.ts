@@ -21,3 +21,9 @@ export interface AppState {
   currentModule: 1 | 2 | 3 | null;
 }
 
+// Module 1 result - hand detection
+export interface Module1Result {
+  handCount: number;
+  targetModalId: string;
+}
+

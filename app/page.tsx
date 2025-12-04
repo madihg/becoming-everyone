@@ -14,6 +14,7 @@ export default function Home() {
   const [revealedModals, setRevealedModals] = useState<string[]>([]);
   const [currentModule, setCurrentModule] = useState<1 | 2 | 3>(1);
   const [moduleExpanded, setModuleExpanded] = useState(false);
+  const [targetModal, setTargetModal] = useState<string | null>(null);
 
   // Keyboard controls for testing
   useEffect(() => {
@@ -51,6 +52,8 @@ export default function Home() {
     if (!revealedModals.includes(modalId)) {
       setRevealedModals(prev => [...prev, modalId]);
     }
+    // Clear target once revealed
+    setTargetModal(null);
   }, [revealedModals]);
 
   const handleModuleChange = useCallback((module: 1 | 2 | 3) => {
@@ -62,6 +65,14 @@ export default function Home() {
     setModuleExpanded(prev => !prev);
   }, []);
 
+  // Handle Module 1 completion - triggers slime movement
+  const handleModule1Complete = useCallback((targetModalId: string) => {
+    console.log('Module 1 complete, target:', targetModalId);
+    setTargetModal(targetModalId);
+    // Collapse the module
+    setModuleExpanded(false);
+  }, []);
+
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-[#0A0A0A]">
       {/* Module Layer - Top */}
@@ -70,7 +81,7 @@ export default function Home() {
           <Module1 
             expanded={moduleExpanded} 
             onExpand={handleModuleExpand}
-            onNext={() => handleModuleChange(2)}
+            onComplete={handleModule1Complete}
           />
         )}
         {currentModule === 2 && (
@@ -95,6 +106,7 @@ export default function Home() {
         revealedModals={revealedModals}
         onRevealModal={handleRevealModal}
         onBecomeClick={handleBecomeClick}
+        targetModal={targetModal}
       />
 
       {/* Modal Overlay */}
