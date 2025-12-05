@@ -22,21 +22,24 @@ export default function Home() {
     preloadBodyModel();
   }, []);
 
-  // Keyboard controls for testing
+  // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === '1') setCurrentModule(1);
-      if (e.key === '2') setCurrentModule(2);
-      if (e.key === '3') setCurrentModule(3);
-      // Press 'r' to reveal a random modal (for testing)
-      if (e.key === 'r') {
-        const unrevealed = modalsConfig.modals.filter(
-          (m: ModalConfig) => !revealedModals.includes(m.id)
-        );
-        if (unrevealed.length > 0) {
-          const random = unrevealed[Math.floor(Math.random() * unrevealed.length)];
-          setRevealedModals(prev => [...prev, random.id]);
+      // a, s, d for modules 1, 2, 3
+      if (e.key === 'a') setCurrentModule(1);
+      if (e.key === 's') setCurrentModule(2);
+      if (e.key === 'd') setCurrentModule(3);
+      
+      // 1-8 to directly open modals
+      const num = parseInt(e.key);
+      if (num >= 1 && num <= 8) {
+        const modalId = `modal${num}`;
+        // Reveal it if not already revealed
+        if (!revealedModals.includes(modalId)) {
+          setRevealedModals(prev => [...prev, modalId]);
         }
+        // Open it
+        setActiveModal(modalId);
       }
     };
 
@@ -123,12 +126,6 @@ export default function Home() {
           onClose={handleCloseModal}
         />
       )}
-
-      {/* Dev controls */}
-      <div className="fixed bottom-4 right-4 text-gray-600 text-xs z-10 text-right">
-        <div>1, 2, 3 — switch modules</div>
-        <div>r — reveal random modal</div>
-      </div>
     </main>
   );
 }
