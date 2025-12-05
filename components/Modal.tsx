@@ -67,7 +67,7 @@ export default function Modal({ modalId, modalName, onClose }: Props) {
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-4 flex-1 overflow-hidden">
           {ContentComponent ? (
             <ContentComponent />
           ) : (
