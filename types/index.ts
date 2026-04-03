@@ -1,29 +1,35 @@
-// Modal configuration
-export interface ModalConfig {
+export type FileType =
+  | "image"
+  | "video"
+  | "pdf"
+  | "document"
+  | "audio"
+  | "executable"
+  | "html"
+  | "presentation";
+
+export interface FileItem {
   id: string;
   name: string;
-  x: number; // Normalized 0-1 position
-  y: number; // Normalized 0-1 position
+  type: FileType;
+  path: string;
 }
 
-// Module state
-export interface ModuleState {
-  id: 1 | 2 | 3;
-  visible: boolean;
-  expanded: boolean;
-  content: string;
+export interface Folder {
+  id: string;
+  name: string;
+  tabId: string;
+  position: { x: number; y: number };
+  isOpen: boolean;
+  contents: FileItem[];
 }
 
-// App state
-export interface AppState {
-  activeModal: string | null;
-  revealedModals: string[];
-  currentModule: 1 | 2 | 3 | null;
+export interface Tab {
+  id: string;
+  name: string;
 }
 
-// Module 1 result - hand detection
-export interface Module1Result {
-  handCount: number;
-  targetModalId: string;
+export interface FolderState {
+  tabs: Tab[];
+  folders: Folder[];
 }
-

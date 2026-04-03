@@ -1,131 +1,126 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useEffect } from 'react';
-import PhysarumVisualization from '@/components/PhysarumVisualization';
-import Module1 from '@/components/modules/Module1';
-import Module2 from '@/components/modules/Module2';
-import Module3 from '@/components/modules/Module3';
-import Modal from '@/components/Modal';
-import modalsConfig from '@/config/modals.json';
-import type { ModalConfig } from '@/types';
-import { preloadBodyModel } from '@/lib/model-preloader';
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import FolderIcon from "@/components/folders/FolderIcon";
+import FolderWindow from "@/components/windows/FolderWindow";
+import PhysarumBackground from "@/components/physarum/PhysarumBackground";
+import type { FolderState, FileItem } from "@/types";
 
 export default function Home() {
-  const [activeModal, setActiveModal] = useState<string | null>(null);
-  const [revealedModals, setRevealedModals] = useState<string[]>([]);
-  const [currentModule, setCurrentModule] = useState<1 | 2 | 3>(1);
-  const [moduleExpanded, setModuleExpanded] = useState(false);
-  const [targetModal, setTargetModal] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [state, setState] = useState<FolderState | null>(null);
+  const [windowZMap, setWindowZMap] = useState<Record<string, number>>({});
+  const [topZ, setTopZ] = useState(10);
 
-  // Preload the body detection model on mount
   useEffect(() => {
-    preloadBodyModel();
+    fetch("/api/folders")
+      .then((r) => r.json())
+      .then((data: FolderState) => setState(data));
   }, []);
 
-  // Keyboard controls
+  // Poll for updates every 2 seconds
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // a, s, d for modules 1, 2, 3
-      if (e.key === 'a') setCurrentModule(1);
-      if (e.key === 's') setCurrentModule(2);
-      if (e.key === 'd') setCurrentModule(3);
-      
-      // 1-8 to directly open modals
-      const num = parseInt(e.key);
-      if (num >= 1 && num <= 8) {
-        const modalId = `modal${num}`;
-        // Reveal it if not already revealed
-        if (!revealedModals.includes(modalId)) {
-          setRevealedModals(prev => [...prev, modalId]);
-        }
-        // Open it
-        setActiveModal(modalId);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [revealedModals]);
-
-  const modals = modalsConfig.modals as ModalConfig[];
-
-  const handleBecomeClick = useCallback((modalId: string) => {
-    setActiveModal(modalId);
+    const interval = setInterval(() => {
+      fetch("/api/folders")
+        .then((r) => r.json())
+        .then((data: FolderState) => setState(data));
+    }, 2000);
+    return () => clearInterval(interval);
   }, []);
 
-  const handleCloseModal = useCallback(() => {
-    setActiveModal(null);
-  }, []);
+  const handleFolderDoubleClick = useCallback(
+    async (folderId: string) => {
+      if (!state) return;
+      const newState = {
+        ...state,
+        folders: state.folders.map((f) =>
+          f.id === folderId ? { ...f, isOpen: true } : f,
+        ),
+      };
+      setState(newState);
+      const z = topZ + 1;
+      setTopZ(z);
+      setWindowZMap((prev) => ({ ...prev, [folderId]: z }));
 
-  const handleRevealModal = useCallback((modalId: string) => {
-    if (!revealedModals.includes(modalId)) {
-      setRevealedModals(prev => [...prev, modalId]);
+      await fetch(`/api/folders/${folderId}/open`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isOpen: true }),
+      });
+    },
+    [state, topZ],
+  );
+
+  const handleWindowClose = useCallback(
+    (folderId: string) => {
+      if (!state) return;
+      setState({
+        ...state,
+        folders: state.folders.map((f) =>
+          f.id === folderId ? { ...f, isOpen: false } : f,
+        ),
+      });
+      fetch(`/api/folders/${folderId}/open`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isOpen: false }),
+      });
+    },
+    [state],
+  );
+
+  const handleWindowFocus = useCallback(
+    (folderId: string) => {
+      const z = topZ + 1;
+      setTopZ(z);
+      setWindowZMap((prev) => ({ ...prev, [folderId]: z }));
+    },
+    [topZ],
+  );
+
+  const handleFileDoubleClick = useCallback((file: FileItem) => {
+    if (file.type === "html" || file.type === "executable") {
+      window.open(file.path, "_blank");
+    } else if (file.type === "image" || file.type === "video") {
+      window.open(file.path, "_blank");
     }
-    // Clear target once revealed
-    setTargetModal(null);
-  }, [revealedModals]);
-
-  const handleModuleChange = useCallback((module: 1 | 2 | 3) => {
-    setCurrentModule(module);
-    setModuleExpanded(false);
   }, []);
 
-  const handleModuleExpand = useCallback(() => {
-    setModuleExpanded(prev => !prev);
-  }, []);
+  if (!state) return <div className="h-screen w-screen bg-bg" />;
 
-  // Handle Module completion - triggers slime movement
-  const handleModuleComplete = useCallback((targetModalId: string) => {
-    console.log('Module complete, target:', targetModalId);
-    setTargetModal(targetModalId);
-    // Collapse the module
-    setModuleExpanded(false);
-  }, []);
+  // Default: show ALL folders. Only filter by tab if ?tab= is explicitly set.
+  const visibleFolders = tabParam
+    ? state.folders.filter((f) => f.tabId === tabParam)
+    : state.folders;
+  const openFolders = state.folders.filter((f) => f.isOpen);
 
   return (
-    <main className="relative w-screen h-screen overflow-hidden bg-[#0A0A0A]">
-      {/* Module Layer - Top */}
-      <div className="absolute top-4 left-4 right-4 z-20">
-        {currentModule === 1 && (
-          <Module1 
-            expanded={moduleExpanded} 
-            onExpand={handleModuleExpand}
-            onComplete={handleModuleComplete}
-          />
-        )}
-        {currentModule === 2 && (
-          <Module2 
-            expanded={moduleExpanded} 
-            onExpand={handleModuleExpand}
-            onComplete={handleModuleComplete}
-          />
-        )}
-        {currentModule === 3 && (
-          <Module3 
-            expanded={moduleExpanded} 
-            onExpand={handleModuleExpand}
-            onComplete={handleModuleComplete}
-          />
-        )}
-      </div>
+    <main className="h-screen w-screen bg-bg relative">
+      <PhysarumBackground openFolders={openFolders} />
 
-      {/* Physarum Visualization - Full Screen Background */}
-      <PhysarumVisualization
-        modals={modals}
-        revealedModals={revealedModals}
-        onRevealModal={handleRevealModal}
-        onBecomeClick={handleBecomeClick}
-        targetModal={targetModal}
-      />
-
-      {/* Modal Overlay */}
-      {activeModal && (
-        <Modal
-          modalId={activeModal}
-          modalName={modals.find(m => m.id === activeModal)?.name || 'Modal'}
-          onClose={handleCloseModal}
+      {visibleFolders.map((folder) => (
+        <FolderIcon
+          key={folder.id}
+          folder={folder}
+          draggable={false}
+          onDoubleClick={handleFolderDoubleClick}
         />
-      )}
+      ))}
+
+      {visibleFolders
+        .filter((f) => f.isOpen)
+        .map((folder) => (
+          <FolderWindow
+            key={`window-${folder.id}`}
+            folder={folder}
+            zIndex={windowZMap[folder.id] || 10}
+            onClose={handleWindowClose}
+            onFocus={handleWindowFocus}
+            onFileDoubleClick={handleFileDoubleClick}
+          />
+        ))}
     </main>
   );
 }

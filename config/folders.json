@@ -1,0 +1,355 @@
+{
+  "tabs": [
+    {
+      "id": "tab-1",
+      "name": "Screen 1"
+    },
+    {
+      "id": "tab-2",
+      "name": "Screen 2"
+    }
+  ],
+  "folders": [
+    {
+      "id": "1P1-service",
+      "name": "1P1-service",
+      "tabId": "tab-2",
+      "position": {
+        "x": 99,
+        "y": 330
+      },
+      "isOpen": false,
+      "contents": [
+        {
+          "id": "1p1-img-1",
+          "name": "Elderly Lebanese Woman Cooking 1990s.png",
+          "type": "image",
+          "path": "/folders/1P1-service/Elderly Lebanese Woman Cooking 1990s.png"
+        },
+        {
+          "id": "1p1-img-2",
+          "name": "Elderly Man Driving Mercedes 1990s.png",
+          "type": "image",
+          "path": "/folders/1P1-service/Elderly Man Driving Mercedes 1990s.png"
+        },
+        {
+          "id": "1p1-img-3",
+          "name": "Gallery Photograph iPhone.png",
+          "type": "image",
+          "path": "/folders/1P1-service/Gallery Photograph iPhone.png"
+        },
+        {
+          "id": "1p1-img-4",
+          "name": "Lebanese Living Room 1990s.png",
+          "type": "image",
+          "path": "/folders/1P1-service/Lebanese Living Room 1990s.png"
+        },
+        {
+          "id": "1p1-img-5",
+          "name": "Middle-aged Arab Man with Tupperware.png",
+          "type": "image",
+          "path": "/folders/1P1-service/Middle-aged Arab Man with Tupperware.png"
+        },
+        {
+          "id": "1p1-img-6",
+          "name": "Middle-aged Lebanese Man Fixing AC in Beirut.png",
+          "type": "image",
+          "path": "/folders/1P1-service/Middle-aged Lebanese Man Fixing AC in Beirut.png"
+        },
+        {
+          "id": "1p1-vid-1",
+          "name": "Pikaso Service Artist Apr 02 2026.mp4",
+          "type": "video",
+          "path": "/folders/1P1-service/Pikaso Service Artist Apr 02 2026.mp4"
+        }
+      ]
+    },
+    {
+      "id": "2O1-anyone",
+      "name": "2O1-anyone",
+      "tabId": "tab-2",
+      "position": {
+        "x": 181,
+        "y": 448
+      },
+      "isOpen": false,
+      "contents": []
+    },
+    {
+      "id": "3R1-breaking",
+      "name": "3R1-breaking",
+      "tabId": "tab-2",
+      "position": {
+        "x": 249,
+        "y": 322
+      },
+      "isOpen": false,
+      "contents": [
+        {
+          "id": "3r1-img-1",
+          "name": "Higgsfield AI Image Apr 2 2026.png",
+          "type": "image",
+          "path": "/folders/3R1-breaking/Higgsfield AI Image Apr 2 2026.png"
+        },
+        {
+          "id": "3r1-img-2",
+          "name": "Higgsfield AI Image Apr 2 2026 (1).png",
+          "type": "image",
+          "path": "/folders/3R1-breaking/Higgsfield AI Image Apr 2 2026 (1).png"
+        },
+        {
+          "id": "3r1-img-3",
+          "name": "Higgsfield Image Apr 2 2026.png",
+          "type": "image",
+          "path": "/folders/3R1-breaking/Higgsfield Image Apr 2 2026.png"
+        },
+        {
+          "id": "3r1-img-4",
+          "name": "Higgsfield Image Apr 2 2026 (1).png",
+          "type": "image",
+          "path": "/folders/3R1-breaking/Higgsfield Image Apr 2 2026 (1).png"
+        }
+      ]
+    },
+    {
+      "id": "4W1-children",
+      "name": "4W1-children",
+      "tabId": "tab-1",
+      "position": {
+        "x": 249,
+        "y": 36
+      },
+      "isOpen": false,
+      "contents": []
+    },
+    {
+      "id": "5P2-sleep",
+      "name": "5P2-sleep",
+      "tabId": "tab-1",
+      "position": {
+        "x": 492,
+        "y": 170
+      },
+      "isOpen": false,
+      "contents": [
+        {
+          "id": "5p2-html-1",
+          "name": "sleep.html",
+          "type": "html",
+          "path": "/content/sleep"
+        }
+      ]
+    },
+    {
+      "id": "6O2-what",
+      "name": "6O2-what",
+      "tabId": "tab-1",
+      "position": {
+        "x": 680,
+        "y": 80
+      },
+      "isOpen": false,
+      "contents": []
+    },
+    {
+      "id": "7P3-lift",
+      "name": "7P3-lift",
+      "tabId": "tab-1",
+      "position": {
+        "x": 80,
+        "y": 200
+      },
+      "isOpen": false,
+      "contents": [
+        {
+          "id": "7p3-exe-1",
+          "name": "40-120.exe",
+          "type": "executable",
+          "path": "/content/lift"
+        }
+      ]
+    },
+    {
+      "id": "8W2-move",
+      "name": "8W2-move",
+      "tabId": "tab-1",
+      "position": {
+        "x": 200,
+        "y": 200
+      },
+      "isOpen": false,
+      "contents": []
+    },
+    {
+      "id": "9O3-win",
+      "name": "9O3-win",
+      "tabId": "tab-1",
+      "position": {
+        "x": 308,
+        "y": 301
+      },
+      "isOpen": false,
+      "contents": []
+    },
+    {
+      "id": "10P4-dance",
+      "name": "10P4-dance",
+      "tabId": "tab-2",
+      "position": {
+        "x": 328,
+        "y": 449
+      },
+      "isOpen": false,
+      "contents": [
+        {
+          "id": "10p4-exe-1",
+          "name": "body.exe",
+          "type": "executable",
+          "path": "/content/dance"
+        }
+      ]
+    },
+    {
+      "id": "11R2-arms",
+      "name": "11R2-arms",
+      "tabId": "tab-2",
+      "position": {
+        "x": 200,
+        "y": 80
+      },
+      "isOpen": false,
+      "contents": []
+    },
+    {
+      "id": "12W3-poly",
+      "name": "12W3-poly",
+      "tabId": "tab-2",
+      "position": {
+        "x": 320,
+        "y": 80
+      },
+      "isOpen": false,
+      "contents": []
+    },
+    {
+      "id": "13P5-grieve",
+      "name": "13P5-grieve",
+      "tabId": "tab-2",
+      "position": {
+        "x": 440,
+        "y": 80
+      },
+      "isOpen": false,
+      "contents": [
+        {
+          "id": "13p5-img-1",
+          "name": "Cryogenics Facility Interior.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/Cryogenics Facility Interior.png"
+        },
+        {
+          "id": "13p5-img-2",
+          "name": "Empty Therapy Couch.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/Empty Therapy Couch.png"
+        },
+        {
+          "id": "13p5-img-3",
+          "name": "Fitness Trackers and Smoothie.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/Fitness Trackers and Smoothie.png"
+        },
+        {
+          "id": "13p5-img-4",
+          "name": "Gratitude Journal Morning Light.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/Gratitude Journal Morning Light.png"
+        },
+        {
+          "id": "13p5-img-5",
+          "name": "Meditation App Interface Screenshot.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/Meditation App Interface Screenshot.png"
+        },
+        {
+          "id": "13p5-img-6",
+          "name": "Supplement Bottles Photo.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/Supplement Bottles Photo.png"
+        },
+        {
+          "id": "13p5-ppt-1",
+          "name": "griefbots_keynote.pptx",
+          "type": "presentation",
+          "path": "/folders/13P5-grieve/griefbots_keynote.pptx"
+        }
+      ]
+    },
+    {
+      "id": "14R3-critic",
+      "name": "14R3-critic",
+      "tabId": "tab-2",
+      "position": {
+        "x": 560,
+        "y": 80
+      },
+      "isOpen": false,
+      "contents": []
+    },
+    {
+      "id": "15O4-agenda",
+      "name": "15O4-agenda",
+      "tabId": "tab-2",
+      "position": {
+        "x": 680,
+        "y": 80
+      },
+      "isOpen": false,
+      "contents": []
+    },
+    {
+      "id": "16P6-arson",
+      "name": "16P6-arson",
+      "tabId": "tab-2",
+      "position": {
+        "x": 80,
+        "y": 200
+      },
+      "isOpen": false,
+      "contents": []
+    },
+    {
+      "id": "17P7-neural",
+      "name": "17P7-neural",
+      "tabId": "tab-2",
+      "position": {
+        "x": 200,
+        "y": 200
+      },
+      "isOpen": false,
+      "contents": []
+    },
+    {
+      "id": "18P8-yellow",
+      "name": "18P8-yellow",
+      "tabId": "tab-2",
+      "position": {
+        "x": 320,
+        "y": 200
+      },
+      "isOpen": false,
+      "contents": []
+    },
+    {
+      "id": "19R4-found",
+      "name": "19R4-found",
+      "tabId": "tab-2",
+      "position": {
+        "x": 440,
+        "y": 200
+      },
+      "isOpen": false,
+      "contents": []
+    }
+  ]
+}
