@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import FolderIcon from "@/components/folders/FolderIcon";
 import FolderWindow from "@/components/windows/FolderWindow";
@@ -8,6 +8,14 @@ import PhysarumBackground from "@/components/physarum/PhysarumBackground";
 import type { FolderState, FileItem } from "@/types";
 
 export default function Home() {
+  return (
+    <Suspense fallback={<div className="h-screen w-screen bg-bg" />}>
+      <HomeInner />
+    </Suspense>
+  );
+}
+
+function HomeInner() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const [state, setState] = useState<FolderState | null>(null);
@@ -33,13 +41,12 @@ export default function Home() {
   const handleFolderDoubleClick = useCallback(
     async (folderId: string) => {
       if (!state) return;
-      const newState = {
+      setState({
         ...state,
         folders: state.folders.map((f) =>
           f.id === folderId ? { ...f, isOpen: true } : f,
         ),
-      };
-      setState(newState);
+      });
       const z = topZ + 1;
       setTopZ(z);
       setWindowZMap((prev) => ({ ...prev, [folderId]: z }));
@@ -90,37 +97,61 @@ export default function Home() {
 
   if (!state) return <div className="h-screen w-screen bg-bg" />;
 
-  // Default: show ALL folders. Only filter by tab if ?tab= is explicitly set.
-  const visibleFolders = tabParam
-    ? state.folders.filter((f) => f.tabId === tabParam)
-    : state.folders;
-  const openFolders = state.folders.filter((f) => f.isOpen);
+  // Default: side-by-side screens matching admin. ?tab=id shows single screen.
+  const visibleTabs = tabParam
+    ? state.tabs.filter((t) => t.id === tabParam)
+    : state.tabs;
 
   return (
-    <main className="h-screen w-screen bg-bg relative">
-      <PhysarumBackground openFolders={openFolders} />
+    <main className="h-screen w-screen bg-bg flex">
+      {visibleTabs.map((tab, idx) => {
+        const tabFolders = state.folders.filter((f) => f.tabId === tab.id);
+        const openTabFolders = tabFolders.filter((f) => f.isOpen);
+        return (
+          <div
+            key={tab.id}
+            className="flex-1 relative"
+            style={{
+              backgroundImage:
+                idx < visibleTabs.length - 1
+                  ? "linear-gradient(180deg, transparent, #2a2a2a 20%, #2a2a2a 80%, transparent)"
+                  : "none",
+              backgroundPosition: "right center",
+              backgroundSize: "1px 100%",
+              backgroundRepeat: "no-repeat",
+            }}
+          >
+            <PhysarumBackground openFolders={openTabFolders} />
 
-      {visibleFolders.map((folder) => (
-        <FolderIcon
-          key={folder.id}
-          folder={folder}
-          draggable={false}
-          onDoubleClick={handleFolderDoubleClick}
-        />
-      ))}
+            {/* Screen label */}
+            <div className="absolute top-3 left-4 text-[10px] font-mono text-text-muted/30 pointer-events-none z-10 uppercase tracking-wider select-none">
+              {tab.name}
+            </div>
 
-      {visibleFolders
-        .filter((f) => f.isOpen)
-        .map((folder) => (
-          <FolderWindow
-            key={`window-${folder.id}`}
-            folder={folder}
-            zIndex={windowZMap[folder.id] || 10}
-            onClose={handleWindowClose}
-            onFocus={handleWindowFocus}
-            onFileDoubleClick={handleFileDoubleClick}
-          />
-        ))}
+            {tabFolders.map((folder) => (
+              <FolderIcon
+                key={folder.id}
+                folder={folder}
+                draggable={false}
+                onDoubleClick={handleFolderDoubleClick}
+              />
+            ))}
+
+            {tabFolders
+              .filter((f) => f.isOpen)
+              .map((folder) => (
+                <FolderWindow
+                  key={`window-${folder.id}`}
+                  folder={folder}
+                  zIndex={windowZMap[folder.id] || 10}
+                  onClose={handleWindowClose}
+                  onFocus={handleWindowFocus}
+                  onFileDoubleClick={handleFileDoubleClick}
+                />
+              ))}
+          </div>
+        );
+      })}
     </main>
   );
 }

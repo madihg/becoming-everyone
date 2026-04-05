@@ -15,8 +15,8 @@
       "name": "1P1-service",
       "tabId": "tab-2",
       "position": {
-        "x": 99,
-        "y": 330
+        "x": 158,
+        "y": 411
       },
       "isOpen": false,
       "contents": [
@@ -69,8 +69,8 @@
       "name": "2O1-anyone",
       "tabId": "tab-2",
       "position": {
-        "x": 181,
-        "y": 448
+        "x": 145,
+        "y": 540
       },
       "isOpen": false,
       "contents": []
@@ -81,7 +81,7 @@
       "tabId": "tab-2",
       "position": {
         "x": 249,
-        "y": 322
+        "y": 371
       },
       "isOpen": false,
       "contents": [
@@ -127,8 +127,8 @@
       "name": "5P2-sleep",
       "tabId": "tab-1",
       "position": {
-        "x": 492,
-        "y": 170
+        "x": 489,
+        "y": 294
       },
       "isOpen": false,
       "contents": [
@@ -196,8 +196,8 @@
       "name": "10P4-dance",
       "tabId": "tab-2",
       "position": {
-        "x": 328,
-        "y": 449
+        "x": 238,
+        "y": 507
       },
       "isOpen": false,
       "contents": [
@@ -290,8 +290,8 @@
       "name": "14R3-critic",
       "tabId": "tab-2",
       "position": {
-        "x": 560,
-        "y": 80
+        "x": 413,
+        "y": 344
       },
       "isOpen": false,
       "contents": []

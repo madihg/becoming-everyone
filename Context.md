@@ -40,38 +40,59 @@ Fonts from singulars.oulipo.xyz (Cargo CDN):
 
 Colors: #000000 bg, #1a1a1a folders, #2a2a2a borders, #9ca3af text, #FFE600 accent
 
+## PRDs
+
+- PRD #1: `tasks/prd-becoming-everyone.md` - 12 user stories (US-001 to US-012)
+- PRD #2: `tasks/prd-becoming-everyone-v2.md` - 4 amendment stories (US-013 to US-016)
+
 ## Implementation Status
 
-**US-001 through US-012: COMPLETE (all 12 stories implemented)**
+**US-001 through US-016: COMPLETE**
 
 ### Phases completed:
 
 - Phase 1: Scaffold + data model (clean slate, types, folders.json, API routes)
 - Phase 2: Admin interface (folder drag-drop, unlimited tabs, tab bar)
 - Phase 3: Public view (mirrors admin, polls for updates)
-- Phase 4: Windows + physarum + icons (Mac OS 9 windows, 7 file type icons, mold background)
+- Phase 4: Windows + physarum + icons (Mac OS 9 windows, 8 file type icons, mold background)
 - Phase 5: Content modules (sleep typewriter, heartbeat monitor, dance body tracking)
+- Phase 6: Amendments (ECG line fix, sleep centering, unified public view, admin side-by-side tabs)
 
 ### Not yet built:
 
 - **US-006: PartyKit multiplayer cursors** - deps installed, server file not yet created
 - **Music tracks** for dance module - need royalty-free afrobeat/techno/EDM in public/dance/
 
+### Design review issues (from ui-ux-pro-max):
+
+Must fix before performance:
+
+- T-1: Bump text sizes from 9-11px to 12px+ for projection readability
+- A-5: Self-host BlazePose ML models instead of CDN loading
+- LM-1: ECG canvas resolution mismatch (use ResizeObserver)
+
+Should fix:
+
+- A-3: PhysarumBackground restarts on every render (useMemo the openFolders array)
+- P-1: Mold connects folders sequentially not by proximity (use spatial distance)
+- P-2: PhysarumBackground canvas size wrong in admin split view
+- C-3: Lift module green/red not in design system
+
 ### Key files:
 
 - `config/folders.json` - 19 folders with positions, tabs, file contents
-- `app/admin/page.tsx` - admin with drag-drop, tabs, windows, physarum
-- `app/page.tsx` - public view with windows, physarum
+- `app/admin/page.tsx` - admin with drag-drop, side-by-side tab surfaces, physarum
+- `app/page.tsx` - public view, all folders by default, physarum
 - `components/windows/FolderWindow.tsx` - Mac OS 9 dark window
 - `components/physarum/PhysarumBackground.tsx` - adapted mold canvas
-- `components/icons/FileIcon.tsx` - 7 file type icons
-- `app/content/sleep/page.tsx` - typewriter monologue
-- `app/content/lift/page.tsx` - heartbeat + cryptic data table
+- `components/icons/FileIcon.tsx` - 8 file type icons
+- `app/content/sleep/page.tsx` - typewriter monologue (center-anchored)
+- `app/content/lift/page.tsx` - heartbeat ECG + cryptic data table
 - `app/content/dance/page.tsx` - BlazePose body tracking + commands
 
 ## Session State
 
-- **Status**: Core implementation complete, quality gates pass (tsc + lint)
-- **Next steps**: Visual test in browser, PartyKit server, source dance music
-- **Decisions**: ESLint 8 pinned (Next 14 compat), BlazePose via @mediapipe/tasks-vision
-- **Open**: p5.js physarum exploration (deferred)
+- **Status**: All 16 stories complete. Committed and pushed (e1b8cd3). Design review done.
+- **Next steps**: Fix projection-critical issues (text sizes, self-host BlazePose, ECG canvas resolution). PartyKit server. Source dance music.
+- **Decisions**: ESLint 8 pinned (Next 14 compat), BlazePose via @mediapipe/tasks-vision, admin shows all tabs side-by-side, public shows all folders unless ?tab= specified
+- **Open**: p5.js physarum exploration (deferred), dance music sourcing
