@@ -45,6 +45,20 @@ function ViewerInner() {
 
   const currentFile = files[currentIndex];
 
+  const togglePlayPause = useCallback(() => {
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) {
+      videoRef.current.play();
+      setIsPlaying(true);
+    } else {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+    setShowPlayIcon(true);
+    if (playIconTimeout.current) clearTimeout(playIconTimeout.current);
+    playIconTimeout.current = setTimeout(() => setShowPlayIcon(false), 600);
+  }, []);
+
   // Arrow key navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -76,21 +90,6 @@ function ViewerInner() {
       }
     }
   }, [currentIndex, currentFile, isPlaying]);
-
-  const togglePlayPause = useCallback(() => {
-    if (!videoRef.current) return;
-    if (videoRef.current.paused) {
-      videoRef.current.play();
-      setIsPlaying(true);
-    } else {
-      videoRef.current.pause();
-      setIsPlaying(false);
-    }
-    // Flash play/pause icon
-    setShowPlayIcon(true);
-    if (playIconTimeout.current) clearTimeout(playIconTimeout.current);
-    playIconTimeout.current = setTimeout(() => setShowPlayIcon(false), 600);
-  }, []);
 
   const navigateLeft = useCallback(() => {
     if (currentIndex > 0) {
