@@ -145,7 +145,7 @@
       "name": "6O2-what",
       "tabId": "tab-1",
       "position": {
-        "x": 680,
+        "x": 360,
         "y": 80
       },
       "isOpen": false,
@@ -301,7 +301,7 @@
       "name": "15O4-agenda",
       "tabId": "tab-2",
       "position": {
-        "x": 680,
+        "x": 350,
         "y": 80
       },
       "isOpen": false,

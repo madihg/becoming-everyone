@@ -11,9 +11,16 @@ export default function AdminPage() {
   const [windowZMap, setWindowZMap] = useState<Record<string, number>>({});
   const [topZ, setTopZ] = useState(10);
   const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
-  const dragFolderIdRef = useRef<string | null>(null);
-  const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const labelInputRef = useRef<HTMLInputElement>(null);
+
+  // Pointer-based drag
+  const dragRef = useRef<{
+    folderId: string;
+    offsetX: number;
+    offsetY: number;
+  } | null>(null);
+  const [dragFolderId, setDragFolderId] = useState<string | null>(null);
+  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     fetch("/api/folders")
@@ -30,52 +37,105 @@ export default function AdminPage() {
     });
   }, []);
 
-  // Drag - use element rects for accurate cross-screen positioning
-  const handleDragStart = useCallback(
-    (e: React.DragEvent, folderId: string) => {
-      dragFolderIdRef.current = folderId;
+  // Pointer drag - folder follows cursor in real time
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent, folderId: string) => {
+      e.preventDefault();
       const iconRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-      dragOffsetRef.current = {
-        x: e.clientX - iconRect.left,
-        y: e.clientY - iconRect.top,
+      const startX = e.clientX;
+      const startY = e.clientY;
+      let isDragging = false;
+
+      dragRef.current = {
+        folderId,
+        offsetX: e.clientX - iconRect.left,
+        offsetY: e.clientY - iconRect.top,
       };
-      e.dataTransfer.effectAllowed = "move";
-      const img = new Image();
-      img.src =
-        "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-      e.dataTransfer.setDragImage(img, 0, 0);
+
+      const handleMove = (ev: PointerEvent) => {
+        if (!isDragging) {
+          const dist = Math.hypot(ev.clientX - startX, ev.clientY - startY);
+          if (dist < 5) return;
+          isDragging = true;
+          setDragFolderId(folderId);
+        }
+        setDragPos({ x: ev.clientX, y: ev.clientY });
+      };
+
+      const handleUp = (ev: PointerEvent) => {
+        document.removeEventListener("pointermove", handleMove);
+        document.removeEventListener("pointerup", handleUp);
+
+        if (!isDragging) {
+          dragRef.current = null;
+          return;
+        }
+
+        const drag = dragRef.current;
+        if (!drag) return;
+
+        // Find which panel the cursor is over
+        const panels =
+          document.querySelectorAll<HTMLElement>("[data-tab-panel]");
+        let targetTabId: string | undefined;
+        let targetRect: DOMRect | undefined;
+
+        for (const panel of panels) {
+          const rect = panel.getBoundingClientRect();
+          if (
+            ev.clientX >= rect.left &&
+            ev.clientX <= rect.right &&
+            ev.clientY >= rect.top &&
+            ev.clientY <= rect.bottom
+          ) {
+            targetTabId = panel.dataset.tabPanel;
+            targetRect = rect;
+            break;
+          }
+        }
+
+        if (targetTabId && targetRect) {
+          const newX = ev.clientX - targetRect.left - drag.offsetX;
+          const newY = ev.clientY - targetRect.top - drag.offsetY;
+          const maxX = targetRect.width - 80;
+          const maxY = targetRect.height - 70;
+
+          setState((prev) => {
+            if (!prev) return prev;
+            const newState = {
+              ...prev,
+              folders: prev.folders.map((f) =>
+                f.id === drag.folderId
+                  ? {
+                      ...f,
+                      tabId: targetTabId!,
+                      position: {
+                        x: Math.max(0, Math.min(maxX, newX)),
+                        y: Math.max(24, Math.min(maxY, newY)),
+                      },
+                    }
+                  : f,
+              ),
+            };
+            fetch("/api/folders", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(newState),
+            });
+            return newState;
+          });
+        }
+
+        dragRef.current = null;
+        setDragFolderId(null);
+        setDragPos(null);
+      };
+
+      document.addEventListener("pointermove", handleMove);
+      document.addEventListener("pointerup", handleUp);
     },
     [],
   );
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent, targetTabId: string) => {
-      e.preventDefault();
-      if (!state || !dragFolderIdRef.current) return;
-      const folderId = dragFolderIdRef.current;
-      const containerRect = e.currentTarget.getBoundingClientRect();
-      const newX = e.clientX - containerRect.left - dragOffsetRef.current.x;
-      const newY = e.clientY - containerRect.top - dragOffsetRef.current.y;
-      persist({
-        ...state,
-        folders: state.folders.map((f) =>
-          f.id === folderId
-            ? {
-                ...f,
-                tabId: targetTabId,
-                position: { x: Math.max(0, newX), y: Math.max(24, newY) },
-              }
-            : f,
-        ),
-      });
-      dragFolderIdRef.current = null;
-    },
-    [state, persist],
-  );
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-  }, []);
 
   const handleFolderDoubleClick = useCallback(
     async (folderId: string) => {
@@ -202,27 +262,21 @@ export default function AdminPage() {
         return (
           <div
             key={tab.id}
-            className="flex-1 relative"
+            data-tab-panel={tab.id}
+            className="flex-1 relative overflow-hidden"
             style={{
-              backgroundImage:
-                idx < state.tabs.length - 1
-                  ? "linear-gradient(180deg, transparent, #2a2a2a 20%, #2a2a2a 80%, transparent)"
-                  : "none",
-              backgroundPosition: "right center",
-              backgroundSize: "1px 100%",
-              backgroundRepeat: "no-repeat",
+              borderRight:
+                idx < state.tabs.length - 1 ? "1px solid #2a2a2a" : "none",
             }}
-            onDrop={(e) => handleDrop(e, tab.id)}
-            onDragOver={handleDragOver}
           >
             <PhysarumBackground openFolders={openTabFolders} />
 
-            {/* Screen label - double-click to rename, hover to show close */}
-            <div className="absolute top-3 left-4 z-50 group/label flex items-center gap-2">
+            {/* Screen label with close button */}
+            <div className="absolute top-2 left-3 z-50 flex items-center gap-1.5">
               {editingLabelId === tab.id ? (
                 <input
                   ref={labelInputRef}
-                  className="bg-transparent text-text-muted/60 text-[10px] font-mono outline-none border-b border-yellow/40 w-24 uppercase tracking-wider"
+                  className="bg-transparent text-text-muted text-[11px] font-mono outline-none border-b border-yellow/40 w-24 uppercase tracking-wider"
                   defaultValue={tab.name}
                   onBlur={(e) => handleRenameScreen(tab.id, e.target.value)}
                   onKeyDown={(e) => {
@@ -237,7 +291,7 @@ export default function AdminPage() {
                 />
               ) : (
                 <span
-                  className="text-[10px] font-mono text-text-muted/30 cursor-default uppercase tracking-wider select-none"
+                  className="text-[11px] font-mono text-text-muted/50 cursor-default uppercase tracking-wider select-none"
                   onDoubleClick={() => {
                     setEditingLabelId(tab.id);
                     setTimeout(() => labelInputRef.current?.select(), 0);
@@ -248,7 +302,7 @@ export default function AdminPage() {
               )}
               {state.tabs.length > 1 && (
                 <button
-                  className="text-[9px] text-transparent group-hover/label:text-text-muted/40 hover:!text-white transition-colors"
+                  className="text-[10px] font-mono text-text-muted/30 hover:text-white transition-colors leading-none"
                   onClick={() => handleCloseScreen(tab.id)}
                 >
                   x
@@ -261,7 +315,8 @@ export default function AdminPage() {
                 key={folder.id}
                 folder={folder}
                 draggable={true}
-                onDragStart={handleDragStart}
+                isDragging={dragFolderId === folder.id}
+                onPointerDown={handlePointerDown}
                 onDoubleClick={handleFolderDoubleClick}
               />
             ))}
@@ -282,9 +337,49 @@ export default function AdminPage() {
         );
       })}
 
-      {/* Add screen - barely visible, top-right */}
+      {/* Floating drag ghost - follows cursor */}
+      {dragFolderId &&
+        dragPos &&
+        dragRef.current &&
+        (() => {
+          const folder = state.folders.find((f) => f.id === dragFolderId);
+          if (!folder) return null;
+          return (
+            <div
+              className="fixed pointer-events-none z-[9999]"
+              style={{
+                left: dragPos.x - dragRef.current!.offsetX,
+                top: dragPos.y - dragRef.current!.offsetY,
+              }}
+            >
+              <div className="flex flex-col items-center opacity-80">
+                <svg width="64" height="52" viewBox="0 0 64 52" fill="none">
+                  <path
+                    d="M2 8C2 6.89543 2.89543 6 4 6H20L24 2H4C2.89543 2 2 2.89543 2 4V8Z"
+                    fill="#2a2a2a"
+                  />
+                  <rect
+                    x="2"
+                    y="8"
+                    width="60"
+                    height="40"
+                    rx="2"
+                    fill="#1a1a1a"
+                    stroke="#444"
+                    strokeWidth="1"
+                  />
+                </svg>
+                <span className="mt-1 text-[11px] font-mono text-white text-center leading-tight max-w-[80px] truncate">
+                  {folder.name}
+                </span>
+              </div>
+            </div>
+          );
+        })()}
+
+      {/* Add screen button */}
       <button
-        className="absolute top-2 right-3 text-[11px] font-mono text-text-muted/20 hover:text-text-muted/60 transition-colors z-50"
+        className="absolute top-2 right-3 text-[11px] font-mono text-text-muted/30 hover:text-text-muted/60 transition-colors z-50"
         onClick={handleAddScreen}
         title="Add screen (Cmd+N)"
       >

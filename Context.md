@@ -92,7 +92,21 @@ Should fix:
 
 ## Session State
 
-- **Status**: All 16 stories complete. Committed and pushed (e1b8cd3). Design review done.
+- **Status**: Drag-and-drop rewrite complete. Pointer events replace HTML5 drag. Cleanup done.
+- **Last commit**: 51dfc1b (admin side-by-side screens, unified public view)
+- **Changes this session**:
+  - Replaced HTML5 drag API with pointer events - folders follow cursor in real time
+  - Added 5px drag threshold to prevent accidental drags on double-click
+  - Floating drag ghost follows cursor during drag, original folder dims
+  - Boundary clamping - folders can't go off-screen (maxX/maxY based on panel size)
+  - Cross-screen drag - drop a folder into any screen panel
+  - Screen labels: 11px, 50% opacity (up from 10px/30%), solid border divider
+  - Panels have overflow-hidden to prevent off-screen folder rendering
+  - Public view polls at 1s (was 2s) for faster admin sync
+  - Fixed 6O2-what and 15O4-agenda positions (x:680 was off-screen in split layout)
+  - Deleted: public/arson, public/dance, public/iron, public/move, public/sleeper (empty legacy dirs)
+  - Deleted: components/admin/TabBar.tsx (replaced by inline labels)
+  - Deleted: app/api/choreographer/ (empty dir)
 - **Next steps**: Fix projection-critical issues (text sizes, self-host BlazePose, ECG canvas resolution). PartyKit server. Source dance music.
 - **Decisions**: ESLint 8 pinned (Next 14 compat), BlazePose via @mediapipe/tasks-vision, admin shows all tabs side-by-side, public shows all folders unless ?tab= specified
 - **Open**: p5.js physarum exploration (deferred), dance music sourcing

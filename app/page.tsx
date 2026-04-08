@@ -28,13 +28,13 @@ function HomeInner() {
       .then((data: FolderState) => setState(data));
   }, []);
 
-  // Poll for updates every 2 seconds
+  // Poll for admin changes every second
   useEffect(() => {
     const interval = setInterval(() => {
       fetch("/api/folders")
         .then((r) => r.json())
         .then((data: FolderState) => setState(data));
-    }, 2000);
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -97,7 +97,7 @@ function HomeInner() {
 
   if (!state) return <div className="h-screen w-screen bg-bg" />;
 
-  // Default: side-by-side screens matching admin. ?tab=id shows single screen.
+  // Side-by-side screens matching admin. ?tab=id shows single screen.
   const visibleTabs = tabParam
     ? state.tabs.filter((t) => t.id === tabParam)
     : state.tabs;
@@ -110,21 +110,16 @@ function HomeInner() {
         return (
           <div
             key={tab.id}
-            className="flex-1 relative"
+            className="flex-1 relative overflow-hidden"
             style={{
-              backgroundImage:
-                idx < visibleTabs.length - 1
-                  ? "linear-gradient(180deg, transparent, #2a2a2a 20%, #2a2a2a 80%, transparent)"
-                  : "none",
-              backgroundPosition: "right center",
-              backgroundSize: "1px 100%",
-              backgroundRepeat: "no-repeat",
+              borderRight:
+                idx < visibleTabs.length - 1 ? "1px solid #2a2a2a" : "none",
             }}
           >
             <PhysarumBackground openFolders={openTabFolders} />
 
             {/* Screen label */}
-            <div className="absolute top-3 left-4 text-[10px] font-mono text-text-muted/30 pointer-events-none z-10 uppercase tracking-wider select-none">
+            <div className="absolute top-2 left-3 text-[11px] font-mono text-text-muted/30 pointer-events-none z-10 uppercase tracking-wider select-none">
               {tab.name}
             </div>
 

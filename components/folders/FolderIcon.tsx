@@ -5,22 +5,30 @@ import type { Folder } from "@/types";
 interface Props {
   folder: Folder;
   draggable?: boolean;
-  onDragStart?: (e: React.DragEvent, folderId: string) => void;
+  isDragging?: boolean;
+  onPointerDown?: (e: React.PointerEvent, folderId: string) => void;
   onDoubleClick?: (folderId: string) => void;
 }
 
 export default function FolderIcon({
   folder,
   draggable = false,
-  onDragStart,
+  isDragging = false,
+  onPointerDown,
   onDoubleClick,
 }: Props) {
   return (
     <div
-      className="absolute flex flex-col items-center cursor-pointer select-none group"
-      style={{ left: folder.position.x, top: folder.position.y }}
-      draggable={draggable}
-      onDragStart={(e) => onDragStart?.(e, folder.id)}
+      className="absolute flex flex-col items-center select-none group"
+      style={{
+        left: folder.position.x,
+        top: folder.position.y,
+        opacity: isDragging ? 0.3 : 1,
+        cursor: draggable ? "grab" : "pointer",
+      }}
+      onPointerDown={
+        draggable ? (e) => onPointerDown?.(e, folder.id) : undefined
+      }
       onDoubleClick={() => onDoubleClick?.(folder.id)}
     >
       {/* Mac OS folder shape */}
