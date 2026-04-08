@@ -30,12 +30,6 @@ export default function AdminAuth({ children }: AdminAuthProps) {
         setAnimationPhase("complete");
         setIsAuthenticated(true);
       }, 5000);
-    } else if (
-      input.length > 0 &&
-      input.toLowerCase() !== "every".slice(0, input.length)
-    ) {
-      // Wrong input - clear it
-      setInput("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input]);
@@ -122,17 +116,14 @@ export default function AdminAuth({ children }: AdminAuthProps) {
         <div className="text-center">
           <p className="text-[32px] font-mono text-white leading-relaxed">
             i&apos;ve always wanted to be{" "}
-            <span className="relative inline-block min-w-[120px]">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                className="bg-transparent border-none outline-none text-white w-[120px] text-center caret-white"
-                autoFocus
-                maxLength={5}
-              />
-              <span className="absolute right-0 top-0 bottom-0 w-[2px] bg-white animate-pulse" />
-            </span>{" "}
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="bg-transparent border-none outline-none text-white caret-white inline"
+              style={{ width: `${Math.max(input.length, 1) * 19}px` }}
+              autoFocus
+            />{" "}
             one
           </p>
         </div>
