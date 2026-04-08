@@ -92,8 +92,9 @@ Should fix:
 
 ## Session State
 
-- **Status**: Camera integration and admin authentication complete
-- **Last changes**:
+- **Status**: Camera integration and admin authentication deployed ✅
+- **Last commit**: 05423a2 (camera feeds + admin auth, videos via Vercel Blob)
+- **Deployed features**:
   - Admin authentication screen with password "every" - full-screen takeover before admin access
   - 5-second animation: 2.5s white-to-yellow text transition + 2.5s pixelated TV static dissolve
   - Camera routes for 3R1-breaking and 19R4-found - open in new browser tabs
@@ -102,12 +103,17 @@ Should fix:
   - 19R4-found ticker: Omar found narrative with [SIGNAL GLITCH] markers
   - Yellow color (#FFE600) already consistent across all components
   - Both admin and public views open camera tabs on folder double-click
-  - Quality gates passed: TypeScript typecheck ✓, ESLint (warnings only) ✓
 - **Files added**:
   - `components/auth/AdminAuth.tsx` - authentication wrapper with animated password reveal
   - `app/camera/3r1-breaking/page.tsx` - camera feed with 2046 outbreak news ticker
   - `app/camera/19r4-found/page.tsx` - camera feed with "found" narrative ticker
   - `tasks/prd-camera-auth.md` - PRD for this feature (6 user stories)
-- **Next steps**: Fix projection-critical issues (text sizes, self-host BlazePose, ECG canvas resolution). PartyKit server. Source dance music.
-- **Decisions**: ESLint 8 pinned (Next 14 compat), BlazePose via @mediapipe/tasks-vision, admin shows all tabs side-by-side, public shows all folders unless ?tab= specified
-- **Open**: p5.js physarum exploration (deferred), dance music sourcing
+  - `BLOB_UPLOAD_INSTRUCTIONS.md` - guide for uploading videos to Vercel Blob
+- **Video hosting**:
+  - All .mp4/.mov files now gitignored (695MB total)
+  - Videos need to be uploaded to Vercel Blob storage
+  - 9 videos to upload - see BLOB_UPLOAD_INSTRUCTIONS.md
+  - After upload, update config/folders.json with blob URLs
+- **Next steps**: Upload videos to Vercel Blob. Fix projection-critical issues (text sizes, self-host BlazePose, ECG canvas resolution). PartyKit server.
+- **Decisions**: ESLint 8 pinned (Next 14 compat), BlazePose via @mediapipe/tasks-vision, admin shows all tabs side-by-side, videos hosted on Vercel Blob (not in git)
+- **Open**: Video upload to Blob, p5.js physarum exploration (deferred)
