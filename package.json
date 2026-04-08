@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.18",
+    "@vercel/blob": "^2.3.3",
     "next": "^14.0.4",
     "partysocket": "^1.0.3",
     "react": "^18.2.0",

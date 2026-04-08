@@ -56,6 +56,17 @@ function HomeInner() {
   const handleFolderDoubleClick = useCallback(
     async (folderId: string) => {
       if (!state) return;
+
+      // Special handling for camera folders
+      if (folderId === "3R1-breaking") {
+        window.open("/camera/3r1-breaking", "_blank");
+        return;
+      }
+      if (folderId === "19R4-found") {
+        window.open("/camera/19r4-found", "_blank");
+        return;
+      }
+
       setState({
         ...state,
         folders: state.folders.map((f) =>

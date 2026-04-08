@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import FolderIcon from "@/components/folders/FolderIcon";
 import FolderWindow from "@/components/windows/FolderWindow";
 import PhysarumBackground from "@/components/physarum/PhysarumBackground";
+import AdminAuth from "@/components/auth/AdminAuth";
 import type { FolderState, Tab, FileItem } from "@/types";
 
 function openMediaViewer(
@@ -154,6 +155,17 @@ export default function AdminPage() {
   const handleFolderDoubleClick = useCallback(
     async (folderId: string) => {
       if (!state) return;
+
+      // Special handling for camera folders
+      if (folderId === "3R1-breaking") {
+        window.open("/camera/3r1-breaking", "_blank");
+        return;
+      }
+      if (folderId === "19R4-found") {
+        window.open("/camera/19r4-found", "_blank");
+        return;
+      }
+
       const folder = state.folders.find((f) => f.id === folderId);
       if (!folder) return;
       const newOpen = !folder.isOpen;
@@ -336,151 +348,155 @@ export default function AdminPage() {
   if (!state) return <div className="h-screen w-screen bg-bg" />;
 
   return (
-    <div className="h-screen w-screen bg-bg flex relative">
-      {state.tabs.map((tab, idx) => {
-        const tabFolders = state.folders.filter((f) => f.tabId === tab.id);
-        const openTabFolders = tabFolders.filter((f) => f.isOpen);
-        return (
-          <div
-            key={tab.id}
-            data-tab-panel={tab.id}
-            className="flex-1 relative overflow-hidden"
-            style={{
-              borderRight:
-                idx < state.tabs.length - 1 ? "1px solid #2a2a2a" : "none",
-            }}
-          >
-            <PhysarumBackground openFolders={openTabFolders} />
+    <AdminAuth>
+      <div className="h-screen w-screen bg-bg flex relative">
+        {state.tabs.map((tab, idx) => {
+          const tabFolders = state.folders.filter((f) => f.tabId === tab.id);
+          const openTabFolders = tabFolders.filter((f) => f.isOpen);
+          return (
+            <div
+              key={tab.id}
+              data-tab-panel={tab.id}
+              className="flex-1 relative overflow-hidden"
+              style={{
+                borderRight:
+                  idx < state.tabs.length - 1 ? "1px solid #2a2a2a" : "none",
+              }}
+            >
+              <PhysarumBackground openFolders={openTabFolders} />
 
-            {/* Screen tab - VS Code style */}
-            <div className="absolute top-0 left-0 right-0 z-50 flex items-end h-[28px] border-b border-[#2a2a2a]">
-              <div className="flex items-center gap-0 h-full">
-                <div className="flex items-center h-full px-3 border-r border-[#333] bg-[#1a1a1a] rounded-t-sm">
-                  {editingLabelId === tab.id ? (
-                    <input
-                      ref={labelInputRef}
-                      className="bg-transparent text-[#ccc] text-[11px] font-mono outline-none w-20 uppercase tracking-wider"
-                      defaultValue={tab.name}
-                      onBlur={(e) => handleRenameScreen(tab.id, e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter")
-                          handleRenameScreen(
-                            tab.id,
-                            (e.target as HTMLInputElement).value,
-                          );
-                        if (e.key === "Escape") setEditingLabelId(null);
-                      }}
-                      autoFocus
-                    />
-                  ) : (
-                    <span
-                      className="text-[11px] font-mono text-[#999] cursor-default uppercase tracking-wider select-none"
-                      onDoubleClick={() => {
-                        setEditingLabelId(tab.id);
-                        setTimeout(() => labelInputRef.current?.select(), 0);
-                      }}
-                    >
-                      {tab.name}
-                    </span>
-                  )}
-                  {state.tabs.length > 1 && (
-                    <button
-                      className="ml-2 text-[10px] font-mono text-[#555] hover:text-white transition-colors leading-none"
-                      onClick={() => handleCloseScreen(tab.id)}
-                    >
-                      x
-                    </button>
-                  )}
+              {/* Screen tab - VS Code style */}
+              <div className="absolute top-0 left-0 right-0 z-50 flex items-end h-[28px] border-b border-[#2a2a2a]">
+                <div className="flex items-center gap-0 h-full">
+                  <div className="flex items-center h-full px-3 border-r border-[#333] bg-[#1a1a1a] rounded-t-sm">
+                    {editingLabelId === tab.id ? (
+                      <input
+                        ref={labelInputRef}
+                        className="bg-transparent text-[#ccc] text-[11px] font-mono outline-none w-20 uppercase tracking-wider"
+                        defaultValue={tab.name}
+                        onBlur={(e) =>
+                          handleRenameScreen(tab.id, e.target.value)
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter")
+                            handleRenameScreen(
+                              tab.id,
+                              (e.target as HTMLInputElement).value,
+                            );
+                          if (e.key === "Escape") setEditingLabelId(null);
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      <span
+                        className="text-[11px] font-mono text-[#999] cursor-default uppercase tracking-wider select-none"
+                        onDoubleClick={() => {
+                          setEditingLabelId(tab.id);
+                          setTimeout(() => labelInputRef.current?.select(), 0);
+                        }}
+                      >
+                        {tab.name}
+                      </span>
+                    )}
+                    {state.tabs.length > 1 && (
+                      <button
+                        className="ml-2 text-[10px] font-mono text-[#555] hover:text-white transition-colors leading-none"
+                        onClick={() => handleCloseScreen(tab.id)}
+                      >
+                        x
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {tabFolders.map((folder) => (
-              <FolderIcon
-                key={folder.id}
-                folder={folder}
-                draggable={true}
-                isDragging={dragFolderId === folder.id}
-                onPointerDown={handlePointerDown}
-                onDoubleClick={handleFolderDoubleClick}
-              />
-            ))}
-
-            {tabFolders
-              .filter((f) => f.isOpen)
-              .map((folder) => (
-                <FolderWindow
-                  key={`window-${folder.id}`}
+              {tabFolders.map((folder) => (
+                <FolderIcon
+                  key={folder.id}
                   folder={folder}
-                  zIndex={windowZMap[folder.id] || 10}
-                  onClose={handleWindowClose}
-                  onFocus={handleWindowFocus}
-                  onFileDoubleClick={(file) =>
-                    handleFileDoubleClick(file, folder.id)
-                  }
+                  draggable={true}
+                  isDragging={dragFolderId === folder.id}
+                  onPointerDown={handlePointerDown}
+                  onDoubleClick={handleFolderDoubleClick}
                 />
               ))}
 
-            {/* Auto-arrange button */}
-            <button
-              className="absolute bottom-3 right-3 z-50 text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
-              onClick={() => handleAutoArrange(tab.id)}
-              title="Arrange folders in grid"
-            >
-              Arrange
-            </button>
-          </div>
-        );
-      })}
+              {tabFolders
+                .filter((f) => f.isOpen)
+                .map((folder) => (
+                  <FolderWindow
+                    key={`window-${folder.id}`}
+                    folder={folder}
+                    zIndex={windowZMap[folder.id] || 10}
+                    onClose={handleWindowClose}
+                    onFocus={handleWindowFocus}
+                    onFileDoubleClick={(file) =>
+                      handleFileDoubleClick(file, folder.id)
+                    }
+                  />
+                ))}
 
-      {/* Floating drag ghost - follows cursor */}
-      {dragFolderId &&
-        dragPos &&
-        dragRef.current &&
-        (() => {
-          const folder = state.folders.find((f) => f.id === dragFolderId);
-          if (!folder) return null;
-          return (
-            <div
-              className="fixed pointer-events-none z-[9999]"
-              style={{
-                left: dragPos.x - dragRef.current!.offsetX,
-                top: dragPos.y - dragRef.current!.offsetY,
-              }}
-            >
-              <div className="flex flex-col items-center opacity-80">
-                <svg width="64" height="52" viewBox="0 0 64 52" fill="none">
-                  <path
-                    d="M2 8C2 6.89543 2.89543 6 4 6H20L24 2H4C2.89543 2 2 2.89543 2 4V8Z"
-                    fill="#2a2a2a"
-                  />
-                  <rect
-                    x="2"
-                    y="8"
-                    width="60"
-                    height="40"
-                    rx="2"
-                    fill="#1a1a1a"
-                    stroke="#444"
-                    strokeWidth="1"
-                  />
-                </svg>
-                <span className="mt-1 text-[11px] font-mono text-white text-center leading-tight max-w-[80px] truncate">
-                  {folder.name}
-                </span>
-              </div>
+              {/* Auto-arrange button */}
+              <button
+                className="absolute bottom-3 right-3 z-50 text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
+                onClick={() => handleAutoArrange(tab.id)}
+                title="Arrange folders in grid"
+              >
+                Arrange
+              </button>
             </div>
           );
-        })()}
+        })}
 
-      {/* Add screen button */}
-      <button
-        className="absolute top-0 right-0 h-[28px] px-3 flex items-center text-[13px] font-mono text-[#555] hover:text-white transition-colors z-50 border-b border-[#2a2a2a]"
-        onClick={handleAddScreen}
-        title="Add screen (Cmd+N)"
-      >
-        +
-      </button>
-    </div>
+        {/* Floating drag ghost - follows cursor */}
+        {dragFolderId &&
+          dragPos &&
+          dragRef.current &&
+          (() => {
+            const folder = state.folders.find((f) => f.id === dragFolderId);
+            if (!folder) return null;
+            return (
+              <div
+                className="fixed pointer-events-none z-[9999]"
+                style={{
+                  left: dragPos.x - dragRef.current!.offsetX,
+                  top: dragPos.y - dragRef.current!.offsetY,
+                }}
+              >
+                <div className="flex flex-col items-center opacity-80">
+                  <svg width="64" height="52" viewBox="0 0 64 52" fill="none">
+                    <path
+                      d="M2 8C2 6.89543 2.89543 6 4 6H20L24 2H4C2.89543 2 2 2.89543 2 4V8Z"
+                      fill="#2a2a2a"
+                    />
+                    <rect
+                      x="2"
+                      y="8"
+                      width="60"
+                      height="40"
+                      rx="2"
+                      fill="#1a1a1a"
+                      stroke="#444"
+                      strokeWidth="1"
+                    />
+                  </svg>
+                  <span className="mt-1 text-[11px] font-mono text-white text-center leading-tight max-w-[80px] truncate">
+                    {folder.name}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+
+        {/* Add screen button */}
+        <button
+          className="absolute top-0 right-0 h-[28px] px-3 flex items-center text-[13px] font-mono text-[#555] hover:text-white transition-colors z-50 border-b border-[#2a2a2a]"
+          onClick={handleAddScreen}
+          title="Add screen (Cmd+N)"
+        >
+          +
+        </button>
+      </div>
+    </AdminAuth>
   );
 }
