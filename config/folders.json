@@ -93,6 +93,18 @@
       "isOpen": false,
       "contents": [
         {
+          "id": "3r1-audio-1",
+          "name": "0.wav",
+          "type": "audio",
+          "path": "https://v3qzfzavcac6sdmw.public.blob.vercel-storage.com/0.wav"
+        },
+        {
+          "id": "3r1-vid-1",
+          "name": "0408.mov",
+          "type": "video",
+          "path": "/folders/3R1-breaking/0408.mov"
+        },
+        {
           "id": "3r1-img-1",
           "name": "Higgsfield AI Image Apr 2 2026.png",
           "type": "image",
