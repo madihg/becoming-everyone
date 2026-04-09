@@ -8,18 +8,18 @@ import PhysarumBackground from "@/components/physarum/PhysarumBackground";
 import AdminAuth from "@/components/auth/AdminAuth";
 import type { FolderState, Tab, FileItem } from "@/types";
 
-function openMediaViewer(
-  folderId: string,
-  fileIndex: number,
-  panelEl?: HTMLElement | null,
-) {
-  const rect = panelEl?.getBoundingClientRect();
-  const w = rect ? Math.round(rect.width) : 960;
-  const h = rect ? Math.round(rect.height) : 720;
+let nextWindowSide: "left" | "right" = "right";
+
+function openExternalWindow(url: string) {
+  const w = Math.floor(screen.availWidth / 3);
+  const h = Math.floor(screen.availHeight * 0.6);
+  const side = nextWindowSide;
+  nextWindowSide = side === "right" ? "left" : "right";
+  const left = side === "right" ? screen.availWidth - w : 0;
   window.open(
-    `/content/viewer?folder=${folderId}&index=${fileIndex}`,
+    url,
     "_blank",
-    `width=${w},height=${h},toolbar=no,menubar=no,location=no,status=no`,
+    `width=${w},height=${h},left=${left},top=0,toolbar=no,menubar=no,location=no,status=no`,
   );
 }
 
@@ -33,6 +33,7 @@ export default function AdminPage() {
     { id: string; title: string; src: string; zIndex: number }[]
   >([]);
   const [everOpenedIds, setEverOpenedIds] = useState<Set<string>>(new Set());
+  const [openMode, setOpenMode] = useState<"ext" | "int">("ext");
 
   // Pointer-based drag
   const dragRef = useRef<{
@@ -180,17 +181,6 @@ export default function AdminPage() {
         const z = topZ + 1;
         setTopZ(z);
         setWindowZMap((prev) => ({ ...prev, [folderId]: z }));
-        const viewable = folder.contents
-          .filter((f) => ["image", "video", "pdf", "audio"].includes(f.type))
-          .sort((a, b) =>
-            a.name.localeCompare(b.name, undefined, { numeric: true }),
-          );
-        if (viewable.length === 1) {
-          const panel = document.querySelector<HTMLElement>(
-            `[data-tab-panel="${folder.tabId}"]`,
-          );
-          queueMicrotask(() => openMediaViewer(folderId, 0, panel));
-        }
       }
       await fetch(`/api/folders/${folderId}/open`, {
         method: "PUT",
@@ -241,42 +231,65 @@ export default function AdminPage() {
 
   const handleFileDoubleClick = useCallback(
     (file: FileItem, folderId: string) => {
-      if (file.type === "html" || file.type === "executable") {
-        // Open in floating window instead of new tab
-        const newZ = Math.max(...floatingWindows.map((w) => w.zIndex), 50) + 1;
-        setFloatingWindows((prev) => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            title: file.name,
-            src: file.path,
-            zIndex: newZ,
-          },
-        ]);
-        return;
-      }
-      if (
-        file.type === "image" ||
-        file.type === "video" ||
-        file.type === "pdf" ||
-        file.type === "audio"
-      ) {
-        if (!state) return;
-        const folder = state.folders.find((f) => f.id === folderId);
-        if (!folder) return;
-        const viewable = folder.contents
-          .filter((f) => ["image", "video", "pdf", "audio"].includes(f.type))
-          .sort((a, b) =>
-            a.name.localeCompare(b.name, undefined, { numeric: true }),
+      if (openMode === "ext") {
+        // External mode: everything opens in a popup window
+        if (file.type === "html" || file.type === "executable") {
+          openExternalWindow(file.path);
+        } else if (
+          file.type === "image" ||
+          file.type === "video" ||
+          file.type === "pdf" ||
+          file.type === "audio"
+        ) {
+          if (!state) return;
+          const folder = state.folders.find((f) => f.id === folderId);
+          if (!folder) return;
+          const viewable = folder.contents
+            .filter((f) => ["image", "video", "pdf", "audio"].includes(f.type))
+            .sort((a, b) =>
+              a.name.localeCompare(b.name, undefined, { numeric: true }),
+            );
+          const fileIndex = viewable.findIndex((f) => f.id === file.id);
+          openExternalWindow(
+            `/content/viewer?folder=${folderId}&index=${Math.max(0, fileIndex)}`,
           );
-        const fileIndex = viewable.findIndex((f) => f.id === file.id);
-        const panel = document.querySelector<HTMLElement>(
-          `[data-tab-panel="${folder.tabId}"]`,
-        );
-        openMediaViewer(folderId, Math.max(0, fileIndex), panel);
+        }
+      } else {
+        // Internal mode: open in floating windows
+        if (file.type === "html" || file.type === "executable") {
+          const newZ =
+            Math.max(...floatingWindows.map((w) => w.zIndex), 50) + 1;
+          setFloatingWindows((prev) => [
+            ...prev,
+            {
+              id: crypto.randomUUID(),
+              title: file.name,
+              src: file.path,
+              zIndex: newZ,
+            },
+          ]);
+        } else if (
+          file.type === "image" ||
+          file.type === "video" ||
+          file.type === "pdf" ||
+          file.type === "audio"
+        ) {
+          if (!state) return;
+          const folder = state.folders.find((f) => f.id === folderId);
+          if (!folder) return;
+          const viewable = folder.contents
+            .filter((f) => ["image", "video", "pdf", "audio"].includes(f.type))
+            .sort((a, b) =>
+              a.name.localeCompare(b.name, undefined, { numeric: true }),
+            );
+          const fileIndex = viewable.findIndex((f) => f.id === file.id);
+          openExternalWindow(
+            `/content/viewer?folder=${folderId}&index=${Math.max(0, fileIndex)}`,
+          );
+        }
       }
     },
-    [state, floatingWindows],
+    [state, floatingWindows, openMode],
   );
 
   // Screen management
@@ -477,7 +490,7 @@ export default function AdminPage() {
 
               {/* Auto-arrange button */}
               <button
-                className="absolute bottom-3 right-3 z-50 text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
+                className="absolute bottom-3 left-3 z-50 text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
                 onClick={() => handleAutoArrange(tab.id)}
                 title="Arrange folders in grid"
               >
@@ -535,6 +548,19 @@ export default function AdminPage() {
         >
           +
         </button>
+
+        {/* Ext/Int mode toggle */}
+        <div className="absolute bottom-3 right-3 z-50">
+          <select
+            value={openMode}
+            onChange={(e) => setOpenMode(e.target.value as "ext" | "int")}
+            className="text-[10px] font-mono text-[#888] bg-[#111] border border-[#333] rounded-sm px-2 py-1 outline-none cursor-pointer hover:border-[#555] transition-colors"
+            title="File open mode: ext (external windows) / int (internal floating)"
+          >
+            <option value="ext">ext</option>
+            <option value="int">int</option>
+          </select>
+        </div>
 
         {/* Floating windows */}
         {floatingWindows.map((win) => (

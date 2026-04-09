@@ -111,10 +111,39 @@ export default function PhysarumBackground({
       time += 16;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (openFolders.length === 0) {
+      if (openFolders.length === 0 && everOpenedFolders.length === 0) {
         animationRef.current = requestAnimationFrame(animate);
         return;
       }
+
+      // Draw persistent faded lines between ever-opened folder pairs
+      if (everOpenedFolders.length > 1) {
+        ctx.strokeStyle = "rgba(255, 230, 0, 0.15)";
+        ctx.lineWidth = 1;
+        ctx.lineCap = "round";
+
+        for (let i = 0; i < everOpenedFolders.length; i++) {
+          for (let j = i + 1; j < everOpenedFolders.length; j++) {
+            const a = everOpenedFolders[i];
+            const b = everOpenedFolders[j];
+            ctx.beginPath();
+            ctx.moveTo(a.position.x + 32, a.position.y + 26);
+            ctx.lineTo(b.position.x + 32, b.position.y + 26);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw faded blobs at ever-opened folder positions
+      ctx.fillStyle = "rgba(255, 230, 0, 0.04)";
+      everOpenedFolders.forEach((folder, idx) => {
+        drawShorelineBlob(
+          folder.position.x + 32,
+          folder.position.y + 26,
+          20,
+          idx * 100 + 500,
+        );
+      });
 
       // Draw tubes between ALL pairs of folders (complex web)
       if (openFolders.length > 1) {

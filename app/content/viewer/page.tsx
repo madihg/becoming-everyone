@@ -86,17 +86,19 @@ function ViewerInner() {
     return () => document.removeEventListener("keydown", handleKeyDown, true);
   }, [currentIndex, files.length, currentFile, togglePlayPause]);
 
-  // Autoplay video when navigating to it
+  // Autoplay video when navigating to a new file (not on play/pause toggle)
+  const prevIndexRef = useRef(currentIndex);
   useEffect(() => {
+    if (prevIndexRef.current === currentIndex) return;
+    prevIndexRef.current = currentIndex;
     if (currentFile?.type === "video" && videoRef.current) {
       videoRef.current.currentTime = 0;
-      if (isPlaying) {
-        videoRef.current.play().catch(() => {
-          // Autoplay blocked - user will click to play
-        });
-      }
+      videoRef.current.play().catch(() => {
+        // Autoplay blocked - user will click to play
+      });
+      setIsPlaying(true);
     }
-  }, [currentIndex, currentFile, isPlaying]);
+  }, [currentIndex, currentFile]);
 
   const navigateLeft = useCallback(() => {
     if (currentIndex > 0) {
@@ -145,7 +147,6 @@ function ViewerInner() {
               autoPlay
               loop
               playsInline
-              onClick={togglePlayPause}
               crossOrigin="anonymous"
             />
 
@@ -188,7 +189,6 @@ function ViewerInner() {
               className="w-full max-w-2xl"
               controls
               autoPlay
-              crossOrigin="anonymous"
             />
           </div>
         )}

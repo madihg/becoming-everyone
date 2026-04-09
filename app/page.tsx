@@ -8,18 +8,18 @@ import FloatingWindow from "@/components/windows/FloatingWindow";
 import PhysarumBackground from "@/components/physarum/PhysarumBackground";
 import type { FolderState, FileItem } from "@/types";
 
-function openMediaViewer(
-  folderId: string,
-  fileIndex: number,
-  panelEl?: HTMLElement | null,
-) {
-  const rect = panelEl?.getBoundingClientRect();
-  const w = rect ? Math.round(rect.width) : 960;
-  const h = rect ? Math.round(rect.height) : 720;
+let nextWindowSide: "left" | "right" = "right";
+
+function openExternalWindow(url: string) {
+  const w = Math.floor(screen.availWidth / 3);
+  const h = Math.floor(screen.availHeight * 0.6);
+  const side = nextWindowSide;
+  nextWindowSide = side === "right" ? "left" : "right";
+  const left = side === "right" ? screen.availWidth - w : 0;
   window.open(
-    `/content/viewer?folder=${folderId}&index=${fileIndex}`,
+    url,
     "_blank",
-    `width=${w},height=${h},toolbar=no,menubar=no,location=no,status=no`,
+    `width=${w},height=${h},left=${left},top=0,toolbar=no,menubar=no,location=no,status=no`,
   );
 }
 
@@ -84,20 +84,6 @@ function HomeInner() {
       setTopZ(z);
       setWindowZMap((prev) => ({ ...prev, [folderId]: z }));
 
-      if (folder) {
-        const viewable = folder.contents
-          .filter((f) => ["image", "video", "pdf", "audio"].includes(f.type))
-          .sort((a, b) =>
-            a.name.localeCompare(b.name, undefined, { numeric: true }),
-          );
-        if (viewable.length === 1) {
-          const panel = document.querySelector<HTMLElement>(
-            `[data-tab-panel="${folder.tabId}"]`,
-          );
-          queueMicrotask(() => openMediaViewer(folderId, 0, panel));
-        }
-      }
-
       await fetch(`/api/folders/${folderId}/open`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -148,17 +134,7 @@ function HomeInner() {
   const handleFileDoubleClick = useCallback(
     (file: FileItem, folderId: string) => {
       if (file.type === "html" || file.type === "executable") {
-        // Open in floating window instead of new tab
-        const newZ = Math.max(...floatingWindows.map((w) => w.zIndex), 50) + 1;
-        setFloatingWindows((prev) => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            title: file.name,
-            src: file.path,
-            zIndex: newZ,
-          },
-        ]);
+        openExternalWindow(file.path);
         return;
       }
       if (
@@ -176,13 +152,12 @@ function HomeInner() {
             a.name.localeCompare(b.name, undefined, { numeric: true }),
           );
         const fileIndex = viewable.findIndex((f) => f.id === file.id);
-        const panel = document.querySelector<HTMLElement>(
-          `[data-tab-panel="${folder.tabId}"]`,
+        openExternalWindow(
+          `/content/viewer?folder=${folderId}&index=${Math.max(0, fileIndex)}`,
         );
-        openMediaViewer(folderId, Math.max(0, fileIndex), panel);
       }
     },
-    [state, floatingWindows],
+    [state],
   );
 
   if (!state) return <div className="h-screen w-screen bg-bg" />;

@@ -288,6 +288,12 @@
           "name": "Pikaso Report Army Apr 2026.mp4",
           "type": "video",
           "path": "https://v3qzfzavcac6sdmw.public.blob.vercel-storage.com/Pikaso%20Report%20Army%20Apr%202026.mp4"
+        },
+        {
+          "id": "11r2-html-1",
+          "name": "arms.html",
+          "type": "html",
+          "path": "/camera/11r2-arms"
         }
       ]
     },
@@ -371,6 +377,12 @@
           "name": "Report Critic.mov",
           "type": "video",
           "path": "https://v3qzfzavcac6sdmw.public.blob.vercel-storage.com/Report%20Critic.mov"
+        },
+        {
+          "id": "14r3-vid-2",
+          "name": "critic-0408.mov",
+          "type": "video",
+          "path": "https://v3qzfzavcac6sdmw.public.blob.vercel-storage.com/critic-0408.mov"
         }
       ]
     },

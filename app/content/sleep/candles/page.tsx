@@ -151,8 +151,8 @@ function CandleDrop({
         left: `${x}%`,
         height: "50px",
         width: "auto",
-        filter: "grayscale(100%)",
-        mixBlendMode: "multiply",
+        filter: "grayscale(100%) brightness(1.3) contrast(1.1)",
+        opacity: 0.85,
         transform: "translateX(-50%)",
         ...(landed
           ? { top: "calc(100vh - 50px)", animation: "none" }
