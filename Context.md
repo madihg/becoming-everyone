@@ -92,29 +92,35 @@ Should fix:
 
 ## Session State
 
-- **Status**: Camera integration, admin auth, and Vercel Blob complete ✅
+- **Status**: Omar proximity tracking + floating windows complete ✅
 - **Last commit**: 6d9445e (admin auth UX fix + blob video URLs)
-- **Deployed features**:
-  - Admin authentication with password "every" - full-screen takeover
-  - 5-second animation: 2.5s white-to-yellow transition + 2.5s pixelated dissolve
-  - Input allows typing any word, only triggers on "every" (no auto-clear)
-  - Dynamic inline input - text appears next to "one" without gaps
-  - Camera routes for 3R1-breaking and 19R4-found - new browser tabs
-  - Breaking news overlays with red banners and scrolling tickers
-  - 3R1-breaking ticker: Rapid Personality Shuffle outbreak narrative
-  - 19R4-found ticker: Omar found narrative with [SIGNAL GLITCH] markers
-  - Both admin and public views open camera tabs on folder double-click
+- **Just implemented**:
+  - FloatingWindow component - Mac OS 9 style, draggable, resizable, z-index stacking
+  - HTML/executable files now open in floating windows (not browser tabs)
+  - OmarProximityTracker component - BlazePose body tracking with distance zones
+  - Three Omar routes: 2O1-anyone, 6O2-what, 9O3-win with dialogue
+  - Distance-based visual effects: far (blue blob), medium (blurry B&W), close (blue silhouette)
+  - Dialogue advances when performer moves closer, resets when far away
+  - Camera feeds (3R1-breaking, 19R4-found) now have HTML icons for floating window access
 - **Files added**:
-  - `components/auth/AdminAuth.tsx` - authentication with animated password reveal
-  - `app/camera/3r1-breaking/page.tsx` - camera feed with 2046 outbreak ticker
-  - `app/camera/19r4-found/page.tsx` - camera feed with "found" narrative ticker
-  - `tasks/prd-camera-auth.md` - PRD for this feature (6 user stories)
-  - `BLOB_UPLOAD_INSTRUCTIONS.md` - video upload guide
-- **Vercel Blob**:
-  - All 8 videos (695MB) uploaded successfully to Vercel Blob storage
-  - `config/folders.json` updated with blob URLs
-  - Videos: 7P3-lift (2), 1P1-service (1), 4W1-children (1), 11R2-arms (1), 14R3-critic (2), 16P6-arson (1)
-  - .mp4/.mov files gitignored, served from blob storage
-- **Next steps**: Fix projection-critical issues (text sizes, self-host BlazePose, ECG canvas resolution). PartyKit server.
-- **Decisions**: ESLint 8 pinned (Next 14 compat), BlazePose via @mediapipe/tasks-vision, videos on Vercel Blob (public access)
-- **Open**: p5.js physarum exploration (deferred)
+  - `components/windows/FloatingWindow.tsx` - floating window component
+  - `components/omar/OmarProximityTracker.tsx` - proximity tracking with visual effects
+  - `app/content/omar/2o1-anyone/page.tsx` - "Anybody here?" dialogue
+  - `app/content/omar/6o2-what/page.tsx` - "What is happening?" dialogue
+  - `app/content/omar/9o3-win/page.tsx` - "you win, I give up" dialogue
+- **Files modified**:
+  - `app/admin/page.tsx` - added floating window state and handlers
+  - `app/page.tsx` - added floating window state and handlers
+  - `config/folders.json` - added HTML entries for O folders and R camera feeds
+- **Technical details**:
+  - Distance zones: close (>50% frame), medium (20-50%), far (<20%)
+  - BlazePose GPU-accelerated, 30+ FPS target
+  - Canvas-based rendering for performance
+  - Zero TypeScript/ESLint errors
+- **Next steps**: Visual testing with projection, fine-tune distance thresholds, self-host BlazePose model
+- **Decisions**: FloatingWindow is independent of FolderWindow (different content model)
+- **Open questions**:
+  - Threshold sensitivity for zone transitions (prevent flickering)?
+  - "No person detected" state behavior?
+  - Dialogue loop or stay on final line?
+  - Glow/bloom effect on blue ghost?

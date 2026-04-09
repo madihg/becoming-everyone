@@ -45,7 +45,7 @@ export default function AdminAuth({ children }: AdminAuthProps) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const text = `i've always wanted to be ${input} one`;
+    const text = `i've always wanted to be${input}one`;
     const fontSize = 32;
     ctx.font = `${fontSize}px "Diatype Mono", monospace`;
     ctx.textAlign = "center";
@@ -115,7 +115,7 @@ export default function AdminAuth({ children }: AdminAuthProps) {
       {animationPhase === "input" && (
         <div className="text-center">
           <p className="text-[32px] font-mono text-white leading-relaxed">
-            i&apos;ve always wanted to be{" "}
+            i&apos;ve always wanted to be
             <input
               type="text"
               value={input}
@@ -123,7 +123,7 @@ export default function AdminAuth({ children }: AdminAuthProps) {
               className="bg-transparent border-none outline-none text-white caret-white inline"
               style={{ width: `${Math.max(input.length, 1) * 19}px` }}
               autoFocus
-            />{" "}
+            />
             one
           </p>
         </div>
@@ -137,7 +137,7 @@ export default function AdminAuth({ children }: AdminAuthProps) {
           }}
         >
           <p className="text-[32px] font-mono leading-relaxed">
-            i&apos;ve always wanted to be {input} one
+            i&apos;ve always wanted to be{input}one
           </p>
         </div>
       )}

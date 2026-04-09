@@ -131,6 +131,22 @@ export default function PhysarumBackground({ openFolders }: Props) {
         }
       }
 
+      // Draw straight yellow lines between open folders
+      if (openFolders.length > 1) {
+        ctx.strokeStyle = "rgba(255, 230, 0, 0.4)";
+        ctx.lineWidth = 1;
+        ctx.lineCap = "round";
+
+        for (let i = 0; i < openFolders.length - 1; i++) {
+          const a = openFolders[i];
+          const b = openFolders[i + 1];
+          ctx.beginPath();
+          ctx.moveTo(a.position.x + 32, a.position.y + 26);
+          ctx.lineTo(b.position.x + 32, b.position.y + 26);
+          ctx.stroke();
+        }
+      }
+
       // Draw blobs at open folder positions
       ctx.fillStyle = "rgba(255, 230, 0, 0.08)";
       openFolders.forEach((folder, idx) => {
