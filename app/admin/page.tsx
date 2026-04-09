@@ -175,7 +175,7 @@ export default function AdminPage() {
         setTopZ(z);
         setWindowZMap((prev) => ({ ...prev, [folderId]: z }));
         const viewable = folder.contents
-          .filter((f) => ["image", "video", "pdf"].includes(f.type))
+          .filter((f) => ["image", "video", "pdf", "audio"].includes(f.type))
           .sort((a, b) =>
             a.name.localeCompare(b.name, undefined, { numeric: true }),
           );
@@ -252,13 +252,14 @@ export default function AdminPage() {
       if (
         file.type === "image" ||
         file.type === "video" ||
-        file.type === "pdf"
+        file.type === "pdf" ||
+        file.type === "audio"
       ) {
         if (!state) return;
         const folder = state.folders.find((f) => f.id === folderId);
         if (!folder) return;
         const viewable = folder.contents
-          .filter((f) => ["image", "video", "pdf"].includes(f.type))
+          .filter((f) => ["image", "video", "pdf", "audio"].includes(f.type))
           .sort((a, b) =>
             a.name.localeCompare(b.name, undefined, { numeric: true }),
           );

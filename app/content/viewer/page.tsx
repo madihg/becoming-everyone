@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import type { FolderState, FileItem } from "@/types";
 
-const VIEWABLE_TYPES = new Set(["image", "video", "pdf"]);
+const VIEWABLE_TYPES = new Set(["image", "video", "pdf", "audio"]);
 
 export default function ViewerPage() {
   return (
@@ -136,7 +136,6 @@ function ViewerInner() {
               className="max-w-full max-h-full object-contain"
               controls
               autoPlay
-              muted
               loop
               playsInline
               onClick={togglePlayPause}
@@ -170,6 +169,19 @@ function ViewerInner() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {currentFile.type === "audio" && (
+          <div className="flex items-center justify-center">
+            <audio
+              key={currentFile.id}
+              src={currentFile.path}
+              className="w-full max-w-2xl"
+              controls
+              autoPlay
+              crossOrigin="anonymous"
+            />
           </div>
         )}
       </div>
