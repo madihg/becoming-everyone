@@ -120,7 +120,7 @@ function ViewerInner() {
         {currentFile.type === "image" && (
           <img
             key={currentFile.id}
-            src={currentFile.path}
+            src={encodeURI(currentFile.path)}
             alt={currentFile.name}
             className="max-w-full max-h-full object-contain"
             draggable={false}
@@ -132,7 +132,7 @@ function ViewerInner() {
             <video
               key={currentFile.id}
               ref={videoRef}
-              src={currentFile.path}
+              src={encodeURI(currentFile.path)}
               className="max-w-full max-h-full object-contain"
               autoPlay
               onClick={togglePlayPause}

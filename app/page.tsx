@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import FolderIcon from "@/components/folders/FolderIcon";
 import FolderWindow from "@/components/windows/FolderWindow";
+import FloatingWindow from "@/components/windows/FloatingWindow";
 import PhysarumBackground from "@/components/physarum/PhysarumBackground";
 import type { FolderState, FileItem } from "@/types";
 
@@ -36,6 +37,9 @@ function HomeInner() {
   const [state, setState] = useState<FolderState | null>(null);
   const [windowZMap, setWindowZMap] = useState<Record<string, number>>({});
   const [topZ, setTopZ] = useState(10);
+  const [floatingWindows, setFloatingWindows] = useState<
+    { id: string; title: string; src: string; zIndex: number }[]
+  >([]);
 
   useEffect(() => {
     fetch("/api/folders")
@@ -67,6 +71,7 @@ function HomeInner() {
         return;
       }
 
+      const folder = state.folders.find((f) => f.id === folderId);
       setState({
         ...state,
         folders: state.folders.map((f) =>
@@ -76,6 +81,20 @@ function HomeInner() {
       const z = topZ + 1;
       setTopZ(z);
       setWindowZMap((prev) => ({ ...prev, [folderId]: z }));
+
+      if (folder) {
+        const viewable = folder.contents
+          .filter((f) => ["image", "video", "pdf"].includes(f.type))
+          .sort((a, b) =>
+            a.name.localeCompare(b.name, undefined, { numeric: true }),
+          );
+        if (viewable.length === 1) {
+          const panel = document.querySelector<HTMLElement>(
+            `[data-tab-panel="${folder.tabId}"]`,
+          );
+          queueMicrotask(() => openMediaViewer(folderId, 0, panel));
+        }
+      }
 
       await fetch(`/api/folders/${folderId}/open`, {
         method: "PUT",
@@ -113,10 +132,31 @@ function HomeInner() {
     [topZ],
   );
 
+  const handleFloatingWindowFocus = useCallback(
+    (windowId: string) => {
+      const newZ = topZ + 1;
+      setTopZ(newZ);
+      setFloatingWindows((prev) =>
+        prev.map((w) => (w.id === windowId ? { ...w, zIndex: newZ } : w)),
+      );
+    },
+    [topZ],
+  );
+
   const handleFileDoubleClick = useCallback(
     (file: FileItem, folderId: string) => {
       if (file.type === "html" || file.type === "executable") {
-        window.open(file.path, "_blank");
+        // Open in floating window instead of new tab
+        const newZ = Math.max(...floatingWindows.map((w) => w.zIndex), 50) + 1;
+        setFloatingWindows((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            title: file.name,
+            src: file.path,
+            zIndex: newZ,
+          },
+        ]);
         return;
       }
       if (
@@ -139,7 +179,7 @@ function HomeInner() {
         openMediaViewer(folderId, Math.max(0, fileIndex), panel);
       }
     },
-    [state],
+    [state, floatingWindows],
   );
 
   if (!state) return <div className="h-screen w-screen bg-bg" />;
@@ -197,6 +237,21 @@ function HomeInner() {
           </div>
         );
       })}
+
+      {/* Floating windows */}
+      {floatingWindows.map((win) => (
+        <FloatingWindow
+          key={win.id}
+          title={win.title}
+          zIndex={win.zIndex}
+          onClose={() =>
+            setFloatingWindows((prev) => prev.filter((w) => w.id !== win.id))
+          }
+          onFocus={() => handleFloatingWindowFocus(win.id)}
+        >
+          <iframe src={win.src} className="w-full h-full border-0" />
+        </FloatingWindow>
+      ))}
     </main>
   );
 }
