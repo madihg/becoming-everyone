@@ -132,10 +132,15 @@ function ViewerInner() {
             <video
               key={currentFile.id}
               ref={videoRef}
-              src={encodeURI(currentFile.path)}
+              src={currentFile.path}
               className="max-w-full max-h-full object-contain"
+              controls
               autoPlay
+              muted
+              loop
+              playsInline
               onClick={togglePlayPause}
+              crossOrigin="anonymous"
             />
 
             {/* Play/pause flash icon */}
