@@ -319,10 +319,142 @@
       "isOpen": false,
       "contents": [
         {
-          "id": "13p5-pdf-1",
-          "name": "griefbots_keynote.pdf",
-          "type": "pdf",
-          "path": "/folders/13P5-grieve/griefbots_keynote.pdf"
+          "id": "13p5-slide-01",
+          "name": "page-01.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-01.png"
+        },
+        {
+          "id": "13p5-slide-02",
+          "name": "page-02.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-02.png"
+        },
+        {
+          "id": "13p5-slide-03",
+          "name": "page-03.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-03.png"
+        },
+        {
+          "id": "13p5-slide-04",
+          "name": "page-04.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-04.png"
+        },
+        {
+          "id": "13p5-slide-05",
+          "name": "page-05.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-05.png"
+        },
+        {
+          "id": "13p5-slide-06",
+          "name": "page-06.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-06.png"
+        },
+        {
+          "id": "13p5-slide-07",
+          "name": "page-07.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-07.png"
+        },
+        {
+          "id": "13p5-slide-08",
+          "name": "page-08.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-08.png"
+        },
+        {
+          "id": "13p5-slide-09",
+          "name": "page-09.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-09.png"
+        },
+        {
+          "id": "13p5-slide-10",
+          "name": "page-10.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-10.png"
+        },
+        {
+          "id": "13p5-slide-11",
+          "name": "page-11.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-11.png"
+        },
+        {
+          "id": "13p5-slide-12",
+          "name": "page-12.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-12.png"
+        },
+        {
+          "id": "13p5-slide-13",
+          "name": "page-13.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-13.png"
+        },
+        {
+          "id": "13p5-slide-14",
+          "name": "page-14.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-14.png"
+        },
+        {
+          "id": "13p5-slide-15",
+          "name": "page-15.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-15.png"
+        },
+        {
+          "id": "13p5-slide-16",
+          "name": "page-16.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-16.png"
+        },
+        {
+          "id": "13p5-slide-17",
+          "name": "page-17.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-17.png"
+        },
+        {
+          "id": "13p5-slide-18",
+          "name": "page-18.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-18.png"
+        },
+        {
+          "id": "13p5-slide-19",
+          "name": "page-19.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-19.png"
+        },
+        {
+          "id": "13p5-slide-20",
+          "name": "page-20.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-20.png"
+        },
+        {
+          "id": "13p5-slide-21",
+          "name": "page-21.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-21.png"
+        },
+        {
+          "id": "13p5-slide-22",
+          "name": "page-22.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-22.png"
+        },
+        {
+          "id": "13p5-slide-23",
+          "name": "page-23.png",
+          "type": "image",
+          "path": "/folders/13P5-grieve/slides/page-23.png"
         }
       ]
     },

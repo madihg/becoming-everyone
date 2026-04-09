@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import type { FolderState, FileItem } from "@/types";
 
-const VIEWABLE_TYPES = new Set(["image", "video", "pdf", "audio"]);
+const VIEWABLE_TYPES = new Set(["image", "video", "audio"]);
 
 export default function ViewerPage() {
   return (
@@ -27,35 +27,6 @@ function ViewerInner() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const playIconTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // PDF state
-  const [pdfPage, setPdfPage] = useState(1);
-  const [pdfTotalPages, setPdfTotalPages] = useState(0);
-  const pdfDocRef = useRef<any>(null);
-  const pdfCanvasRef = useRef<HTMLCanvasElement>(null);
-  const pdfPathRef = useRef<string>("");
-  const pdfjsLibRef = useRef<any>(null);
-
-  // Load pdf.js from CDN (avoids webpack bundling issues)
-  useEffect(() => {
-    if (pdfjsLibRef.current) return;
-    if ((window as any).pdfjsLib) {
-      pdfjsLibRef.current = (window as any).pdfjsLib;
-      return;
-    }
-    const script = document.createElement("script");
-    script.src =
-      "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js";
-    script.onload = () => {
-      const lib = (window as any).pdfjsLib;
-      if (lib) {
-        lib.GlobalWorkerOptions.workerSrc =
-          "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
-        pdfjsLibRef.current = lib;
-      }
-    };
-    document.head.appendChild(script);
-  }, []);
-
   // Load folder contents
   useEffect(() => {
     if (!folderId) return;
@@ -75,79 +46,6 @@ function ViewerInner() {
 
   const currentFile = files[currentIndex];
 
-  // Load PDF document when current file is a PDF
-  useEffect(() => {
-    if (currentFile?.type !== "pdf") {
-      pdfDocRef.current = null;
-      pdfPathRef.current = "";
-      setPdfPage(1);
-      setPdfTotalPages(0);
-      return;
-    }
-
-    // Don't reload if same PDF
-    if (pdfPathRef.current === currentFile.path && pdfDocRef.current) return;
-
-    let cancelled = false;
-    const loadPdf = async () => {
-      // Wait for CDN script to load
-      while (!pdfjsLibRef.current) {
-        await new Promise((r) => setTimeout(r, 100));
-        if (cancelled) return;
-      }
-      try {
-        const doc = await pdfjsLibRef.current.getDocument(currentFile.path)
-          .promise;
-        if (cancelled) return;
-        pdfDocRef.current = doc;
-        pdfPathRef.current = currentFile.path;
-        setPdfTotalPages(doc.numPages);
-        setPdfPage(1);
-      } catch (err) {
-        console.error("PDF load failed:", err);
-      }
-    };
-    loadPdf();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [currentFile]);
-
-  // Render current PDF page to canvas
-  useEffect(() => {
-    if (!pdfDocRef.current || !pdfCanvasRef.current || pdfPage < 1) return;
-
-    let cancelled = false;
-    (async () => {
-      const page = await pdfDocRef.current.getPage(pdfPage);
-      if (cancelled || !pdfCanvasRef.current) return;
-      const canvas = pdfCanvasRef.current;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      const viewport = page.getViewport({ scale: 1 });
-      const scale =
-        Math.min(
-          window.innerWidth / viewport.width,
-          window.innerHeight / viewport.height,
-        ) * (window.devicePixelRatio || 1);
-      const scaledViewport = page.getViewport({ scale });
-
-      canvas.width = scaledViewport.width;
-      canvas.height = scaledViewport.height;
-      canvas.style.width = `${scaledViewport.width / (window.devicePixelRatio || 1)}px`;
-      canvas.style.height = `${scaledViewport.height / (window.devicePixelRatio || 1)}px`;
-
-      await page.render({ canvasContext: ctx, viewport: scaledViewport })
-        .promise;
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [pdfPage, pdfTotalPages]);
-
   const togglePlayPause = useCallback(() => {
     const el = videoRef.current || audioRef.current;
     if (!el) return;
@@ -166,22 +64,14 @@ function ViewerInner() {
   // Arrow key and spacebar navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") {
+      if (e.key === "ArrowRight" && currentIndex < files.length - 1) {
         e.preventDefault();
-        if (currentFile?.type === "pdf" && pdfPage < pdfTotalPages) {
-          setPdfPage((p) => p + 1);
-        } else if (currentIndex < files.length - 1) {
-          setCurrentIndex((i) => i + 1);
-          setIsPlaying(false);
-        }
-      } else if (e.key === "ArrowLeft") {
+        setCurrentIndex((i) => i + 1);
+        setIsPlaying(false);
+      } else if (e.key === "ArrowLeft" && currentIndex > 0) {
         e.preventDefault();
-        if (currentFile?.type === "pdf" && pdfPage > 1) {
-          setPdfPage((p) => p - 1);
-        } else if (currentIndex > 0) {
-          setCurrentIndex((i) => i - 1);
-          setIsPlaying(false);
-        }
+        setCurrentIndex((i) => i - 1);
+        setIsPlaying(false);
       } else if (
         e.key === " " &&
         (currentFile?.type === "video" || currentFile?.type === "audio")
@@ -193,38 +83,21 @@ function ViewerInner() {
     };
     document.addEventListener("keydown", handleKeyDown, true);
     return () => document.removeEventListener("keydown", handleKeyDown, true);
-  }, [
-    currentIndex,
-    files.length,
-    currentFile,
-    togglePlayPause,
-    pdfPage,
-    pdfTotalPages,
-  ]);
+  }, [currentIndex, files.length, currentFile, togglePlayPause]);
 
   const navigateLeft = useCallback(() => {
-    if (currentFile?.type === "pdf" && pdfPage > 1) {
-      setPdfPage((p) => p - 1);
-    } else if (currentIndex > 0) {
+    if (currentIndex > 0) {
       setCurrentIndex((i) => i - 1);
       setIsPlaying(false);
     }
-  }, [currentIndex, currentFile, pdfPage]);
+  }, [currentIndex]);
 
   const navigateRight = useCallback(() => {
-    if (currentFile?.type === "pdf" && pdfPage < pdfTotalPages) {
-      setPdfPage((p) => p + 1);
-    } else if (currentIndex < files.length - 1) {
+    if (currentIndex < files.length - 1) {
       setCurrentIndex((i) => i + 1);
       setIsPlaying(false);
     }
-  }, [currentIndex, files.length, currentFile, pdfPage, pdfTotalPages]);
-
-  const canGoLeft =
-    currentIndex > 0 || (currentFile?.type === "pdf" && pdfPage > 1);
-  const canGoRight =
-    currentIndex < files.length - 1 ||
-    (currentFile?.type === "pdf" && pdfPage < pdfTotalPages);
+  }, [currentIndex, files.length]);
 
   if (!folderId || files.length === 0) {
     return <div className="h-screen w-screen bg-black" />;
@@ -302,18 +175,10 @@ function ViewerInner() {
             />
           </div>
         )}
-
-        {currentFile.type === "pdf" && (
-          <canvas
-            key={currentFile.id}
-            ref={pdfCanvasRef}
-            className="max-w-full max-h-full object-contain"
-          />
-        )}
       </div>
 
       {/* Left navigation zone */}
-      {canGoLeft && (
+      {currentIndex > 0 && (
         <button
           className="absolute left-0 top-0 w-[15%] h-full flex items-center justify-start pl-6 group cursor-pointer"
           onClick={navigateLeft}
@@ -335,7 +200,7 @@ function ViewerInner() {
       )}
 
       {/* Right navigation zone */}
-      {canGoRight && (
+      {currentIndex < files.length - 1 && (
         <button
           className="absolute right-0 top-0 w-[15%] h-full flex items-center justify-end pr-6 group cursor-pointer"
           onClick={navigateRight}
@@ -356,11 +221,9 @@ function ViewerInner() {
         </button>
       )}
 
-      {/* File/page counter */}
+      {/* File counter */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[11px] font-mono text-white/20">
-        {currentFile.type === "pdf"
-          ? `${pdfPage} / ${pdfTotalPages}`
-          : `${currentIndex + 1} / ${files.length}`}
+        {currentIndex + 1} / {files.length}
       </div>
     </div>
   );
