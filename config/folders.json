@@ -319,48 +319,6 @@
       "isOpen": false,
       "contents": [
         {
-          "id": "13p5-img-1",
-          "name": "Cryogenics Facility Interior.png",
-          "type": "image",
-          "path": "/folders/13P5-grieve/Cryogenics Facility Interior.png"
-        },
-        {
-          "id": "13p5-img-2",
-          "name": "Empty Therapy Couch.png",
-          "type": "image",
-          "path": "/folders/13P5-grieve/Empty Therapy Couch.png"
-        },
-        {
-          "id": "13p5-img-3",
-          "name": "Fitness Trackers and Smoothie.png",
-          "type": "image",
-          "path": "/folders/13P5-grieve/Fitness Trackers and Smoothie.png"
-        },
-        {
-          "id": "13p5-img-4",
-          "name": "Gratitude Journal Morning Light.png",
-          "type": "image",
-          "path": "/folders/13P5-grieve/Gratitude Journal Morning Light.png"
-        },
-        {
-          "id": "13p5-img-5",
-          "name": "Meditation App Interface Screenshot.png",
-          "type": "image",
-          "path": "/folders/13P5-grieve/Meditation App Interface Screenshot.png"
-        },
-        {
-          "id": "13p5-img-6",
-          "name": "Supplement Bottles Photo.png",
-          "type": "image",
-          "path": "/folders/13P5-grieve/Supplement Bottles Photo.png"
-        },
-        {
-          "id": "13p5-ppt-1",
-          "name": "griefbots_keynote.pptx",
-          "type": "presentation",
-          "path": "/folders/13P5-grieve/griefbots_keynote.pptx"
-        },
-        {
           "id": "13p5-pdf-1",
           "name": "griefbots_keynote.pdf",
           "type": "pdf",
