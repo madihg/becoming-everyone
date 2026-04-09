@@ -134,7 +134,9 @@ export default function AdminAuth({ children }: AdminAuthProps) {
       {animationPhase === "input" && (
         <div className="text-center">
           <p className="text-[32px] font-mono text-white leading-relaxed">
-            <span className="select-none">i&apos;ve always wanted to be </span>
+            <span className="select-none">
+              i&apos;ve always wanted to be{"\u00a0"}
+            </span>
             <span className="inline-flex items-baseline relative">
               <span className="inline-flex">
                 {input.split("").map((char, i) => (
@@ -176,7 +178,9 @@ export default function AdminAuth({ children }: AdminAuthProps) {
           }}
         >
           <p className="text-[32px] font-mono leading-relaxed flex flex-wrap justify-center items-baseline px-4">
-            <span className="select-none">i&apos;ve always wanted to be </span>
+            <span className="select-none">
+              i&apos;ve always wanted to be{"\u00a0"}
+            </span>
             <TypedBeforeOne
               value={input}
               animateChars={false}
