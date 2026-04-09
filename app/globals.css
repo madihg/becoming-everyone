@@ -68,3 +68,27 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--yellow);
 }
+
+/* Admin auth: typed letters hug “one”, micro-interaction ~200ms, transform+opacity */
+@keyframes admin-auth-char-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.14em) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .admin-auth-char {
+    animation: admin-auth-char-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-auth-char {
+    animation: none;
+  }
+}

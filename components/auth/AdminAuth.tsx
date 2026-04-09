@@ -6,6 +6,33 @@ interface AdminAuthProps {
   children: React.ReactNode;
 }
 
+/** Renders `value` letter-by-letter flush before `one` (reads as e.g. everyone, anyone). */
+function TypedBeforeOne({
+  value,
+  animateChars,
+  className,
+}: {
+  value: string;
+  animateChars: boolean;
+  className?: string;
+}) {
+  return (
+    <span
+      className={`inline-flex items-baseline flex-nowrap ${className ?? ""}`}
+    >
+      {value.split("").map((char, i) => (
+        <span
+          key={`${i}-${char}`}
+          className={`inline-block ${animateChars ? "admin-auth-char" : ""}`}
+        >
+          {char}
+        </span>
+      ))}
+      <span className="inline-block">one</span>
+    </span>
+  );
+}
+
 export default function AdminAuth({ children }: AdminAuthProps) {
   const [input, setInput] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -13,19 +40,17 @@ export default function AdminAuth({ children }: AdminAuthProps) {
     "input" | "colorTransition" | "pixelDissolve" | "complete"
   >("input");
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (input.toLowerCase() === "every") {
-      // Start color transition
       setAnimationPhase("colorTransition");
 
-      // After 2.5s, start pixel dissolve
       setTimeout(() => {
         setAnimationPhase("pixelDissolve");
         startPixelDissolve();
       }, 2500);
 
-      // After 5s total, complete
       setTimeout(() => {
         setAnimationPhase("complete");
         setIsAuthenticated(true);
@@ -41,7 +66,6 @@ export default function AdminAuth({ children }: AdminAuthProps) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas size
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -51,13 +75,11 @@ export default function AdminAuth({ children }: AdminAuthProps) {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    // Get text dimensions
     const textWidth = ctx.measureText(text).width;
     const textHeight = fontSize;
     const x = canvas.width / 2 - textWidth / 2;
     const y = canvas.height / 2 - textHeight / 2;
 
-    // Create pixel grid
     const pixelSize = 4;
     const pixels: { x: number; y: number; delay: number }[] = [];
 
@@ -83,11 +105,9 @@ export default function AdminAuth({ children }: AdminAuthProps) {
       pixels.forEach((pixel) => {
         const pixelElapsed = elapsed - pixel.delay;
         if (pixelElapsed < 0) {
-          // Not started yet - draw normal
           ctx.fillStyle = "#FFE600";
           ctx.fillRect(pixel.x, pixel.y, pixelSize, pixelSize);
         } else if (pixelElapsed < duration - pixel.delay) {
-          // Dissolving - random static
           const opacity = 1 - pixelElapsed / (duration - pixel.delay);
           ctx.fillStyle = `rgba(255, 230, 0, ${opacity})`;
           ctx.fillRect(
@@ -97,7 +117,6 @@ export default function AdminAuth({ children }: AdminAuthProps) {
             pixelSize,
           );
         }
-        // Else: fully dissolved - don't draw
       });
 
       requestAnimationFrame(animate);
@@ -114,17 +133,42 @@ export default function AdminAuth({ children }: AdminAuthProps) {
     <div className="fixed inset-0 bg-bg flex items-center justify-center z-[9999]">
       {animationPhase === "input" && (
         <div className="text-center">
-          <p className="text-[32px] font-mono text-white leading-relaxed">
-            i&apos;ve always wanted to be{" "}
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              className="bg-transparent border-none outline-none text-white caret-white inline"
-              style={{ width: `${Math.max(input.length, 1) * 19}px` }}
-              autoFocus
-            />
-            one
+          <p
+            className="text-[32px] font-mono text-white leading-relaxed flex flex-wrap justify-center items-baseline px-4"
+            onClick={() => inputRef.current?.focus()}
+          >
+            <span className="select-none">i&apos;ve always wanted to be </span>
+            <span className="inline-flex cursor-text select-none items-baseline">
+              <span className="relative inline-flex items-baseline">
+                {input.split("").map((char, i) => (
+                  <span
+                    key={`${i}-${char}`}
+                    className="inline-block admin-auth-char text-white"
+                  >
+                    {char}
+                  </span>
+                ))}
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  className="absolute left-0 top-0 z-10 m-0 h-[1.35em] border-0 bg-transparent p-0 font-mono text-[32px] leading-relaxed text-transparent caret-white outline-none ring-0 focus:ring-0"
+                  style={{
+                    width: `${Math.max(input.length, 1)}ch`,
+                    minWidth: "1ch",
+                  }}
+                  aria-label="Complete the word before one"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  autoFocus
+                />
+              </span>
+              <span className="inline-block text-white" aria-hidden>
+                one
+              </span>
+            </span>
           </p>
         </div>
       )}
@@ -136,8 +180,13 @@ export default function AdminAuth({ children }: AdminAuthProps) {
             color: "#FFE600",
           }}
         >
-          <p className="text-[32px] font-mono leading-relaxed">
-            i&apos;ve always wanted to be {input}one
+          <p className="text-[32px] font-mono leading-relaxed flex flex-wrap justify-center items-baseline px-4">
+            <span className="select-none">i&apos;ve always wanted to be </span>
+            <TypedBeforeOne
+              value={input}
+              animateChars={false}
+              className="text-[#FFE600]"
+            />
           </p>
         </div>
       )}
