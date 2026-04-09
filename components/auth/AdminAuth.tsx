@@ -133,41 +133,36 @@ export default function AdminAuth({ children }: AdminAuthProps) {
     <div className="fixed inset-0 bg-bg flex items-center justify-center z-[9999]">
       {animationPhase === "input" && (
         <div className="text-center">
-          <p
-            className="text-[32px] font-mono text-white leading-relaxed flex flex-wrap justify-center items-baseline px-4"
-            onClick={() => inputRef.current?.focus()}
-          >
-            <span className="select-none">i&apos;ve always wanted to be </span>
-            <span className="inline-flex cursor-text select-none items-baseline">
-              <span className="relative inline-flex items-baseline">
+          <p className="text-[32px] font-mono text-white leading-relaxed">
+            <span className="select-none">i&apos;ve always wanted to be</span>
+            <span className="inline-flex items-baseline relative">
+              <span className="inline-flex">
                 {input.split("").map((char, i) => (
                   <span
                     key={`${i}-${char}`}
-                    className="inline-block admin-auth-char text-white"
+                    className="inline-block admin-auth-char"
+                    style={{ animationDelay: `${i * 20}ms` }}
                   >
                     {char}
                   </span>
                 ))}
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  className="absolute left-0 top-0 z-10 m-0 h-[1.35em] border-0 bg-transparent p-0 font-mono text-[32px] leading-relaxed text-transparent caret-white outline-none ring-0 focus:ring-0"
-                  style={{
-                    width: `${Math.max(input.length, 1)}ch`,
-                    minWidth: "1ch",
-                  }}
-                  aria-label="Complete the word before one"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  autoFocus
-                />
               </span>
-              <span className="inline-block text-white" aria-hidden>
-                one
-              </span>
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                className="absolute left-0 top-0 bg-transparent border-0 outline-none text-transparent caret-white w-full"
+                style={{
+                  width: `${Math.max(input.length * 0.6, 0.6)}em`,
+                  font: "inherit",
+                }}
+                autoFocus
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+              />
+              <span>one</span>
             </span>
           </p>
         </div>
