@@ -33,6 +33,28 @@ function ViewerInner() {
   const pdfDocRef = useRef<any>(null);
   const pdfCanvasRef = useRef<HTMLCanvasElement>(null);
   const pdfPathRef = useRef<string>("");
+  const pdfjsLibRef = useRef<any>(null);
+
+  // Load pdf.js from CDN (avoids webpack bundling issues)
+  useEffect(() => {
+    if (pdfjsLibRef.current) return;
+    if ((window as any).pdfjsLib) {
+      pdfjsLibRef.current = (window as any).pdfjsLib;
+      return;
+    }
+    const script = document.createElement("script");
+    script.src =
+      "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js";
+    script.onload = () => {
+      const lib = (window as any).pdfjsLib;
+      if (lib) {
+        lib.GlobalWorkerOptions.workerSrc =
+          "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+        pdfjsLibRef.current = lib;
+      }
+    };
+    document.head.appendChild(script);
+  }, []);
 
   // Load folder contents
   useEffect(() => {
@@ -67,16 +89,25 @@ function ViewerInner() {
     if (pdfPathRef.current === currentFile.path && pdfDocRef.current) return;
 
     let cancelled = false;
-    (async () => {
-      const pdfjsLib = await import("pdfjs-dist");
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
-      const doc = await pdfjsLib.getDocument(currentFile.path).promise;
-      if (cancelled) return;
-      pdfDocRef.current = doc;
-      pdfPathRef.current = currentFile.path;
-      setPdfTotalPages(doc.numPages);
-      setPdfPage(1);
-    })();
+    const loadPdf = async () => {
+      // Wait for CDN script to load
+      while (!pdfjsLibRef.current) {
+        await new Promise((r) => setTimeout(r, 100));
+        if (cancelled) return;
+      }
+      try {
+        const doc = await pdfjsLibRef.current.getDocument(currentFile.path)
+          .promise;
+        if (cancelled) return;
+        pdfDocRef.current = doc;
+        pdfPathRef.current = currentFile.path;
+        setPdfTotalPages(doc.numPages);
+        setPdfPage(1);
+      } catch (err) {
+        console.error("PDF load failed:", err);
+      }
+    };
+    loadPdf();
 
     return () => {
       cancelled = true;
