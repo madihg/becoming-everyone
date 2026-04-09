@@ -60,7 +60,7 @@
           "id": "1p1-vid-1",
           "name": "7.mp4",
           "type": "video",
-          "path": "/folders/1P1-service/7.mp4"
+          "path": "https://v3qzfzavcac6sdmw.public.blob.vercel-storage.com/7.mp4"
         }
       ]
     },
@@ -102,7 +102,7 @@
           "id": "3r1-vid-1",
           "name": "0408.mov",
           "type": "video",
-          "path": "/folders/3R1-breaking/0408.mov"
+          "path": "https://v3qzfzavcac6sdmw.public.blob.vercel-storage.com/0408.mov"
         },
         {
           "id": "3r1-img-1",
@@ -150,7 +150,7 @@
           "id": "4w1-vid-1",
           "name": "Pikaso Witness Children Apr 2026.mp4",
           "type": "video",
-          "path": "/folders/4W1-children/Pikaso Witness Children Apr 2026.mp4"
+          "path": "https://v3qzfzavcac6sdmw.public.blob.vercel-storage.com/Pikaso%20Witness%20Children%20Apr%202026.mp4"
         }
       ]
     },
@@ -205,6 +205,18 @@
           "name": "40-120.exe",
           "type": "executable",
           "path": "/content/lift"
+        },
+        {
+          "id": "7p3-vid-1",
+          "name": "Pikaso Workout Artist Apr 2026.mp4",
+          "type": "video",
+          "path": "https://v3qzfzavcac6sdmw.public.blob.vercel-storage.com/Pikaso%20Workout%20Artist%20Apr%202026.mp4"
+        },
+        {
+          "id": "7p3-vid-2",
+          "name": "Persona Workout.mov",
+          "type": "video",
+          "path": "https://v3qzfzavcac6sdmw.public.blob.vercel-storage.com/Persona%20Workout.mov"
         }
       ]
     },
@@ -264,7 +276,14 @@
         "y": 80
       },
       "isOpen": false,
-      "contents": []
+      "contents": [
+        {
+          "id": "11r2-vid-1",
+          "name": "Pikaso Report Army Apr 2026.mp4",
+          "type": "video",
+          "path": "https://v3qzfzavcac6sdmw.public.blob.vercel-storage.com/Pikaso%20Report%20Army%20Apr%202026.mp4"
+        }
+      ]
     },
     {
       "id": "12W3-poly",
@@ -340,7 +359,14 @@
         "y": 344
       },
       "isOpen": false,
-      "contents": []
+      "contents": [
+        {
+          "id": "14r3-vid-1",
+          "name": "Report Critic.mov",
+          "type": "video",
+          "path": "https://v3qzfzavcac6sdmw.public.blob.vercel-storage.com/Report%20Critic.mov"
+        }
+      ]
     },
     {
       "id": "15O4-agenda",
@@ -362,7 +388,14 @@
         "y": 200
       },
       "isOpen": false,
-      "contents": []
+      "contents": [
+        {
+          "id": "16p6-vid-1",
+          "name": "Pikaso Arson Artist Apr 8 2026.mp4",
+          "type": "video",
+          "path": "https://v3qzfzavcac6sdmw.public.blob.vercel-storage.com/Pikaso%20Arson%20Artist%20Apr%208%202026.mp4"
+        }
+      ]
     },
     {
       "id": "17P7-neural",
