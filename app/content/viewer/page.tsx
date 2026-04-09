@@ -24,6 +24,7 @@ function ViewerInner() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const playIconTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Load folder contents
@@ -46,12 +47,13 @@ function ViewerInner() {
   const currentFile = files[currentIndex];
 
   const togglePlayPause = useCallback(() => {
-    if (!videoRef.current) return;
-    if (videoRef.current.paused) {
-      videoRef.current.play();
+    const el = videoRef.current || audioRef.current;
+    if (!el) return;
+    if (el.paused) {
+      el.play();
       setIsPlaying(true);
     } else {
-      videoRef.current.pause();
+      el.pause();
       setIsPlaying(false);
     }
     setShowPlayIcon(true);
@@ -59,7 +61,7 @@ function ViewerInner() {
     playIconTimeout.current = setTimeout(() => setShowPlayIcon(false), 600);
   }, []);
 
-  // Arrow key navigation
+  // Arrow key and spacebar navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight" && currentIndex < files.length - 1) {
@@ -70,13 +72,18 @@ function ViewerInner() {
         e.preventDefault();
         setCurrentIndex((i) => i - 1);
         setIsPlaying(true);
-      } else if (e.key === " " && currentFile?.type === "video") {
+      } else if (
+        e.key === " " &&
+        (currentFile?.type === "video" || currentFile?.type === "audio")
+      ) {
         e.preventDefault();
+        e.stopPropagation();
         togglePlayPause();
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    // Use capture phase to intercept before native video controls
+    document.addEventListener("keydown", handleKeyDown, true);
+    return () => document.removeEventListener("keydown", handleKeyDown, true);
   }, [currentIndex, files.length, currentFile, togglePlayPause]);
 
   // Autoplay video when navigating to it
@@ -176,6 +183,7 @@ function ViewerInner() {
           <div className="flex items-center justify-center">
             <audio
               key={currentFile.id}
+              ref={audioRef}
               src={currentFile.path}
               className="w-full max-w-2xl"
               controls
