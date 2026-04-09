@@ -21,7 +21,7 @@ function ViewerInner() {
 
   const [files, setFiles] = useState<FileItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(startIndex);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -67,11 +67,11 @@ function ViewerInner() {
       if (e.key === "ArrowRight" && currentIndex < files.length - 1) {
         e.preventDefault();
         setCurrentIndex((i) => i + 1);
-        setIsPlaying(true);
+        setIsPlaying(false);
       } else if (e.key === "ArrowLeft" && currentIndex > 0) {
         e.preventDefault();
         setCurrentIndex((i) => i - 1);
-        setIsPlaying(true);
+        setIsPlaying(false);
       } else if (
         e.key === " " &&
         (currentFile?.type === "video" || currentFile?.type === "audio")
@@ -85,20 +85,6 @@ function ViewerInner() {
     document.addEventListener("keydown", handleKeyDown, true);
     return () => document.removeEventListener("keydown", handleKeyDown, true);
   }, [currentIndex, files.length, currentFile, togglePlayPause]);
-
-  // Autoplay video when navigating to a new file (not on play/pause toggle)
-  const prevIndexRef = useRef(currentIndex);
-  useEffect(() => {
-    if (prevIndexRef.current === currentIndex) return;
-    prevIndexRef.current = currentIndex;
-    if (currentFile?.type === "video" && videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => {
-        // Autoplay blocked - user will click to play
-      });
-      setIsPlaying(true);
-    }
-  }, [currentIndex, currentFile]);
 
   const navigateLeft = useCallback(() => {
     if (currentIndex > 0) {
@@ -144,7 +130,6 @@ function ViewerInner() {
               src={currentFile.path}
               className="max-w-full max-h-full object-contain"
               controls
-              autoPlay
               loop
               playsInline
               crossOrigin="anonymous"
@@ -188,9 +173,17 @@ function ViewerInner() {
               src={currentFile.path}
               className="w-full max-w-2xl"
               controls
-              autoPlay
             />
           </div>
+        )}
+
+        {currentFile.type === "pdf" && (
+          <iframe
+            key={currentFile.id}
+            src={encodeURI(currentFile.path)}
+            className="w-full h-full"
+            title={currentFile.name}
+          />
         )}
       </div>
 

@@ -118,7 +118,7 @@ export default function PhysarumBackground({
 
       // Draw persistent faded lines between ever-opened folder pairs
       if (everOpenedFolders.length > 1) {
-        ctx.strokeStyle = "rgba(255, 230, 0, 0.15)";
+        ctx.strokeStyle = "rgba(255, 230, 0, 0.5)";
         ctx.lineWidth = 1;
         ctx.lineCap = "round";
 
@@ -168,7 +168,7 @@ export default function PhysarumBackground({
 
       // Draw straight yellow lines between ALL pairs (complex web)
       if (openFolders.length > 1) {
-        ctx.strokeStyle = "rgba(255, 230, 0, 0.4)";
+        ctx.strokeStyle = "rgba(255, 230, 0, 0.5)";
         ctx.lineWidth = 1;
         ctx.lineCap = "round";
 

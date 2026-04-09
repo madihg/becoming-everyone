@@ -359,6 +359,12 @@
           "name": "griefbots_keynote.pptx",
           "type": "presentation",
           "path": "/folders/13P5-grieve/griefbots_keynote.pptx"
+        },
+        {
+          "id": "13p5-pdf-1",
+          "name": "griefbots_keynote.pdf",
+          "type": "pdf",
+          "path": "/folders/13P5-grieve/griefbots_keynote.pdf"
         }
       ]
     },
@@ -424,7 +430,14 @@
         "y": 200
       },
       "isOpen": false,
-      "contents": []
+      "contents": [
+        {
+          "id": "17p7-img-1",
+          "name": "neural.png",
+          "type": "image",
+          "path": "/folders/17P7-neural/neural.png"
+        }
+      ]
     },
     {
       "id": "18P8-yellow",
