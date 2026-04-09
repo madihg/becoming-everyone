@@ -22,45 +22,45 @@
       "contents": [
         {
           "id": "1p1-img-1",
-          "name": "Elderly Lebanese Woman Cooking 1990s.png",
+          "name": "1.png",
           "type": "image",
-          "path": "/folders/1P1-service/Elderly Lebanese Woman Cooking 1990s.png"
+          "path": "/folders/1P1-service/1.png"
         },
         {
           "id": "1p1-img-2",
-          "name": "Elderly Man Driving Mercedes 1990s.png",
+          "name": "2.png",
           "type": "image",
-          "path": "/folders/1P1-service/Elderly Man Driving Mercedes 1990s.png"
+          "path": "/folders/1P1-service/2.png"
         },
         {
           "id": "1p1-img-3",
-          "name": "Gallery Photograph iPhone.png",
+          "name": "3.png",
           "type": "image",
-          "path": "/folders/1P1-service/Gallery Photograph iPhone.png"
+          "path": "/folders/1P1-service/3.png"
         },
         {
           "id": "1p1-img-4",
-          "name": "Lebanese Living Room 1990s.png",
+          "name": "4.png",
           "type": "image",
-          "path": "/folders/1P1-service/Lebanese Living Room 1990s.png"
+          "path": "/folders/1P1-service/4.png"
         },
         {
           "id": "1p1-img-5",
-          "name": "Middle-aged Arab Man with Tupperware.png",
+          "name": "5.png",
           "type": "image",
-          "path": "/folders/1P1-service/Middle-aged Arab Man with Tupperware.png"
+          "path": "/folders/1P1-service/5.png"
         },
         {
           "id": "1p1-img-6",
-          "name": "Middle-aged Lebanese Man Fixing AC in Beirut.png",
+          "name": "6.png",
           "type": "image",
-          "path": "/folders/1P1-service/Middle-aged Lebanese Man Fixing AC in Beirut.png"
+          "path": "/folders/1P1-service/6.png"
         },
         {
           "id": "1p1-vid-1",
-          "name": "Pikaso Service Artist Apr 02 2026.mp4",
+          "name": "7.mp4",
           "type": "video",
-          "path": "/folders/1P1-service/Pikaso Service Artist Apr 02 2026.mp4"
+          "path": "/folders/1P1-service/7.mp4"
         }
       ]
     },
