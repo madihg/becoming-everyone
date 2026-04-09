@@ -32,6 +32,7 @@ export default function AdminPage() {
   const [floatingWindows, setFloatingWindows] = useState<
     { id: string; title: string; src: string; zIndex: number }[]
   >([]);
+  const [everOpenedIds, setEverOpenedIds] = useState<Set<string>>(new Set());
 
   // Pointer-based drag
   const dragRef = useRef<{
@@ -163,6 +164,11 @@ export default function AdminPage() {
       const folder = state.folders.find((f) => f.id === folderId);
       if (!folder) return;
       const newOpen = !folder.isOpen;
+
+      // Track that this folder has been opened
+      if (newOpen) {
+        setEverOpenedIds((prev) => new Set([...prev, folderId]));
+      }
       const newState = {
         ...state,
         folders: state.folders.map((f) =>
@@ -380,6 +386,9 @@ export default function AdminPage() {
         {state.tabs.map((tab, idx) => {
           const tabFolders = state.folders.filter((f) => f.tabId === tab.id);
           const openTabFolders = tabFolders.filter((f) => f.isOpen);
+          const everOpenedTabFolders = tabFolders.filter((f) =>
+            everOpenedIds.has(f.id),
+          );
           return (
             <div
               key={tab.id}
@@ -390,7 +399,10 @@ export default function AdminPage() {
                   idx < state.tabs.length - 1 ? "1px solid #2a2a2a" : "none",
               }}
             >
-              <PhysarumBackground openFolders={openTabFolders} />
+              <PhysarumBackground
+                openFolders={openTabFolders}
+                everOpenedFolders={everOpenedTabFolders}
+              />
 
               {/* Screen tab - VS Code style */}
               <div className="absolute top-0 left-0 right-0 z-50 flex items-end h-[28px] border-b border-[#2a2a2a]">

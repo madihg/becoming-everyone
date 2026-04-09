@@ -17,7 +17,6 @@ export default function OmarProximityTracker({ dialogue }: Props) {
   const [dialogueIndex, setDialogueIndex] = useState(0);
   const poseLandmarkerRef = useRef<any>(null);
   const animFrameRef = useRef<number>(0);
-  const prevZoneRef = useRef<DistanceZone>("far");
 
   // Initialize webcam
   useEffect(() => {
@@ -91,25 +90,19 @@ export default function OmarProximityTracker({ dialogue }: Props) {
     [],
   );
 
-  // Dialogue advancement logic - advance when moving closer
+  // Dialogue advancement - show each sentence every 2 seconds
   useEffect(() => {
-    const prevZone = prevZoneRef.current;
-    const zoneOrder = ["far", "medium", "close"];
-    const prevIndex = zoneOrder.indexOf(prevZone);
-    const currIndex = zoneOrder.indexOf(currentZone);
+    if (!poseLoaded) return;
 
-    // Moving closer (zone index increased)
-    if (currIndex > prevIndex && dialogueIndex < dialogue.length - 1) {
-      setDialogueIndex((prev) => prev + 1);
-    }
+    const interval = setInterval(() => {
+      setDialogueIndex((prev) => {
+        if (prev < dialogue.length - 1) return prev + 1;
+        return prev;
+      });
+    }, 2000);
 
-    // Reset to first line when moving far away
-    if (currentZone === "far" && prevZone !== "far") {
-      setDialogueIndex(0);
-    }
-
-    prevZoneRef.current = currentZone;
-  }, [currentZone, dialogue.length, dialogueIndex]);
+    return () => clearInterval(interval);
+  }, [poseLoaded, dialogue.length]);
 
   // Render loop - visual effects based on zone
   useEffect(() => {

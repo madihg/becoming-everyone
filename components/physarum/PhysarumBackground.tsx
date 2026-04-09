@@ -5,9 +5,13 @@ import type { Folder } from "@/types";
 
 interface Props {
   openFolders: Folder[];
+  everOpenedFolders: Folder[];
 }
 
-export default function PhysarumBackground({ openFolders }: Props) {
+export default function PhysarumBackground({
+  openFolders,
+  everOpenedFolders,
+}: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -112,38 +116,42 @@ export default function PhysarumBackground({ openFolders }: Props) {
         return;
       }
 
-      // Draw tubes between open folders
+      // Draw tubes between ALL pairs of folders (complex web)
       if (openFolders.length > 1) {
         ctx.strokeStyle = "rgba(255, 230, 0, 0.06)";
         ctx.lineWidth = 8;
         ctx.lineCap = "round";
 
-        for (let i = 0; i < openFolders.length - 1; i++) {
-          const a = openFolders[i];
-          const b = openFolders[i + 1];
-          drawOrganicTube(
-            a.position.x + 32,
-            a.position.y + 26,
-            b.position.x + 32,
-            b.position.y + 26,
-            i * 500,
-          );
+        for (let i = 0; i < openFolders.length; i++) {
+          for (let j = i + 1; j < openFolders.length; j++) {
+            const a = openFolders[i];
+            const b = openFolders[j];
+            drawOrganicTube(
+              a.position.x + 32,
+              a.position.y + 26,
+              b.position.x + 32,
+              b.position.y + 26,
+              (i + j) * 300,
+            );
+          }
         }
       }
 
-      // Draw straight yellow lines between open folders
+      // Draw straight yellow lines between ALL pairs (complex web)
       if (openFolders.length > 1) {
         ctx.strokeStyle = "rgba(255, 230, 0, 0.4)";
         ctx.lineWidth = 1;
         ctx.lineCap = "round";
 
-        for (let i = 0; i < openFolders.length - 1; i++) {
-          const a = openFolders[i];
-          const b = openFolders[i + 1];
-          ctx.beginPath();
-          ctx.moveTo(a.position.x + 32, a.position.y + 26);
-          ctx.lineTo(b.position.x + 32, b.position.y + 26);
-          ctx.stroke();
+        for (let i = 0; i < openFolders.length; i++) {
+          for (let j = i + 1; j < openFolders.length; j++) {
+            const a = openFolders[i];
+            const b = openFolders[j];
+            ctx.beginPath();
+            ctx.moveTo(a.position.x + 32, a.position.y + 26);
+            ctx.lineTo(b.position.x + 32, b.position.y + 26);
+            ctx.stroke();
+          }
         }
       }
 
@@ -179,7 +187,7 @@ export default function PhysarumBackground({ openFolders }: Props) {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [openFolders, dimensions]);
+  }, [openFolders, everOpenedFolders, dimensions]);
 
   return (
     <canvas

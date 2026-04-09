@@ -35,7 +35,7 @@ export default function SleepPage() {
       return;
 
     const line = SLEEP_SCRIPT[currentIndex];
-    const extraDelay = line.isStanzaBreak ? 3000 : 0;
+    const extraDelay = line.isStanzaBreak ? 1500 : 0;
 
     timerRef.current = setTimeout(() => {
       advanceLine();

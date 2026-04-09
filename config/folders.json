@@ -169,6 +169,12 @@
           "name": "sleep.html",
           "type": "html",
           "path": "/content/sleep"
+        },
+        {
+          "id": "5p2-html-2",
+          "name": "candles.html",
+          "type": "html",
+          "path": "/content/sleep/candles"
         }
       ]
     },

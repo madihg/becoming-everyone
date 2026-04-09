@@ -40,12 +40,24 @@ function HomeInner() {
   const [floatingWindows, setFloatingWindows] = useState<
     { id: string; title: string; src: string; zIndex: number }[]
   >([]);
+  const [everOpenedIds, setEverOpenedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetch("/api/folders")
       .then((r) => r.json())
       .then((data: FolderState) => setState(data));
   }, []);
+
+  // Track ever-opened folders
+  useEffect(() => {
+    if (!state) return;
+    const currentlyOpen = state.folders
+      .filter((f) => f.isOpen)
+      .map((f) => f.id);
+    if (currentlyOpen.length > 0) {
+      setEverOpenedIds((prev) => new Set([...prev, ...currentlyOpen]));
+    }
+  }, [state]);
 
   // Poll for admin changes every second
   useEffect(() => {
@@ -185,6 +197,9 @@ function HomeInner() {
       {visibleTabs.map((tab, idx) => {
         const tabFolders = state.folders.filter((f) => f.tabId === tab.id);
         const openTabFolders = tabFolders.filter((f) => f.isOpen);
+        const everOpenedTabFolders = tabFolders.filter((f) =>
+          everOpenedIds.has(f.id),
+        );
         return (
           <div
             key={tab.id}
@@ -195,7 +210,10 @@ function HomeInner() {
                 idx < visibleTabs.length - 1 ? "1px solid #2a2a2a" : "none",
             }}
           >
-            <PhysarumBackground openFolders={openTabFolders} />
+            <PhysarumBackground
+              openFolders={openTabFolders}
+              everOpenedFolders={everOpenedTabFolders}
+            />
 
             {/* Screen label */}
             <div className="absolute top-2 left-3 text-[11px] font-mono text-[#555] pointer-events-none z-10 uppercase tracking-wider select-none">

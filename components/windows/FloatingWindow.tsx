@@ -17,7 +17,7 @@ export default function FloatingWindow({
   zIndex,
   onFocus,
   children,
-  defaultSize = { w: 600, h: 450 },
+  defaultSize = { w: 420, h: 320 },
 }: Props) {
   const [pos, setPos] = useState({
     x: 100 + Math.random() * 200,
@@ -91,11 +91,11 @@ export default function FloatingWindow({
         if (!resizeRef.current) return;
         setSize({
           w: Math.max(
-            400,
+            280,
             resizeRef.current.origW + (ev.clientX - resizeRef.current.startX),
           ),
           h: Math.max(
-            300,
+            200,
             resizeRef.current.origH + (ev.clientY - resizeRef.current.startY),
           ),
         });
