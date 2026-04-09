@@ -17,7 +17,7 @@ export default function FloatingWindow({
   zIndex,
   onFocus,
   children,
-  defaultSize = { w: 800, h: 600 },
+  defaultSize = { w: 600, h: 450 },
 }: Props) {
   const [pos, setPos] = useState({
     x: 100 + Math.random() * 200,

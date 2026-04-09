@@ -134,7 +134,7 @@ export default function AdminAuth({ children }: AdminAuthProps) {
       {animationPhase === "input" && (
         <div className="text-center">
           <p className="text-[32px] font-mono text-white leading-relaxed">
-            <span className="select-none">i&apos;ve always wanted to be</span>
+            <span className="select-none">i&apos;ve always wanted to be </span>
             <span className="inline-flex items-baseline relative">
               <span className="inline-flex">
                 {input.split("").map((char, i) => (
