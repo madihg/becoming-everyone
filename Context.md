@@ -53,17 +53,49 @@ All 5 workstreams implemented and building clean.
 - 19 folders across two screens with Mac OS 9 windows
 - Sleep typewriter, heartbeat monitor, dance body tracking modules
 
+## Folder Page Overhaul - COMPLETED (April 10, 2026)
+
+All 6 workstreams implemented and building clean.
+
+**1. Folder Icons** - DONE. `FolderIcon.tsx` rewritten with symbolic icons per folder:
+
+- "(650)" text for 1P1-service
+- Webcam PNG for O-type folders (2O1, 6O2, 9O3, 15O4)
+- NBN SVG (nbn-3) for R/W-type folders (3R1, 4W1, 8W2, 11R2, 12W3, 14R3, 19R4)
+- Candle SVG for 5P2-sleep, Dumbbell PNG for 7P3-lift
+- Body silhouette SVG for 10P4-dance, Node network SVG for 13P5-grieve
+- Drone PNG for 16P6-arson, Heart SVG for 17P7-neural, Physarum SVG for 18P8-yellow
+- 100x80px icons (up from 64x52), B&W grain filter: `grayscale(100%) contrast(1.3)`
+
+**2. NBN Logo** - DONE. 5 SVG variations in `public/markers/nbn/nbn-1.svg` through `nbn-5.svg`. Using nbn-3 (diagonal stripe band, 45deg). Added to: news ticker badges/watermarks, landing page marker (#8).
+
+**3. Text Contrast** - DONE. `--text` changed from `#9ca3af` to `#d1d5db`.
+
+**4. Autonomous Cursor on Folders** - DONE. `FolderGuideCursor.tsx` - orbiting yellow dot using requestAnimationFrame. Targets first unopened folder in FOLDER_SEQUENCE.
+
+**5. Sequential Physarum** - DONE. `PhysarumBackground.tsx` rewritten - sequential pairs instead of all-pairs. Traveling yellow dots on latest edge. New props: folderSequence, sequenceProgress.
+
+**6. Viewer Fixes** - DONE. Removed video loop, shrunk nav arrows (60x200px), hidden arrows for workout folder (7P3-lift).
+
 ## Key Files
 
 - `config/folders.json` - 19 folders config
-- `app/page.tsx` - admin page (landing) wrapped in MultiplayerProvider + AdminAuth
+- `config/folder-sequence.ts` - fixed 19-folder performance sequence
+- `app/page.tsx` - admin page with MultiplayerProvider + AdminAuth + FolderGuideCursor
 - `app/admin/page.tsx` - redirect to `/`
 - `components/auth/AdminAuth.tsx` - auth screen with typing, markers, cursor, multiplayer
-- `components/cursor/AutonomousCursor.tsx` - autonomous glowing dot
-- `components/markers/FloatingMarkers.tsx` - 7 B&W floating markers
+- `components/cursor/AutonomousCursor.tsx` - autonomous glowing dot (auth screen)
+- `components/cursor/FolderGuideCursor.tsx` - orbiting cursor (folder page)
+- `components/folders/FolderIcon.tsx` - symbolic per-folder icons with B&W grain
+- `components/markers/FloatingMarkers.tsx` - 8 B&W floating markers (incl. NBN)
 - `components/multiplayer/MultiplayerProvider.tsx` - PartyKit WebSocket context
 - `components/multiplayer/RemoteCursors.tsx` - remote cursor rendering
 - `party/main.ts` - PartyKit server
-- `components/physarum/PhysarumBackground.tsx` - yellow mold animation
-- `app/globals.css` - fonts, colors, animations (marker-hover, admin-auth-char)
-- `public/markers/` - dumbbell.png, drone.png, flame.png
+- `components/physarum/PhysarumBackground.tsx` - sequential yellow mold + traveling dots
+- `app/globals.css` - fonts, colors, animations
+- `public/markers/` - dumbbell.png, drone.png, flame.png, webcam.png
+- `public/markers/nbn/` - 5 NBN logo SVG variations
+- `app/camera/3r1-breaking/page.tsx` - news page with NBN watermark + badge
+- `app/camera/11r2-arms/page.tsx` - press briefing with NBN watermark + badge
+- `app/camera/19r4-found/page.tsx` - found news with NBN watermark + badge
+- `app/content/viewer/page.tsx` - media viewer (no loop, smaller arrows)

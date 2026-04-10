@@ -5,8 +5,10 @@ import FolderIcon from "@/components/folders/FolderIcon";
 import FolderWindow from "@/components/windows/FolderWindow";
 import FloatingWindow from "@/components/windows/FloatingWindow";
 import PhysarumBackground from "@/components/physarum/PhysarumBackground";
+import FolderGuideCursor from "@/components/cursor/FolderGuideCursor";
 import AdminAuth from "@/components/auth/AdminAuth";
 import MultiplayerProvider from "@/components/multiplayer/MultiplayerProvider";
+import { FOLDER_SEQUENCE } from "@/config/folder-sequence";
 import type { FolderState, Tab, FileItem } from "@/types";
 
 let nextWindowSide: "left" | "right" = "right";
@@ -387,6 +389,28 @@ export default function Home() {
 
   if (!state) return <div className="h-screen w-screen bg-bg" />;
 
+  // Derive cursor target: first folder in sequence not yet opened
+  const nextIdx = FOLDER_SEQUENCE.findIndex((id) => !everOpenedIds.has(id));
+  const nextTargetId = nextIdx >= 0 ? FOLDER_SEQUENCE[nextIdx] : null;
+  const nextTargetFolder = nextTargetId
+    ? state.folders.find((f) => f.id === nextTargetId)
+    : null;
+
+  // Compute viewport-absolute position for cursor target
+  let cursorTarget: { x: number; y: number } | null = null;
+  if (nextTargetFolder) {
+    const panel = document.querySelector<HTMLElement>(
+      `[data-tab-panel="${nextTargetFolder.tabId}"]`,
+    );
+    if (panel) {
+      const rect = panel.getBoundingClientRect();
+      cursorTarget = {
+        x: rect.left + nextTargetFolder.position.x + 50,
+        y: rect.top + nextTargetFolder.position.y + 40,
+      };
+    }
+  }
+
   return (
     <MultiplayerProvider>
       <AdminAuth>
@@ -396,6 +420,9 @@ export default function Home() {
             const openTabFolders = tabFolders.filter((f) => f.isOpen);
             const everOpenedTabFolders = tabFolders.filter((f) =>
               everOpenedIds.has(f.id),
+            );
+            const tabSequence = FOLDER_SEQUENCE.filter((id) =>
+              tabFolders.some((f) => f.id === id),
             );
             return (
               <div
@@ -410,6 +437,8 @@ export default function Home() {
                 <PhysarumBackground
                   openFolders={openTabFolders}
                   everOpenedFolders={everOpenedTabFolders}
+                  folderSequence={tabSequence}
+                  sequenceProgress={everOpenedIds}
                 />
 
                 <div className="absolute top-0 left-0 right-0 z-50 flex items-end h-[28px] border-b border-[#2a2a2a]">
@@ -570,6 +599,8 @@ export default function Home() {
               <iframe src={win.src} className="w-full h-full border-0" />
             </FloatingWindow>
           ))}
+
+          <FolderGuideCursor targetPosition={cursorTarget} />
         </div>
       </AdminAuth>
     </MultiplayerProvider>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- NBN v2: Clean diagonal text only, 30deg, thin weight -->
+  <g transform="rotate(-30 100 100)">
+    <text x="100" y="110" text-anchor="middle" font-family="monospace" font-size="42" font-weight="300" fill="white" letter-spacing="8">NBN</text>
+  </g>
+</svg>

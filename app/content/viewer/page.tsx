@@ -129,7 +129,6 @@ function ViewerInner() {
               src={currentFile.path}
               className="max-w-full max-h-full object-contain"
               controls
-              loop
               playsInline
               crossOrigin="anonymous"
             />
@@ -178,9 +177,9 @@ function ViewerInner() {
       </div>
 
       {/* Left navigation zone */}
-      {currentIndex > 0 && (
+      {folderId !== "7P3-lift" && currentIndex > 0 && (
         <button
-          className="absolute left-0 top-0 w-[15%] h-full flex items-center justify-start pl-6 group cursor-pointer"
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-[60px] h-[200px] flex items-center justify-center group cursor-pointer"
           onClick={navigateLeft}
         >
           <svg
@@ -200,9 +199,9 @@ function ViewerInner() {
       )}
 
       {/* Right navigation zone */}
-      {currentIndex < files.length - 1 && (
+      {folderId !== "7P3-lift" && currentIndex < files.length - 1 && (
         <button
-          className="absolute right-0 top-0 w-[15%] h-full flex items-center justify-end pr-6 group cursor-pointer"
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-[60px] h-[200px] flex items-center justify-center group cursor-pointer"
           onClick={navigateRight}
         >
           <svg

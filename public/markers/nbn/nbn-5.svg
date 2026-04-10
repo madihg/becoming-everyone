@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- NBN v5: Outlined letters on steep diagonal, 40deg, double stroke -->
+  <g transform="rotate(-40 100 100)">
+    <text x="100" y="112" text-anchor="middle" font-family="monospace" font-size="40" font-weight="700" fill="none" stroke="white" stroke-width="1.5" letter-spacing="5">NBN</text>
+    <text x="100" y="112" text-anchor="middle" font-family="monospace" font-size="40" font-weight="700" fill="none" stroke="white" stroke-width="0.5" stroke-dasharray="2 2" letter-spacing="5" opacity="0.5">NBN</text>
+  </g>
+</svg>

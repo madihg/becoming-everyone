@@ -55,6 +55,13 @@ const MARKERS: MarkerConfig[] = [
     style: { bottom: "20%", left: "35%", maxWidth: "5vw", width: "5vw" },
     animDuration: 11,
   },
+  {
+    id: "nbn",
+    type: "image",
+    src: "/markers/nbn/nbn-3.svg",
+    style: { top: "40%", right: "12%", maxWidth: "8vw" },
+    animDuration: 10,
+  },
 ];
 
 function AnatomicalHeart() {

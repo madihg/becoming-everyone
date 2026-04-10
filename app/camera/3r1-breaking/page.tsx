@@ -64,14 +64,29 @@ export default function Camera3R1Breaking() {
             className="absolute inset-0 w-full h-full object-cover"
           />
 
+          {/* NBN watermark */}
+          <div className="absolute top-16 right-4 z-20 opacity-20">
+            <img
+              src="/markers/nbn/nbn-3.svg"
+              alt=""
+              className="w-24 h-24"
+              draggable={false}
+            />
+          </div>
+
           {/* Breaking news banner */}
           <div className="absolute top-0 left-0 right-0 bg-red-600 py-2 px-4 z-10">
             <div className="flex items-center gap-3">
-              <div className="bg-white text-red-600 px-3 py-1 font-display text-sm font-bold uppercase tracking-wider">
+              <div className="bg-white text-red-600 px-3 py-1 font-display text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                <img
+                  src="/markers/nbn/nbn-3.svg"
+                  alt="NBN"
+                  className="w-5 h-5 invert"
+                />
                 Breaking News
               </div>
               <div className="text-white font-mono text-xs uppercase tracking-wide">
-                NEW BEIRUT 2046 • LIVE COVERAGE
+                NBN • NEW BEIRUT 2046 • LIVE COVERAGE
               </div>
             </div>
           </div>
