@@ -6,6 +6,7 @@ import type { Folder } from "@/types";
 interface Props {
   openFolders: Folder[];
   everOpenedFolders: Folder[];
+  allFolders: Folder[];
   folderSequence: string[];
   sequenceProgress: Set<string>;
 }
@@ -13,6 +14,7 @@ interface Props {
 export default function PhysarumBackground({
   openFolders,
   everOpenedFolders,
+  allFolders,
   folderSequence,
   sequenceProgress,
 }: Props) {
@@ -35,9 +37,8 @@ export default function PhysarumBackground({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Build position map from all folders we know about
+    // Build position map from ALL folders (not just opened) so lines can reach un-opened targets
     const positionMap = new Map<string, { x: number; y: number }>();
-    const allFolders = [...everOpenedFolders, ...openFolders];
     for (const f of allFolders) {
       if (!positionMap.has(f.id)) {
         positionMap.set(f.id, { x: f.position.x + 50, y: f.position.y + 40 });
@@ -231,6 +232,7 @@ export default function PhysarumBackground({
   }, [
     openFolders,
     everOpenedFolders,
+    allFolders,
     folderSequence,
     sequenceProgress,
     dimensions,

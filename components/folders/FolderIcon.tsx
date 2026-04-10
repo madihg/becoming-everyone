@@ -12,15 +12,15 @@ interface Props {
 
 const ICON_MAP: Record<
   string,
-  { type: "image" | "svg" | "text"; src?: string; svgId?: string }
+  { type: "image" | "svg"; src?: string; svgId?: string }
 > = {
-  "1P1-service": { type: "text" },
+  "1P1-service": { type: "image", src: "/markers/phone.png" },
   "2O1-anyone": { type: "image", src: "/markers/webcam.png" },
   "3R1-breaking": { type: "image", src: "/markers/nbn/nbn-3.svg" },
   "4W1-children": { type: "image", src: "/markers/nbn/nbn-3.svg" },
-  "5P2-sleep": { type: "svg", svgId: "candle" },
+  "5P2-sleep": { type: "image", src: "/markers/candle.png" },
   "6O2-what": { type: "image", src: "/markers/webcam.png" },
-  "7P3-lift": { type: "image", src: "/markers/dumbbell.png" },
+  "7P3-lift": { type: "image", src: "/markers/weights.png" },
   "8W2-move": { type: "image", src: "/markers/nbn/nbn-3.svg" },
   "9O3-win": { type: "image", src: "/markers/webcam.png" },
   "10P4-dance": { type: "svg", svgId: "body" },
@@ -30,8 +30,8 @@ const ICON_MAP: Record<
   "14R3-critic": { type: "image", src: "/markers/nbn/nbn-3.svg" },
   "15O4-agenda": { type: "image", src: "/markers/webcam.png" },
   "16P6-arson": { type: "image", src: "/markers/drone.png" },
-  "17P7-neural": { type: "svg", svgId: "heart" },
-  "18P8-yellow": { type: "svg", svgId: "physarum" },
+  "17P7-neural": { type: "image", src: "/markers/heart.png" },
+  "18P8-yellow": { type: "image", src: "/markers/mold.png" },
   "19R4-found": { type: "image", src: "/markers/nbn/nbn-3.svg" },
 };
 
@@ -179,121 +179,9 @@ function NodeNetwork() {
   );
 }
 
-function AnatomicalHeart() {
-  return (
-    <svg
-      viewBox="0 0 200 220"
-      fill="white"
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-full h-full"
-    >
-      <path d="M100 200 C100 200 20 140 20 80 C20 50 40 20 70 20 C85 20 95 30 100 45 C105 30 115 20 130 20 C160 20 180 50 180 80 C180 140 100 200 100 200Z" />
-      <path
-        d="M60 30 C50 10 30 5 20 15"
-        stroke="white"
-        strokeWidth="4"
-        fill="none"
-      />
-      <path
-        d="M140 30 C150 10 170 5 180 15"
-        stroke="white"
-        strokeWidth="4"
-        fill="none"
-      />
-      <path d="M55 15 L45 0" stroke="white" strokeWidth="3" fill="none" />
-      <path d="M145 15 L155 0" stroke="white" strokeWidth="3" fill="none" />
-      <path
-        d="M100 45 L100 10 L90 0"
-        stroke="white"
-        strokeWidth="3"
-        fill="none"
-      />
-      <path d="M100 10 L110 0" stroke="white" strokeWidth="3" fill="none" />
-    </svg>
-  );
-}
-
-function PhysarumShape() {
-  return (
-    <svg
-      viewBox="0 0 300 200"
-      fill="white"
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-full h-full"
-    >
-      <g opacity="0.9">
-        <path
-          d="M150 100 C130 90 100 85 60 80 C40 78 20 82 10 90"
-          stroke="white"
-          strokeWidth="3"
-          fill="none"
-        />
-        <path
-          d="M150 100 C160 80 170 60 180 30 C185 15 190 10 200 5"
-          stroke="white"
-          strokeWidth="3"
-          fill="none"
-        />
-        <path
-          d="M150 100 C170 110 200 115 240 120 C260 122 280 118 290 110"
-          stroke="white"
-          strokeWidth="3"
-          fill="none"
-        />
-        <path
-          d="M150 100 C140 120 130 150 125 175 C123 185 118 192 110 195"
-          stroke="white"
-          strokeWidth="3"
-          fill="none"
-        />
-        <path
-          d="M150 100 C155 115 165 140 180 160 C190 172 200 178 215 180"
-          stroke="white"
-          strokeWidth="2.5"
-          fill="none"
-        />
-        <circle cx="150" cy="100" r="8" opacity="0.6" />
-        <circle cx="60" cy="80" r="4" opacity="0.4" />
-        <circle cx="180" cy="30" r="3" opacity="0.4" />
-        <circle cx="240" cy="120" r="4" opacity="0.4" />
-        <circle cx="125" cy="175" r="3" opacity="0.4" />
-      </g>
-    </svg>
-  );
-}
-
-function CandleShape() {
-  return (
-    <svg
-      viewBox="0 0 60 160"
-      fill="white"
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-full h-full"
-    >
-      <rect x="18" y="60" width="24" height="95" rx="2" opacity="0.8" />
-      <line x1="30" y1="60" x2="30" y2="38" stroke="white" strokeWidth="1.5" />
-      <path
-        d="M30 38 C25 28 22 18 26 8 C28 3 30 0 30 0 C30 0 32 3 34 8 C38 18 35 28 30 38Z"
-        opacity="0.9"
-      />
-    </svg>
-  );
-}
-
-function IconContent({ folderId }: { folderId: string }) {
+export function IconContent({ folderId }: { folderId: string }) {
   const config = ICON_MAP[folderId];
   if (!config) return null;
-
-  if (config.type === "text") {
-    return (
-      <span
-        className="text-white font-mono text-2xl font-normal tracking-tight"
-        style={{ fontFamily: "'Diatype Mono', monospace" }}
-      >
-        (650)
-      </span>
-    );
-  }
 
   if (config.type === "image" && config.src) {
     return (
@@ -308,9 +196,6 @@ function IconContent({ folderId }: { folderId: string }) {
 
   if (config.svgId === "body") return <BodySilhouette />;
   if (config.svgId === "nodes") return <NodeNetwork />;
-  if (config.svgId === "heart") return <AnatomicalHeart />;
-  if (config.svgId === "physarum") return <PhysarumShape />;
-  if (config.svgId === "candle") return <CandleShape />;
 
   return null;
 }

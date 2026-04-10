@@ -47,9 +47,21 @@ export default function AdminAuth({ children }: AdminAuthProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { sharedText, updateText } = useMultiplayer();
   const isRemoteUpdate = useRef(false);
+  const hasMounted = useRef(false);
 
-  // Sync remote text updates to local state
+  // On mount, clear any stale server text so the cursor animation always replays
   useEffect(() => {
+    updateText("");
+    const timer = setTimeout(() => {
+      hasMounted.current = true;
+    }, 1000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync remote text updates to local state (skip stale initial sync)
+  useEffect(() => {
+    if (!hasMounted.current) return;
     if (sharedText && sharedText !== input && animationPhase === "input") {
       isRemoteUpdate.current = true;
       setInput(sharedText);

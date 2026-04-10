@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import FolderIcon from "@/components/folders/FolderIcon";
+import FolderIcon, { IconContent } from "@/components/folders/FolderIcon";
 import FolderWindow from "@/components/windows/FolderWindow";
 import FloatingWindow from "@/components/windows/FloatingWindow";
 import PhysarumBackground from "@/components/physarum/PhysarumBackground";
@@ -337,38 +337,77 @@ export default function Home() {
       const panel = document.querySelector<HTMLElement>(
         `[data-tab-panel="${tabId}"]`,
       );
-      const panelWidth = panel ? panel.clientWidth : 600;
-      const colWidth = 100;
-      const rowHeight = 90;
-      const startX = 30;
-      const startY = 44;
-      const cols = Math.max(
-        1,
-        Math.floor((panelWidth - startX * 2) / colWidth),
-      );
+      const panelW = panel ? panel.clientWidth : 900;
+      const panelH = panel ? panel.clientHeight : 700;
 
-      const tabFolders = state.folders
-        .filter((f) => f.tabId === tabId)
-        .sort((a, b) => {
-          const numA = parseInt(a.name.match(/^(\d+)/)?.[1] || "999", 10);
-          const numB = parseInt(b.name.match(/^(\d+)/)?.[1] || "999", 10);
+      const tabFolders = state.folders.filter((f) => f.tabId === tabId);
+
+      // Categorize by type prefix
+      const pFolders = tabFolders.filter((f) => f.id.match(/^\d+P/));
+      const oFolders = tabFolders.filter((f) => f.id.match(/^\d+O/));
+      const rwFolders = tabFolders.filter((f) => f.id.match(/^\d+[RW]/));
+
+      // Seeded random from folder id (consistent offsets across reloads)
+      const seededRandom = (seed: string) => {
+        let h = 0;
+        for (let i = 0; i < seed.length; i++) {
+          h = ((h << 5) - h + seed.charCodeAt(i)) | 0;
+        }
+        return ((h & 0x7fffffff) % 1000) / 1000;
+      };
+
+      const colWidth = 115;
+      const rowHeight = 100;
+
+      const layoutCluster = (
+        folders: typeof tabFolders,
+        originX: number,
+        originY: number,
+        cols: number,
+      ) => {
+        const result = new Map<string, { x: number; y: number }>();
+        const sorted = [...folders].sort((a, b) => {
+          const numA = parseInt(a.id.match(/^(\d+)/)?.[1] || "999", 10);
+          const numB = parseInt(b.id.match(/^(\d+)/)?.[1] || "999", 10);
           return numA - numB;
         });
-
-      const positionMap = new Map<string, { x: number; y: number }>();
-      tabFolders.forEach((folder, i) => {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-        positionMap.set(folder.id, {
-          x: startX + col * colWidth,
-          y: startY + row * rowHeight,
+        sorted.forEach((folder, i) => {
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          const r = seededRandom(folder.id);
+          const r2 = seededRandom(folder.id + "y");
+          const offsetX = (r - 0.5) * 24;
+          const offsetY = (r2 - 0.5) * 24;
+          result.set(folder.id, {
+            x: Math.max(10, originX + col * colWidth + offsetX),
+            y: Math.max(40, originY + row * rowHeight + offsetY),
+          });
         });
-      });
+        return result;
+      };
+
+      // P cluster: left side
+      const pPositions = layoutCluster(pFolders, 30, 50, 2);
+      // O cluster: top-right
+      const oPositions = layoutCluster(oFolders, panelW * 0.6, 50, 2);
+      // R+W cluster: bottom-right
+      const rwPositions = layoutCluster(
+        rwFolders,
+        panelW * 0.55,
+        panelH * 0.45,
+        3,
+      );
+
+      const allPositions = new Map([
+        ...pPositions,
+        ...oPositions,
+        ...rwPositions,
+      ]);
 
       persist({
         ...state,
         folders: state.folders.map((f) => {
-          const pos = positionMap.get(f.id);
+          const pos = allPositions.get(f.id);
           return pos ? { ...f, position: pos } : f;
         }),
       });
@@ -386,6 +425,18 @@ export default function Home() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleAddScreen]);
+
+  // Auto-arrange into clusters on first load
+  const shouldAutoArrange = useRef(true);
+  useEffect(() => {
+    if (!state || !shouldAutoArrange.current) return;
+    if (state.tabs.length === 0) return;
+    shouldAutoArrange.current = false;
+    const timer = setTimeout(() => {
+      state.tabs.forEach((tab) => handleAutoArrange(tab.id));
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [state, handleAutoArrange]);
 
   if (!state) return <div className="h-screen w-screen bg-bg" />;
 
@@ -437,6 +488,7 @@ export default function Home() {
                 <PhysarumBackground
                   openFolders={openTabFolders}
                   everOpenedFolders={everOpenedTabFolders}
+                  allFolders={tabFolders}
                   folderSequence={tabSequence}
                   sequenceProgress={everOpenedIds}
                 />
@@ -540,23 +592,13 @@ export default function Home() {
                   }}
                 >
                   <div className="flex flex-col items-center opacity-80">
-                    <svg width="64" height="52" viewBox="0 0 64 52" fill="none">
-                      <path
-                        d="M2 8C2 6.89543 2.89543 6 4 6H20L24 2H4C2.89543 2 2 2.89543 2 4V8Z"
-                        fill="#2a2a2a"
-                      />
-                      <rect
-                        x="2"
-                        y="8"
-                        width="60"
-                        height="40"
-                        rx="2"
-                        fill="#1a1a1a"
-                        stroke="#444"
-                        strokeWidth="1"
-                      />
-                    </svg>
-                    <span className="mt-1 text-[11px] font-mono text-white text-center leading-tight max-w-[80px] truncate">
+                    <div
+                      className="w-[100px] h-[80px] flex items-center justify-center"
+                      style={{ filter: "grayscale(100%) contrast(1.3)" }}
+                    >
+                      <IconContent folderId={folder.id} />
+                    </div>
+                    <span className="mt-1 text-[12px] font-mono text-white text-center leading-tight max-w-[110px] truncate">
                       {folder.name}
                     </span>
                   </div>
