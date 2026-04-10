@@ -67,7 +67,7 @@ export default function Camera11R2Arms() {
           {/* NBN watermark */}
           <div className="absolute top-16 right-4 z-20 opacity-20">
             <img
-              src="/markers/nbn/nbn-3.svg"
+              src="/markers/nbn/nbn-logo.svg"
               alt=""
               className="w-24 h-24"
               draggable={false}
@@ -79,7 +79,7 @@ export default function Camera11R2Arms() {
             <div className="flex items-center gap-3">
               <div className="bg-white text-[#556B2F] px-3 py-1 font-display text-sm font-bold uppercase tracking-wider flex items-center gap-2">
                 <img
-                  src="/markers/nbn/nbn-3.svg"
+                  src="/markers/nbn/nbn-logo.svg"
                   alt="NBN"
                   className="w-5 h-5"
                   style={{

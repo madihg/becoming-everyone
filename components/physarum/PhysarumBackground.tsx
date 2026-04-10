@@ -122,7 +122,7 @@ export default function PhysarumBackground({
       x2: number,
       y2: number,
     ) => {
-      const slowTime = time * 0.0006;
+      const slowTime = time * 0.00015;
       const dotCount = 3;
 
       for (let d = 0; d < dotCount; d++) {

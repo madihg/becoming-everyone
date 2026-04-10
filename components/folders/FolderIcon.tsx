@@ -16,88 +16,24 @@ const ICON_MAP: Record<
 > = {
   "1P1-service": { type: "image", src: "/markers/phone.png" },
   "2O1-anyone": { type: "image", src: "/markers/webcam.png" },
-  "3R1-breaking": { type: "image", src: "/markers/nbn/nbn-3.svg" },
-  "4W1-children": { type: "image", src: "/markers/nbn/nbn-3.svg" },
+  "3R1-breaking": { type: "image", src: "/markers/nbn/nbn-logo.svg" },
+  "4W1-children": { type: "image", src: "/markers/nbn/nbn-logo.svg" },
   "5P2-sleep": { type: "image", src: "/markers/candle.png" },
   "6O2-what": { type: "image", src: "/markers/webcam.png" },
   "7P3-lift": { type: "image", src: "/markers/weights.png" },
-  "8W2-move": { type: "image", src: "/markers/nbn/nbn-3.svg" },
+  "8W2-move": { type: "image", src: "/markers/nbn/nbn-logo.svg" },
   "9O3-win": { type: "image", src: "/markers/webcam.png" },
-  "10P4-dance": { type: "svg", svgId: "body" },
-  "11R2-arms": { type: "image", src: "/markers/nbn/nbn-3.svg" },
-  "12W3-poly": { type: "image", src: "/markers/nbn/nbn-3.svg" },
+  "10P4-dance": { type: "image", src: "/markers/dance.png" },
+  "11R2-arms": { type: "image", src: "/markers/nbn/nbn-logo.svg" },
+  "12W3-poly": { type: "image", src: "/markers/nbn/nbn-logo.svg" },
   "13P5-grieve": { type: "svg", svgId: "nodes" },
-  "14R3-critic": { type: "image", src: "/markers/nbn/nbn-3.svg" },
+  "14R3-critic": { type: "image", src: "/markers/nbn/nbn-logo.svg" },
   "15O4-agenda": { type: "image", src: "/markers/webcam.png" },
   "16P6-arson": { type: "image", src: "/markers/drone.png" },
   "17P7-neural": { type: "image", src: "/markers/heart.png" },
   "18P8-yellow": { type: "image", src: "/markers/mold.png" },
-  "19R4-found": { type: "image", src: "/markers/nbn/nbn-3.svg" },
+  "19R4-found": { type: "image", src: "/markers/nbn/nbn-logo.svg" },
 };
-
-function BodySilhouette() {
-  return (
-    <svg
-      viewBox="0 0 100 160"
-      fill="white"
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-full h-full"
-    >
-      <circle cx="50" cy="18" r="10" />
-      <line
-        x1="50"
-        y1="28"
-        x2="50"
-        y2="80"
-        stroke="white"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <line
-        x1="50"
-        y1="42"
-        x2="25"
-        y2="65"
-        stroke="white"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <line
-        x1="50"
-        y1="42"
-        x2="75"
-        y2="65"
-        stroke="white"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <line
-        x1="50"
-        y1="80"
-        x2="30"
-        y2="120"
-        stroke="white"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <line
-        x1="50"
-        y1="80"
-        x2="70"
-        y2="120"
-        stroke="white"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <circle cx="25" cy="65" r="4" opacity="0.6" />
-      <circle cx="75" cy="65" r="4" opacity="0.6" />
-      <circle cx="50" cy="42" r="4" opacity="0.6" />
-      <circle cx="50" cy="80" r="4" opacity="0.6" />
-      <circle cx="30" cy="120" r="4" opacity="0.6" />
-      <circle cx="70" cy="120" r="4" opacity="0.6" />
-    </svg>
-  );
-}
 
 function NodeNetwork() {
   return (
@@ -194,7 +130,6 @@ export function IconContent({ folderId }: { folderId: string }) {
     );
   }
 
-  if (config.svgId === "body") return <BodySilhouette />;
   if (config.svgId === "nodes") return <NodeNetwork />;
 
   return null;

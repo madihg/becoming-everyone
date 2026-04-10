@@ -9,7 +9,7 @@ import FolderGuideCursor from "@/components/cursor/FolderGuideCursor";
 import AdminAuth from "@/components/auth/AdminAuth";
 import MultiplayerProvider from "@/components/multiplayer/MultiplayerProvider";
 import { FOLDER_SEQUENCE } from "@/config/folder-sequence";
-import type { FolderState, Tab, FileItem } from "@/types";
+import type { FolderState, FileItem } from "@/types";
 
 let nextWindowSide: "left" | "right" = "right";
 
@@ -291,16 +291,6 @@ export default function Home() {
     [state, floatingWindows, openMode],
   );
 
-  const handleAddScreen = useCallback(() => {
-    if (!state) return;
-    const newId = `tab-${Date.now()}`;
-    const newTab: Tab = {
-      id: newId,
-      name: `Screen ${state.tabs.length + 1}`,
-    };
-    persist({ ...state, tabs: [...state.tabs, newTab] });
-  }, [state, persist]);
-
   const handleRenameScreen = useCallback(
     (tabId: string, name: string) => {
       if (!state || !name.trim()) return;
@@ -315,116 +305,86 @@ export default function Home() {
     [state, persist],
   );
 
-  const handleCloseScreen = useCallback(
-    (tabId: string) => {
-      if (!state || state.tabs.length <= 1) return;
-      const remaining = state.tabs.find((t) => t.id !== tabId);
-      if (!remaining) return;
-      persist({
-        ...state,
-        tabs: state.tabs.filter((t) => t.id !== tabId),
-        folders: state.folders.map((f) =>
-          f.tabId === tabId ? { ...f, tabId: remaining.id } : f,
-        ),
-      });
-    },
-    [state, persist],
-  );
+  const handleAutoArrange = useCallback(() => {
+    if (!state) return;
+    const tabId = state.tabs[0]?.id;
+    if (!tabId) return;
+    const panel = document.querySelector<HTMLElement>(
+      `[data-tab-panel="${tabId}"]`,
+    );
+    const panelW = panel ? panel.clientWidth : 900;
+    const panelH = panel ? panel.clientHeight : 700;
 
-  const handleAutoArrange = useCallback(
-    (tabId: string) => {
-      if (!state) return;
-      const panel = document.querySelector<HTMLElement>(
-        `[data-tab-panel="${tabId}"]`,
-      );
-      const panelW = panel ? panel.clientWidth : 900;
-      const panelH = panel ? panel.clientHeight : 700;
+    // Categorize by type prefix
+    const pFolders = state.folders.filter((f) => f.id.match(/^\d+P/));
+    const oFolders = state.folders.filter((f) => f.id.match(/^\d+O/));
+    const rwFolders = state.folders.filter((f) => f.id.match(/^\d+[RW]/));
 
-      const tabFolders = state.folders.filter((f) => f.tabId === tabId);
-
-      // Categorize by type prefix
-      const pFolders = tabFolders.filter((f) => f.id.match(/^\d+P/));
-      const oFolders = tabFolders.filter((f) => f.id.match(/^\d+O/));
-      const rwFolders = tabFolders.filter((f) => f.id.match(/^\d+[RW]/));
-
-      // Seeded random from folder id (consistent offsets across reloads)
-      const seededRandom = (seed: string) => {
-        let h = 0;
-        for (let i = 0; i < seed.length; i++) {
-          h = ((h << 5) - h + seed.charCodeAt(i)) | 0;
-        }
-        return ((h & 0x7fffffff) % 1000) / 1000;
-      };
-
-      const colWidth = 115;
-      const rowHeight = 100;
-
-      const layoutCluster = (
-        folders: typeof tabFolders,
-        originX: number,
-        originY: number,
-        cols: number,
-      ) => {
-        const result = new Map<string, { x: number; y: number }>();
-        const sorted = [...folders].sort((a, b) => {
-          const numA = parseInt(a.id.match(/^(\d+)/)?.[1] || "999", 10);
-          const numB = parseInt(b.id.match(/^(\d+)/)?.[1] || "999", 10);
-          return numA - numB;
-        });
-        sorted.forEach((folder, i) => {
-          const col = i % cols;
-          const row = Math.floor(i / cols);
-          const r = seededRandom(folder.id);
-          const r2 = seededRandom(folder.id + "y");
-          const offsetX = (r - 0.5) * 24;
-          const offsetY = (r2 - 0.5) * 24;
-          result.set(folder.id, {
-            x: Math.max(10, originX + col * colWidth + offsetX),
-            y: Math.max(40, originY + row * rowHeight + offsetY),
-          });
-        });
-        return result;
-      };
-
-      // P cluster: left side
-      const pPositions = layoutCluster(pFolders, 30, 50, 2);
-      // O cluster: top-right
-      const oPositions = layoutCluster(oFolders, panelW * 0.6, 50, 2);
-      // R+W cluster: bottom-right
-      const rwPositions = layoutCluster(
-        rwFolders,
-        panelW * 0.55,
-        panelH * 0.45,
-        3,
-      );
-
-      const allPositions = new Map([
-        ...pPositions,
-        ...oPositions,
-        ...rwPositions,
-      ]);
-
-      persist({
-        ...state,
-        folders: state.folders.map((f) => {
-          const pos = allPositions.get(f.id);
-          return pos ? { ...f, position: pos } : f;
-        }),
-      });
-    },
-    [state, persist],
-  );
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "n" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        handleAddScreen();
+    // Seeded random from folder id (consistent offsets across reloads)
+    const seededRandom = (seed: string) => {
+      let h = 0;
+      for (let i = 0; i < seed.length; i++) {
+        h = ((h << 5) - h + seed.charCodeAt(i)) | 0;
       }
+      return ((h & 0x7fffffff) % 1000) / 1000;
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleAddScreen]);
+
+    const colWidth = 115;
+    const rowHeight = 100;
+
+    const layoutCluster = (
+      folders: typeof state.folders,
+      originX: number,
+      originY: number,
+      cols: number,
+    ) => {
+      const result = new Map<string, { x: number; y: number }>();
+      const sorted = [...folders].sort((a, b) => {
+        const numA = parseInt(a.id.match(/^(\d+)/)?.[1] || "999", 10);
+        const numB = parseInt(b.id.match(/^(\d+)/)?.[1] || "999", 10);
+        return numA - numB;
+      });
+      sorted.forEach((folder, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const r = seededRandom(folder.id);
+        const r2 = seededRandom(folder.id + "y");
+        const offsetX = (r - 0.5) * 24;
+        const offsetY = (r2 - 0.5) * 24;
+        result.set(folder.id, {
+          x: Math.max(10, originX + col * colWidth + offsetX),
+          y: Math.max(40, originY + row * rowHeight + offsetY),
+        });
+      });
+      return result;
+    };
+
+    // P cluster: left side
+    const pPositions = layoutCluster(pFolders, 30, 50, 2);
+    // O cluster: top-right
+    const oPositions = layoutCluster(oFolders, panelW * 0.6, 50, 2);
+    // R+W cluster: bottom-right
+    const rwPositions = layoutCluster(
+      rwFolders,
+      panelW * 0.55,
+      panelH * 0.45,
+      3,
+    );
+
+    const allPositions = new Map([
+      ...pPositions,
+      ...oPositions,
+      ...rwPositions,
+    ]);
+
+    persist({
+      ...state,
+      folders: state.folders.map((f) => {
+        const pos = allPositions.get(f.id);
+        return pos ? { ...f, position: pos } : f;
+      }),
+    });
+  }, [state, persist]);
 
   // Auto-arrange into clusters on first load
   const shouldAutoArrange = useRef(true);
@@ -433,7 +393,7 @@ export default function Home() {
     if (state.tabs.length === 0) return;
     shouldAutoArrange.current = false;
     const timer = setTimeout(() => {
-      state.tabs.forEach((tab) => handleAutoArrange(tab.id));
+      handleAutoArrange();
     }, 200);
     return () => clearTimeout(timer);
   }, [state, handleAutoArrange]);
@@ -450,9 +410,10 @@ export default function Home() {
   // Compute viewport-absolute position for cursor target
   let cursorTarget: { x: number; y: number } | null = null;
   if (nextTargetFolder) {
-    const panel = document.querySelector<HTMLElement>(
-      `[data-tab-panel="${nextTargetFolder.tabId}"]`,
-    );
+    const tabId = state.tabs[0]?.id;
+    const panel = tabId
+      ? document.querySelector<HTMLElement>(`[data-tab-panel="${tabId}"]`)
+      : null;
     if (panel) {
       const rect = panel.getBoundingClientRect();
       cursorTarget = {
@@ -465,31 +426,22 @@ export default function Home() {
   return (
     <MultiplayerProvider>
       <AdminAuth>
-        <div className="h-screen w-screen bg-bg flex relative">
-          {state.tabs.map((tab, idx) => {
-            const tabFolders = state.folders.filter((f) => f.tabId === tab.id);
-            const openTabFolders = tabFolders.filter((f) => f.isOpen);
-            const everOpenedTabFolders = tabFolders.filter((f) =>
-              everOpenedIds.has(f.id),
-            );
-            const tabSequence = FOLDER_SEQUENCE.filter((id) =>
-              tabFolders.some((f) => f.id === id),
-            );
-            return (
-              <div
-                key={tab.id}
-                data-tab-panel={tab.id}
-                className="flex-1 relative overflow-hidden"
-                style={{
-                  borderRight:
-                    idx < state.tabs.length - 1 ? "1px solid #2a2a2a" : "none",
-                }}
-              >
+        {(() => {
+          const tab = state.tabs[0];
+          const allFolders = state.folders;
+          const openFolders = allFolders.filter((f) => f.isOpen);
+          const everOpenedFolders = allFolders.filter((f) =>
+            everOpenedIds.has(f.id),
+          );
+
+          return (
+            <div className="h-screen w-screen bg-bg relative overflow-hidden">
+              <div data-tab-panel={tab.id} className="absolute inset-0">
                 <PhysarumBackground
-                  openFolders={openTabFolders}
-                  everOpenedFolders={everOpenedTabFolders}
-                  allFolders={tabFolders}
-                  folderSequence={tabSequence}
+                  openFolders={openFolders}
+                  everOpenedFolders={everOpenedFolders}
+                  allFolders={allFolders}
+                  folderSequence={FOLDER_SEQUENCE}
                   sequenceProgress={everOpenedIds}
                 />
 
@@ -528,19 +480,11 @@ export default function Home() {
                           {tab.name}
                         </span>
                       )}
-                      {state.tabs.length > 1 && (
-                        <button
-                          className="ml-2 text-[10px] font-mono text-[#555] hover:text-white transition-colors leading-none"
-                          onClick={() => handleCloseScreen(tab.id)}
-                        >
-                          x
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
 
-                {tabFolders.map((folder) => (
+                {allFolders.map((folder) => (
                   <FolderIcon
                     key={folder.id}
                     folder={folder}
@@ -551,99 +495,91 @@ export default function Home() {
                   />
                 ))}
 
-                {tabFolders
-                  .filter((f) => f.isOpen)
-                  .map((folder) => (
-                    <FolderWindow
-                      key={`window-${folder.id}`}
-                      folder={folder}
-                      zIndex={windowZMap[folder.id] || 10}
-                      onClose={handleWindowClose}
-                      onFocus={handleWindowFocus}
-                      onFileDoubleClick={(file) =>
-                        handleFileDoubleClick(file, folder.id)
-                      }
-                    />
-                  ))}
+                {openFolders.map((folder) => (
+                  <FolderWindow
+                    key={`window-${folder.id}`}
+                    folder={folder}
+                    zIndex={windowZMap[folder.id] || 10}
+                    onClose={handleWindowClose}
+                    onFocus={handleWindowFocus}
+                    onFileDoubleClick={(file) =>
+                      handleFileDoubleClick(file, folder.id)
+                    }
+                  />
+                ))}
 
                 <button
                   className="absolute bottom-3 left-3 z-50 text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
-                  onClick={() => handleAutoArrange(tab.id)}
+                  onClick={handleAutoArrange}
                   title="Arrange folders in grid"
                 >
                   Arrange
                 </button>
               </div>
-            );
-          })}
 
-          {dragFolderId &&
-            dragPos &&
-            dragRef.current &&
-            (() => {
-              const folder = state.folders.find((f) => f.id === dragFolderId);
-              if (!folder) return null;
-              return (
-                <div
-                  className="fixed pointer-events-none z-[9999]"
-                  style={{
-                    left: dragPos.x - dragRef.current!.offsetX,
-                    top: dragPos.y - dragRef.current!.offsetY,
-                  }}
-                >
-                  <div className="flex flex-col items-center opacity-80">
+              {dragFolderId &&
+                dragPos &&
+                dragRef.current &&
+                (() => {
+                  const folder = state.folders.find(
+                    (f) => f.id === dragFolderId,
+                  );
+                  if (!folder) return null;
+                  return (
                     <div
-                      className="w-[100px] h-[80px] flex items-center justify-center"
-                      style={{ filter: "grayscale(100%) contrast(1.3)" }}
+                      className="fixed pointer-events-none z-[9999]"
+                      style={{
+                        left: dragPos.x - dragRef.current!.offsetX,
+                        top: dragPos.y - dragRef.current!.offsetY,
+                      }}
                     >
-                      <IconContent folderId={folder.id} />
+                      <div className="flex flex-col items-center opacity-80">
+                        <div
+                          className="w-[100px] h-[80px] flex items-center justify-center"
+                          style={{ filter: "grayscale(100%) contrast(1.3)" }}
+                        >
+                          <IconContent folderId={folder.id} />
+                        </div>
+                        <span className="mt-1 text-[12px] font-mono text-white text-center leading-tight max-w-[110px] truncate">
+                          {folder.name}
+                        </span>
+                      </div>
                     </div>
-                    <span className="mt-1 text-[12px] font-mono text-white text-center leading-tight max-w-[110px] truncate">
-                      {folder.name}
-                    </span>
-                  </div>
-                </div>
-              );
-            })()}
+                  );
+                })()}
 
-          <button
-            className="absolute top-0 right-0 h-[28px] px-3 flex items-center text-[13px] font-mono text-[#555] hover:text-white transition-colors z-50 border-b border-[#2a2a2a]"
-            onClick={handleAddScreen}
-            title="Add screen (Cmd+N)"
-          >
-            +
-          </button>
+              <div className="absolute bottom-3 right-3 z-50">
+                <select
+                  value={openMode}
+                  onChange={(e) => setOpenMode(e.target.value as "ext" | "int")}
+                  className="text-[10px] font-mono text-[#888] bg-[#111] border border-[#333] rounded-sm px-2 py-1 outline-none cursor-pointer hover:border-[#555] transition-colors"
+                  title="File open mode: ext (external windows) / int (internal floating)"
+                >
+                  <option value="ext">ext</option>
+                  <option value="int">int</option>
+                </select>
+              </div>
 
-          <div className="absolute bottom-3 right-3 z-50">
-            <select
-              value={openMode}
-              onChange={(e) => setOpenMode(e.target.value as "ext" | "int")}
-              className="text-[10px] font-mono text-[#888] bg-[#111] border border-[#333] rounded-sm px-2 py-1 outline-none cursor-pointer hover:border-[#555] transition-colors"
-              title="File open mode: ext (external windows) / int (internal floating)"
-            >
-              <option value="ext">ext</option>
-              <option value="int">int</option>
-            </select>
-          </div>
+              {floatingWindows.map((win) => (
+                <FloatingWindow
+                  key={win.id}
+                  title={win.title}
+                  zIndex={win.zIndex}
+                  onClose={() =>
+                    setFloatingWindows((prev) =>
+                      prev.filter((w) => w.id !== win.id),
+                    )
+                  }
+                  onFocus={() => handleFloatingWindowFocus(win.id)}
+                >
+                  <iframe src={win.src} className="w-full h-full border-0" />
+                </FloatingWindow>
+              ))}
 
-          {floatingWindows.map((win) => (
-            <FloatingWindow
-              key={win.id}
-              title={win.title}
-              zIndex={win.zIndex}
-              onClose={() =>
-                setFloatingWindows((prev) =>
-                  prev.filter((w) => w.id !== win.id),
-                )
-              }
-              onFocus={() => handleFloatingWindowFocus(win.id)}
-            >
-              <iframe src={win.src} className="w-full h-full border-0" />
-            </FloatingWindow>
-          ))}
-
-          <FolderGuideCursor targetPosition={cursorTarget} />
-        </div>
+              <FolderGuideCursor targetPosition={cursorTarget} />
+            </div>
+          );
+        })()}
       </AdminAuth>
     </MultiplayerProvider>
   );
