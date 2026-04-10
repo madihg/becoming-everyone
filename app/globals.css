@@ -93,8 +93,6 @@ body {
 
 /* Floating markers on auth screen */
 .marker-image {
-  filter: grayscale(100%) contrast(1.3);
-  opacity: 0.4;
 }
 
 @keyframes marker-hover {
