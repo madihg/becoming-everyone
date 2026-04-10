@@ -1,4 +1,5 @@
 {
   "name": "becoming-everyone",
-  "main": "party/main.ts"
+  "main": "party/main.ts",
+  "compatibilityDate": "2026-04-10"
 }
