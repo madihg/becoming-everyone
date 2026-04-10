@@ -6,121 +6,64 @@ Interactive theatre piece. 19 folders on a dark desktop interface, projected on 
 
 ## Architecture
 
-- **Framework**: Next.js 14 (existing, being rewritten)
-- **Admin**: `/admin` - drag/drop folder positioning, unlimited tabs, folder organization across screens
-- **Public**: `/` - mirrors admin layout, read-only, same visual
-- **Multiplayer**: PartyKit (cloud) - two visible cursors for two operators
+- **Framework**: Next.js 14 (App Router, "use client")
+- **Main page**: `/` - admin interface behind AdminAuth screen. Everyone gets full control.
+- **Multiplayer**: PartyKit (cloud) - shared cursors + collaborative text editing
 - **Persistence**: `config/folders.json` - server-side JSON file
-- **Design**: Diatype Mono Variable (from singulars.oulipo.xyz), black bg, grey-black folders, #FFE600 yellow accent
-- **Window aesthetic**: Dark Mac OS 9 (horizontal pinstripes, close/zoom boxes, dark palette)
+- **Design**: Diatype Mono Variable, black bg, #FFE600 yellow accent
+- **Window aesthetic**: Dark Mac OS 9 (horizontal pinstripes, close/zoom boxes)
+- **Deployment**: Vercel (Git-triggered), media on Vercel Blob Storage
+- **No animation libraries** - vanilla CSS keyframes + canvas + requestAnimationFrame
 
-## PRD
+## Landing Page Overhaul - COMPLETED (April 10, 2026)
 
-Full PRD at `tasks/prd-becoming-everyone.md` - 12 user stories.
+All 5 workstreams implemented and building clean.
 
-## Folder Structure
+**1. Route Consolidation** - DONE. `app/page.tsx` is now the admin page. `app/admin/page.tsx` redirects to `/`.
 
-All 19 folders live at `public/folders/`:
-1P1-service (6 imgs + 1 video), 2O1-anyone, 3R1-breaking (4 imgs), 4W1-children, 5P2-sleep, 6O2-what, 7P3-lift, 8W2-move, 9O3-win, 10P4-dance, 11R2-arms, 12W3-poly, 13P5-grieve (6 imgs + 1 pptx), 14R3-critic, 15O4-agenda, 16P6-arson, 17P7-neural, 18P8-yellow, 19R4-found
+**2. Text Fixes** - DONE. "be" changed to "become" in all 3 locations. Spaces render as `\u00a0`.
 
-Music directory: `public/dance/`
+**3. Autonomous Cursor** - DONE. `components/cursor/AutonomousCursor.tsx` - glowing yellow dot, 15s wander, types "every", spacebar skips.
 
-## Three Content Modules (This Phase)
+**4. Visual Markers** - DONE. `components/markers/FloatingMarkers.tsx` - 7 markers (dumbbell, drone, flame PNGs + heart, physarum, candle SVGs + "(650)" text). B&W grainy filter, slow hover animation.
 
-1. **5P2-sleep** - Typewriter monologue, line-by-line fade-in, spacebar pause/resume
-2. **7P3-lift** - Simulated heartbeat graph (40-120 BPM) + cryptic data analysis table
-3. **10P4-dance** - BlazePose body tracking (B&W camera, skeleton overlay), chat commands, afrobeat/techno/EDM music
+**5. PartyKit Multiplayer** - CODE DONE, DEPLOY PENDING.
 
-## Design System Source
+- `party/main.ts` - server (cursor_move, text_update, cursor_leave)
+- `partykit.json` - config
+- `components/multiplayer/MultiplayerProvider.tsx` - context + WebSocket
+- `components/multiplayer/RemoteCursors.tsx` - render remote glowing dots
+- **Next step**: Run `npx partykit deploy` (needs GitHub OAuth login)
+- Default host: `becoming-everyone.halim.partykit.dev` (env: `NEXT_PUBLIC_PARTYKIT_HOST`)
 
-Fonts from singulars.oulipo.xyz (Cargo CDN):
+### Key Decisions
 
-- Primary: Diatype Mono Variable (`type.cargo.site/files/Cargo-DiatypePlusVariable.woff2`)
-- Display: Terminal Grotesque (`type.cargo.site/files/TerminalGrotesque.woff`)
+- Everyone gets full admin control - password protection later
+- Cursor style: glowing yellow dot (12px, #FFE600, soft glow shadow)
+- Autonomous cursor: landing page only for now
+- Text: "i've always wanted to become [input]one"
+- Multiplayer: last-write-wins for text, normalized cursor positions (0-1 range)
 
-Colors: #000000 bg, #1a1a1a folders, #2a2a2a borders, #9ca3af text, #FFE600 accent
+## Previously Completed
 
-## PRDs
+- Candle-drop camera page, Omar B&W grainy video, external window system
+- Physarum persistent lines (0.5 opacity), PDF pages as pre-rendered images
+- Army press briefing camera, video autoplay disabled, spacebar pause fixed
+- All media paths on Vercel Blob Storage
+- 19 folders across two screens with Mac OS 9 windows
+- Sleep typewriter, heartbeat monitor, dance body tracking modules
 
-- PRD #1: `tasks/prd-becoming-everyone.md` - 12 user stories (US-001 to US-012)
-- PRD #2: `tasks/prd-becoming-everyone-v2.md` - 4 amendment stories (US-013 to US-016)
+## Key Files
 
-## Implementation Status
-
-**US-001 through US-016: COMPLETE**
-
-### Phases completed:
-
-- Phase 1: Scaffold + data model (clean slate, types, folders.json, API routes)
-- Phase 2: Admin interface (folder drag-drop, unlimited tabs, tab bar)
-- Phase 3: Public view (mirrors admin, polls for updates)
-- Phase 4: Windows + physarum + icons (Mac OS 9 windows, 8 file type icons, mold background)
-- Phase 5: Content modules (sleep typewriter, heartbeat monitor, dance body tracking)
-- Phase 6: Amendments (ECG line fix, sleep centering, unified public view, admin side-by-side tabs)
-
-### Not yet built:
-
-- **US-006: PartyKit multiplayer cursors** - deps installed, server file not yet created
-- **Music tracks** for dance module - need royalty-free afrobeat/techno/EDM in public/dance/
-
-### Design review issues (from ui-ux-pro-max):
-
-Must fix before performance:
-
-- T-1: Bump text sizes from 9-11px to 12px+ for projection readability
-- A-5: Self-host BlazePose ML models instead of CDN loading
-- LM-1: ECG canvas resolution mismatch (use ResizeObserver)
-
-Should fix:
-
-- A-3: PhysarumBackground restarts on every render (useMemo the openFolders array)
-- P-1: Mold connects folders sequentially not by proximity (use spatial distance)
-- P-2: PhysarumBackground canvas size wrong in admin split view
-- C-3: Lift module green/red not in design system
-
-### Key files:
-
-- `config/folders.json` - 19 folders with positions, tabs, file contents
-- `app/admin/page.tsx` - admin with drag-drop, side-by-side tab surfaces, physarum
-- `app/page.tsx` - public view, all folders by default, physarum
-- `components/windows/FolderWindow.tsx` - Mac OS 9 dark window
-- `components/physarum/PhysarumBackground.tsx` - adapted mold canvas
-- `components/icons/FileIcon.tsx` - 8 file type icons
-- `app/content/sleep/page.tsx` - typewriter monologue (center-anchored)
-- `app/content/lift/page.tsx` - heartbeat ECG + cryptic data table
-- `app/content/dance/page.tsx` - BlazePose body tracking + commands
-
-## Session State
-
-- **Status**: Omar proximity tracking + floating windows complete ✅
-- **Last commit**: 6d9445e (admin auth UX fix + blob video URLs)
-- **Just implemented**:
-  - FloatingWindow component - Mac OS 9 style, draggable, resizable, z-index stacking
-  - HTML/executable files now open in floating windows (not browser tabs)
-  - OmarProximityTracker component - BlazePose body tracking with distance zones
-  - Three Omar routes: 2O1-anyone, 6O2-what, 9O3-win with dialogue
-  - Distance-based visual effects: far (blue blob), medium (blurry B&W), close (blue silhouette)
-  - Dialogue advances when performer moves closer, resets when far away
-  - Camera feeds (3R1-breaking, 19R4-found) now have HTML icons for floating window access
-- **Files added**:
-  - `components/windows/FloatingWindow.tsx` - floating window component
-  - `components/omar/OmarProximityTracker.tsx` - proximity tracking with visual effects
-  - `app/content/omar/2o1-anyone/page.tsx` - "Anybody here?" dialogue
-  - `app/content/omar/6o2-what/page.tsx` - "What is happening?" dialogue
-  - `app/content/omar/9o3-win/page.tsx` - "you win, I give up" dialogue
-- **Files modified**:
-  - `app/admin/page.tsx` - added floating window state and handlers
-  - `app/page.tsx` - added floating window state and handlers
-  - `config/folders.json` - added HTML entries for O folders and R camera feeds
-- **Technical details**:
-  - Distance zones: close (>50% frame), medium (20-50%), far (<20%)
-  - BlazePose GPU-accelerated, 30+ FPS target
-  - Canvas-based rendering for performance
-  - Zero TypeScript/ESLint errors
-- **Next steps**: Visual testing with projection, fine-tune distance thresholds, self-host BlazePose model
-- **Decisions**: FloatingWindow is independent of FolderWindow (different content model)
-- **Open questions**:
-  - Threshold sensitivity for zone transitions (prevent flickering)?
-  - "No person detected" state behavior?
-  - Dialogue loop or stay on final line?
-  - Glow/bloom effect on blue ghost?
+- `config/folders.json` - 19 folders config
+- `app/page.tsx` - admin page (landing) wrapped in MultiplayerProvider + AdminAuth
+- `app/admin/page.tsx` - redirect to `/`
+- `components/auth/AdminAuth.tsx` - auth screen with typing, markers, cursor, multiplayer
+- `components/cursor/AutonomousCursor.tsx` - autonomous glowing dot
+- `components/markers/FloatingMarkers.tsx` - 7 B&W floating markers
+- `components/multiplayer/MultiplayerProvider.tsx` - PartyKit WebSocket context
+- `components/multiplayer/RemoteCursors.tsx` - remote cursor rendering
+- `party/main.ts` - PartyKit server
+- `components/physarum/PhysarumBackground.tsx` - yellow mold animation
+- `app/globals.css` - fonts, colors, animations (marker-hover, admin-auth-char)
+- `public/markers/` - dumbbell.png, drone.png, flame.png

@@ -1,6 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import AutonomousCursor from "@/components/cursor/AutonomousCursor";
+import FloatingMarkers from "@/components/markers/FloatingMarkers";
+import { useMultiplayer } from "@/components/multiplayer/MultiplayerProvider";
+import RemoteCursors from "@/components/multiplayer/RemoteCursors";
 
 interface AdminAuthProps {
   children: React.ReactNode;
@@ -25,7 +29,7 @@ function TypedBeforeOne({
           key={`${i}-${char}`}
           className={`inline-block ${animateChars ? "admin-auth-char" : ""}`}
         >
-          {char}
+          {char === " " ? "\u00a0" : char}
         </span>
       ))}
       <span className="inline-block">one</span>
@@ -41,6 +45,28 @@ export default function AdminAuth({ children }: AdminAuthProps) {
   >("input");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { sharedText, updateText } = useMultiplayer();
+  const isRemoteUpdate = useRef(false);
+
+  // Sync remote text updates to local state
+  useEffect(() => {
+    if (sharedText && sharedText !== input && animationPhase === "input") {
+      isRemoteUpdate.current = true;
+      setInput(sharedText);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sharedText]);
+
+  const handleAutoType = useCallback(
+    (char: string) => {
+      setInput((prev) => {
+        const next = prev + char;
+        updateText(next);
+        return next;
+      });
+    },
+    [updateText],
+  );
 
   useEffect(() => {
     if (input.toLowerCase() === "every") {
@@ -69,7 +95,7 @@ export default function AdminAuth({ children }: AdminAuthProps) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const text = `i've always wanted to be ${input}one`;
+    const text = `i've always wanted to become ${input}one`;
     const fontSize = 32;
     ctx.font = `${fontSize}px "Diatype Mono", monospace`;
     ctx.textAlign = "center";
@@ -132,42 +158,50 @@ export default function AdminAuth({ children }: AdminAuthProps) {
   return (
     <div className="fixed inset-0 bg-bg flex items-center justify-center z-[9999]">
       {animationPhase === "input" && (
-        <div className="text-center">
-          <p className="text-[32px] font-mono text-white leading-relaxed">
-            <span className="select-none">
-              i&apos;ve always wanted to be{"\u00a0"}
-            </span>
-            <span className="inline-flex items-baseline relative">
-              <span className="inline-flex">
-                {input.split("").map((char, i) => (
-                  <span
-                    key={`${i}-${char}`}
-                    className="inline-block admin-auth-char"
-                    style={{ animationDelay: `${i * 20}ms` }}
-                  >
-                    {char}
-                  </span>
-                ))}
+        <>
+          <FloatingMarkers />
+          <div className="text-center relative z-10">
+            <p className="text-[32px] font-mono text-white leading-relaxed">
+              <span className="select-none">
+                i&apos;ve always wanted to become{"\u00a0"}
               </span>
-              <input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                className="absolute left-0 top-0 bg-transparent border-0 outline-none text-transparent caret-white w-full"
-                style={{
-                  width: `${Math.max(input.length * 0.6, 0.6)}em`,
-                  font: "inherit",
-                }}
-                autoFocus
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck={false}
-              />
-              <span>one</span>
-            </span>
-          </p>
-        </div>
+              <span className="inline-flex items-baseline relative">
+                <span className="inline-flex">
+                  {input.split("").map((char, i) => (
+                    <span
+                      key={`${i}-${char}`}
+                      className="inline-block admin-auth-char"
+                      style={{ animationDelay: `${i * 20}ms` }}
+                    >
+                      {char === " " ? "\u00a0" : char}
+                    </span>
+                  ))}
+                </span>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    updateText(e.target.value);
+                  }}
+                  className="absolute left-0 top-0 bg-transparent border-0 outline-none text-transparent caret-white w-full"
+                  style={{
+                    width: `${Math.max(input.length * 0.6, 0.6)}em`,
+                    font: "inherit",
+                  }}
+                  autoFocus
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                />
+                <span>one</span>
+              </span>
+            </p>
+          </div>
+          <RemoteCursors />
+          <AutonomousCursor onType={handleAutoType} inputRef={inputRef} />
+        </>
       )}
 
       {animationPhase === "colorTransition" && (
@@ -179,7 +213,7 @@ export default function AdminAuth({ children }: AdminAuthProps) {
         >
           <p className="text-[32px] font-mono leading-relaxed flex flex-wrap justify-center items-baseline px-4">
             <span className="select-none">
-              i&apos;ve always wanted to be{"\u00a0"}
+              i&apos;ve always wanted to become{"\u00a0"}
             </span>
             <TypedBeforeOne
               value={input}
