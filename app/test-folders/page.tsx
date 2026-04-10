@@ -43,7 +43,12 @@ const FOLDERS = [
     type: "W",
     icon: "/markers/nbn/nbn-logo.svg",
   },
-  { id: "13P5-grieve", label: "grieve", type: "P", icon: null },
+  {
+    id: "13P5-grieve",
+    label: "grieve",
+    type: "P",
+    icon: "/markers/earpiece.png",
+  },
   {
     id: "14R3-critic",
     label: "critic",
@@ -66,86 +71,6 @@ const FOLDERS = [
     icon: "/markers/nbn/nbn-logo.svg",
   },
 ];
-
-function NodeNetwork() {
-  return (
-    <svg
-      viewBox="0 0 120 120"
-      fill="white"
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-full h-full"
-    >
-      <line
-        x1="30"
-        y1="30"
-        x2="90"
-        y2="30"
-        stroke="white"
-        strokeWidth="1.5"
-        opacity="0.5"
-      />
-      <line
-        x1="30"
-        y1="30"
-        x2="60"
-        y2="70"
-        stroke="white"
-        strokeWidth="1.5"
-        opacity="0.5"
-      />
-      <line
-        x1="90"
-        y1="30"
-        x2="60"
-        y2="70"
-        stroke="white"
-        strokeWidth="1.5"
-        opacity="0.5"
-      />
-      <line
-        x1="60"
-        y1="70"
-        x2="20"
-        y2="100"
-        stroke="white"
-        strokeWidth="1.5"
-        opacity="0.5"
-      />
-      <line
-        x1="60"
-        y1="70"
-        x2="100"
-        y2="100"
-        stroke="white"
-        strokeWidth="1.5"
-        opacity="0.5"
-      />
-      <line
-        x1="20"
-        y1="100"
-        x2="100"
-        y2="100"
-        stroke="white"
-        strokeWidth="1.5"
-        opacity="0.5"
-      />
-      <line
-        x1="90"
-        y1="30"
-        x2="100"
-        y2="100"
-        stroke="white"
-        strokeWidth="1.5"
-        opacity="0.3"
-      />
-      <circle cx="30" cy="30" r="6" />
-      <circle cx="90" cy="30" r="6" />
-      <circle cx="60" cy="70" r="8" opacity="0.8" />
-      <circle cx="20" cy="100" r="5" />
-      <circle cx="100" cy="100" r="5" />
-    </svg>
-  );
-}
 
 function TypeBadge({ type }: { type: string }) {
   const colors: Record<string, string> = {
@@ -199,16 +124,12 @@ export default function TestFoldersPage() {
                   className="w-[60px] h-[60px] flex items-center justify-center"
                   style={{ filter: "grayscale(100%) contrast(1.3)" }}
                 >
-                  {folder.icon ? (
-                    <img
-                      src={folder.icon}
-                      alt=""
-                      draggable={false}
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <NodeNetwork />
-                  )}
+                  <img
+                    src={folder.icon}
+                    alt=""
+                    draggable={false}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </div>
             </div>

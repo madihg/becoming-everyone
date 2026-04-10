@@ -10,44 +10,54 @@ interface MarkerConfig {
 
 const MARKERS: MarkerConfig[] = [
   {
+    id: "phone",
+    src: "/markers/phone.png",
+    style: { top: "5%", left: "5%", maxWidth: "16vw" },
+  },
+  {
+    id: "webcam",
+    src: "/markers/webcam.png",
+    style: { top: "3%", right: "25%", maxWidth: "18vw" },
+  },
+  {
     id: "weights",
     src: "/markers/weights.png",
-    style: { top: "12%", left: "8%", maxWidth: "27vw" },
+    style: { top: "5%", left: "30%", maxWidth: "20vw" },
   },
   {
     id: "drone",
     src: "/markers/drone.png",
-    style: { top: "8%", right: "10%", maxWidth: "24vw" },
-  },
-  {
-    id: "heart",
-    src: "/markers/heart.png",
-    style: { bottom: "12%", right: "8%", maxWidth: "24vw" },
-  },
-  {
-    id: "mold",
-    src: "/markers/mold.png",
-    style: { top: "45%", left: "5%", maxWidth: "30vw" },
-  },
-  {
-    id: "phone",
-    src: "/markers/phone.png",
-    style: { top: "18%", right: "30%", maxWidth: "21vw" },
+    style: { top: "3%", right: "5%", maxWidth: "18vw" },
   },
   {
     id: "candle",
     src: "/markers/candle.png",
-    style: { bottom: "20%", left: "35%", maxWidth: "15vw" },
+    style: { bottom: "15%", left: "5%", maxWidth: "11vw" },
   },
   {
     id: "nbn",
     src: "/markers/nbn/nbn-logo.svg",
-    style: { top: "40%", right: "12%", maxWidth: "24vw" },
+    style: { top: "8%", right: "12%", maxWidth: "18vw" },
   },
   {
     id: "dance",
     src: "/markers/dance.png",
-    style: { bottom: "8%", right: "30%", maxWidth: "24vw" },
+    style: { bottom: "5%", right: "25%", maxWidth: "18vw" },
+  },
+  {
+    id: "heart",
+    src: "/markers/heart.png",
+    style: { bottom: "5%", right: "5%", maxWidth: "18vw" },
+  },
+  {
+    id: "mold",
+    src: "/markers/mold.png",
+    style: { bottom: "5%", left: "3%", maxWidth: "22vw" },
+  },
+  {
+    id: "earpiece",
+    src: "/markers/earpiece.png",
+    style: { bottom: "12%", left: "25%", maxWidth: "16vw" },
   },
 ];
 

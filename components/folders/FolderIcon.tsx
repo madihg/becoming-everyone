@@ -10,129 +10,40 @@ interface Props {
   onDoubleClick?: (folderId: string) => void;
 }
 
-const ICON_MAP: Record<
-  string,
-  { type: "image" | "svg"; src?: string; svgId?: string }
-> = {
-  "1P1-service": { type: "image", src: "/markers/phone.png" },
-  "2O1-anyone": { type: "image", src: "/markers/webcam.png" },
-  "3R1-breaking": { type: "image", src: "/markers/nbn/nbn-logo.svg" },
-  "4W1-children": { type: "image", src: "/markers/nbn/nbn-logo.svg" },
-  "5P2-sleep": { type: "image", src: "/markers/candle.png" },
-  "6O2-what": { type: "image", src: "/markers/webcam.png" },
-  "7P3-lift": { type: "image", src: "/markers/weights.png" },
-  "8W2-move": { type: "image", src: "/markers/nbn/nbn-logo.svg" },
-  "9O3-win": { type: "image", src: "/markers/webcam.png" },
-  "10P4-dance": { type: "image", src: "/markers/dance.png" },
-  "11R2-arms": { type: "image", src: "/markers/nbn/nbn-logo.svg" },
-  "12W3-poly": { type: "image", src: "/markers/nbn/nbn-logo.svg" },
-  "13P5-grieve": { type: "svg", svgId: "nodes" },
-  "14R3-critic": { type: "image", src: "/markers/nbn/nbn-logo.svg" },
-  "15O4-agenda": { type: "image", src: "/markers/webcam.png" },
-  "16P6-arson": { type: "image", src: "/markers/drone.png" },
-  "17P7-neural": { type: "image", src: "/markers/heart.png" },
-  "18P8-yellow": { type: "image", src: "/markers/mold.png" },
-  "19R4-found": { type: "image", src: "/markers/nbn/nbn-logo.svg" },
+const ICON_MAP: Record<string, string> = {
+  "1P1-service": "/markers/phone.png",
+  "2O1-anyone": "/markers/webcam.png",
+  "3R1-breaking": "/markers/nbn/nbn-logo.svg",
+  "4W1-children": "/markers/nbn/nbn-logo.svg",
+  "5P2-sleep": "/markers/candle.png",
+  "6O2-what": "/markers/webcam.png",
+  "7P3-lift": "/markers/weights.png",
+  "8W2-move": "/markers/nbn/nbn-logo.svg",
+  "9O3-win": "/markers/webcam.png",
+  "10P4-dance": "/markers/dance.png",
+  "11R2-arms": "/markers/nbn/nbn-logo.svg",
+  "12W3-poly": "/markers/nbn/nbn-logo.svg",
+  "13P5-grieve": "/markers/earpiece.png",
+  "14R3-critic": "/markers/nbn/nbn-logo.svg",
+  "15O4-agenda": "/markers/webcam.png",
+  "16P6-arson": "/markers/drone.png",
+  "17P7-neural": "/markers/heart.png",
+  "18P8-yellow": "/markers/mold.png",
+  "19R4-found": "/markers/nbn/nbn-logo.svg",
 };
 
-function NodeNetwork() {
-  return (
-    <svg
-      viewBox="0 0 120 120"
-      fill="white"
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-full h-full"
-    >
-      <line
-        x1="30"
-        y1="30"
-        x2="90"
-        y2="30"
-        stroke="white"
-        strokeWidth="1.5"
-        opacity="0.5"
-      />
-      <line
-        x1="30"
-        y1="30"
-        x2="60"
-        y2="70"
-        stroke="white"
-        strokeWidth="1.5"
-        opacity="0.5"
-      />
-      <line
-        x1="90"
-        y1="30"
-        x2="60"
-        y2="70"
-        stroke="white"
-        strokeWidth="1.5"
-        opacity="0.5"
-      />
-      <line
-        x1="60"
-        y1="70"
-        x2="20"
-        y2="100"
-        stroke="white"
-        strokeWidth="1.5"
-        opacity="0.5"
-      />
-      <line
-        x1="60"
-        y1="70"
-        x2="100"
-        y2="100"
-        stroke="white"
-        strokeWidth="1.5"
-        opacity="0.5"
-      />
-      <line
-        x1="20"
-        y1="100"
-        x2="100"
-        y2="100"
-        stroke="white"
-        strokeWidth="1.5"
-        opacity="0.5"
-      />
-      <line
-        x1="90"
-        y1="30"
-        x2="100"
-        y2="100"
-        stroke="white"
-        strokeWidth="1.5"
-        opacity="0.3"
-      />
-      <circle cx="30" cy="30" r="6" />
-      <circle cx="90" cy="30" r="6" />
-      <circle cx="60" cy="70" r="8" opacity="0.8" />
-      <circle cx="20" cy="100" r="5" />
-      <circle cx="100" cy="100" r="5" />
-    </svg>
-  );
-}
-
 export function IconContent({ folderId }: { folderId: string }) {
-  const config = ICON_MAP[folderId];
-  if (!config) return null;
+  const src = ICON_MAP[folderId];
+  if (!src) return null;
 
-  if (config.type === "image" && config.src) {
-    return (
-      <img
-        src={config.src}
-        alt=""
-        draggable={false}
-        className="w-full h-full object-contain"
-      />
-    );
-  }
-
-  if (config.svgId === "nodes") return <NodeNetwork />;
-
-  return null;
+  return (
+    <img
+      src={src}
+      alt=""
+      draggable={false}
+      className="w-full h-full object-contain"
+    />
+  );
 }
 
 export default function FolderIcon({
