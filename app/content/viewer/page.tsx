@@ -133,6 +133,18 @@ function ViewerInner() {
               crossOrigin="anonymous"
             />
 
+            {/* NBN watermark for W-folder videos */}
+            {folderId?.match(/^\d+W/) && (
+              <div className="absolute top-4 right-4 z-10 opacity-20 pointer-events-none">
+                <img
+                  src="/markers/nbn/nbn-logo.svg"
+                  alt=""
+                  className="w-20 h-20"
+                  draggable={false}
+                />
+              </div>
+            )}
+
             {/* Play/pause flash icon */}
             {showPlayIcon && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

@@ -77,12 +77,7 @@ export default function Camera19R4Found() {
           {/* Breaking news banner */}
           <div className="absolute top-0 left-0 right-0 bg-red-600 py-2 px-4 z-10">
             <div className="flex items-center gap-3">
-              <div className="bg-white text-red-600 px-3 py-1 font-display text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-                <img
-                  src="/markers/nbn/nbn-logo.svg"
-                  alt="NBN"
-                  className="w-5 h-5 invert"
-                />
+              <div className="bg-white text-red-600 px-3 py-1 font-display text-sm font-bold uppercase tracking-wider">
                 Breaking News
               </div>
               <div className="text-white font-mono text-xs uppercase tracking-wide">

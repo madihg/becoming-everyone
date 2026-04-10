@@ -77,16 +77,7 @@ export default function Camera11R2Arms() {
           {/* Top banner */}
           <div className="absolute top-0 left-0 right-0 bg-[#556B2F] py-2 px-4 z-10">
             <div className="flex items-center gap-3">
-              <div className="bg-white text-[#556B2F] px-3 py-1 font-display text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-                <img
-                  src="/markers/nbn/nbn-logo.svg"
-                  alt="NBN"
-                  className="w-5 h-5"
-                  style={{
-                    filter:
-                      "invert(30%) sepia(20%) saturate(500%) hue-rotate(50deg)",
-                  }}
-                />
+              <div className="bg-white text-[#556B2F] px-3 py-1 font-display text-sm font-bold uppercase tracking-wider">
                 Press Briefing
               </div>
               <div className="text-white font-mono text-xs uppercase tracking-wide">

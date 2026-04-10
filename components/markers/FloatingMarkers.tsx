@@ -12,37 +12,42 @@ const MARKERS: MarkerConfig[] = [
   {
     id: "weights",
     src: "/markers/weights.png",
-    style: { top: "12%", left: "8%", maxWidth: "13.5vw" },
+    style: { top: "12%", left: "8%", maxWidth: "27vw" },
   },
   {
     id: "drone",
     src: "/markers/drone.png",
-    style: { top: "8%", right: "10%", maxWidth: "12vw" },
+    style: { top: "8%", right: "10%", maxWidth: "24vw" },
   },
   {
     id: "heart",
     src: "/markers/heart.png",
-    style: { bottom: "12%", right: "8%", maxWidth: "12vw" },
+    style: { bottom: "12%", right: "8%", maxWidth: "24vw" },
   },
   {
     id: "mold",
     src: "/markers/mold.png",
-    style: { top: "45%", left: "5%", maxWidth: "15vw" },
+    style: { top: "45%", left: "5%", maxWidth: "30vw" },
   },
   {
     id: "phone",
     src: "/markers/phone.png",
-    style: { top: "18%", right: "30%", maxWidth: "10.5vw" },
+    style: { top: "18%", right: "30%", maxWidth: "21vw" },
   },
   {
     id: "candle",
     src: "/markers/candle.png",
-    style: { bottom: "20%", left: "35%", maxWidth: "7.5vw" },
+    style: { bottom: "20%", left: "35%", maxWidth: "15vw" },
   },
   {
     id: "nbn",
     src: "/markers/nbn/nbn-logo.svg",
-    style: { top: "40%", right: "12%", maxWidth: "12vw" },
+    style: { top: "40%", right: "12%", maxWidth: "24vw" },
+  },
+  {
+    id: "dance",
+    src: "/markers/dance.png",
+    style: { bottom: "8%", right: "30%", maxWidth: "24vw" },
   },
 ];
 

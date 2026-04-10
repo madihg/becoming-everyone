@@ -98,6 +98,16 @@ export default function CandlesPage() {
                 onLanded={() => handleLanded(candle.id)}
               />
             ))}
+
+            {/* Warm glow at bottom as candles land */}
+            <div
+              className="absolute bottom-0 left-0 right-0 pointer-events-none"
+              style={{
+                height: "15vh",
+                background: `linear-gradient(to top, rgba(255, 180, 80, ${Math.min(0.6, candles.filter((c) => c.landed).length * 0.08)}), transparent)`,
+                transition: "background 1s ease",
+              }}
+            />
           </div>
         </>
       )}

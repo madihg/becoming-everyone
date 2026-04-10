@@ -160,7 +160,7 @@ export default function FolderIcon({
         className="w-[100px] h-[80px] flex items-center justify-center"
         style={{
           filter: "grayscale(100%) contrast(1.3)",
-          opacity: folder.isOpen ? 0.6 : 0.4,
+          opacity: folder.isOpen ? 1 : 0.85,
         }}
       >
         <IconContent folderId={folder.id} />

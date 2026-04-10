@@ -123,7 +123,7 @@ export default function PhysarumBackground({
       y2: number,
     ) => {
       const slowTime = time * 0.00015;
-      const dotCount = 3;
+      const dotCount = 1;
 
       for (let d = 0; d < dotCount; d++) {
         const phase = (slowTime + d / dotCount) % 1;
