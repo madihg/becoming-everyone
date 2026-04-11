@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
-  <!-- NBN v4: Stacked vertical letters on diagonal, 25deg -->
-  <g transform="rotate(-25 100 100)">
-    <text x="100" y="78" text-anchor="middle" font-family="monospace" font-size="32" font-weight="700" fill="white">N</text>
-    <text x="100" y="110" text-anchor="middle" font-family="monospace" font-size="32" font-weight="700" fill="white">B</text>
-    <text x="100" y="142" text-anchor="middle" font-family="monospace" font-size="32" font-weight="700" fill="white">N</text>
-  </g>
-</svg>

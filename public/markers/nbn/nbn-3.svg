@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
-  <!-- NBN v3: Diagonal stripe band with text, 45deg -->
-  <g transform="rotate(-45 100 100)">
-    <line x1="40" y1="95" x2="160" y2="95" stroke="white" stroke-width="1" opacity="0.4"/>
-    <text x="100" y="112" text-anchor="middle" font-family="monospace" font-size="34" font-weight="600" fill="white" letter-spacing="6">NBN</text>
-    <line x1="40" y1="120" x2="160" y2="120" stroke="white" stroke-width="1" opacity="0.4"/>
-  </g>
-</svg>
