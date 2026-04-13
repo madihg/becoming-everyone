@@ -6,6 +6,7 @@ import FolderWindow from "@/components/windows/FolderWindow";
 import FloatingWindow from "@/components/windows/FloatingWindow";
 import PhysarumBackground from "@/components/physarum/PhysarumBackground";
 import FolderGuideCursor from "@/components/cursor/FolderGuideCursor";
+import RemoteCursors from "@/components/multiplayer/RemoteCursors";
 import AdminAuth from "@/components/auth/AdminAuth";
 import MultiplayerProvider from "@/components/multiplayer/MultiplayerProvider";
 import { FOLDER_SEQUENCE } from "@/config/folder-sequence";
@@ -435,149 +436,154 @@ export default function Home() {
           );
 
           return (
-            <div className="h-screen w-screen bg-bg relative overflow-hidden">
-              <div data-tab-panel={tab.id} className="absolute inset-0">
-                <PhysarumBackground
-                  openFolders={openFolders}
-                  everOpenedFolders={everOpenedFolders}
-                  allFolders={allFolders}
-                  folderSequence={FOLDER_SEQUENCE}
-                  sequenceProgress={everOpenedIds}
-                />
+            <MultiplayerProvider room="folders">
+              <div className="h-screen w-screen bg-bg relative overflow-hidden">
+                <div data-tab-panel={tab.id} className="absolute inset-0">
+                  <PhysarumBackground
+                    openFolders={openFolders}
+                    everOpenedFolders={everOpenedFolders}
+                    allFolders={allFolders}
+                    folderSequence={FOLDER_SEQUENCE}
+                    sequenceProgress={everOpenedIds}
+                  />
 
-                <div className="absolute top-0 left-0 right-0 z-50 flex items-end h-[28px] border-b border-[#2a2a2a]">
-                  <div className="flex items-center gap-0 h-full">
-                    <div className="flex items-center h-full px-3 border-r border-[#333] bg-[#1a1a1a] rounded-t-sm">
-                      {editingLabelId === tab.id ? (
-                        <input
-                          ref={labelInputRef}
-                          className="bg-transparent text-[#ccc] text-[11px] font-mono outline-none w-20 uppercase tracking-wider"
-                          defaultValue={tab.name}
-                          onBlur={(e) =>
-                            handleRenameScreen(tab.id, e.target.value)
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter")
-                              handleRenameScreen(
-                                tab.id,
-                                (e.target as HTMLInputElement).value,
+                  <div className="absolute top-0 left-0 right-0 z-50 flex items-end h-[28px] border-b border-[#2a2a2a]">
+                    <div className="flex items-center gap-0 h-full">
+                      <div className="flex items-center h-full px-3 border-r border-[#333] bg-[#1a1a1a] rounded-t-sm">
+                        {editingLabelId === tab.id ? (
+                          <input
+                            ref={labelInputRef}
+                            className="bg-transparent text-[#ccc] text-[11px] font-mono outline-none w-20 uppercase tracking-wider"
+                            defaultValue={tab.name}
+                            onBlur={(e) =>
+                              handleRenameScreen(tab.id, e.target.value)
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter")
+                                handleRenameScreen(
+                                  tab.id,
+                                  (e.target as HTMLInputElement).value,
+                                );
+                              if (e.key === "Escape") setEditingLabelId(null);
+                            }}
+                            autoFocus
+                          />
+                        ) : (
+                          <span
+                            className="text-[11px] font-mono text-[#999] cursor-default uppercase tracking-wider select-none"
+                            onDoubleClick={() => {
+                              setEditingLabelId(tab.id);
+                              setTimeout(
+                                () => labelInputRef.current?.select(),
+                                0,
                               );
-                            if (e.key === "Escape") setEditingLabelId(null);
-                          }}
-                          autoFocus
-                        />
-                      ) : (
-                        <span
-                          className="text-[11px] font-mono text-[#999] cursor-default uppercase tracking-wider select-none"
-                          onDoubleClick={() => {
-                            setEditingLabelId(tab.id);
-                            setTimeout(
-                              () => labelInputRef.current?.select(),
-                              0,
-                            );
-                          }}
-                        >
-                          {tab.name}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {allFolders.map((folder) => (
-                  <FolderIcon
-                    key={folder.id}
-                    folder={folder}
-                    draggable={true}
-                    isDragging={dragFolderId === folder.id}
-                    onPointerDown={handlePointerDown}
-                    onDoubleClick={handleFolderDoubleClick}
-                  />
-                ))}
-
-                {openFolders.map((folder) => (
-                  <FolderWindow
-                    key={`window-${folder.id}`}
-                    folder={folder}
-                    zIndex={windowZMap[folder.id] || 10}
-                    onClose={handleWindowClose}
-                    onFocus={handleWindowFocus}
-                    onFileDoubleClick={(file) =>
-                      handleFileDoubleClick(file, folder.id)
-                    }
-                  />
-                ))}
-
-                <button
-                  className="absolute bottom-3 left-3 z-50 text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
-                  onClick={handleAutoArrange}
-                  title="Arrange folders in grid"
-                >
-                  Arrange
-                </button>
-              </div>
-
-              {dragFolderId &&
-                dragPos &&
-                dragRef.current &&
-                (() => {
-                  const folder = state.folders.find(
-                    (f) => f.id === dragFolderId,
-                  );
-                  if (!folder) return null;
-                  return (
-                    <div
-                      className="fixed pointer-events-none z-[9999]"
-                      style={{
-                        left: dragPos.x - dragRef.current!.offsetX,
-                        top: dragPos.y - dragRef.current!.offsetY,
-                      }}
-                    >
-                      <div className="flex flex-col items-center opacity-80">
-                        <div
-                          className="w-[100px] h-[80px] flex items-center justify-center"
-                          style={{ filter: "grayscale(100%) contrast(1.3)" }}
-                        >
-                          <IconContent folderId={folder.id} />
-                        </div>
-                        <span className="mt-1 text-[12px] font-mono text-white text-center leading-tight max-w-[110px] truncate">
-                          {folder.name}
-                        </span>
+                            }}
+                          >
+                            {tab.name}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  );
-                })()}
+                  </div>
 
-              <div className="absolute bottom-3 right-3 z-50">
-                <select
-                  value={openMode}
-                  onChange={(e) => setOpenMode(e.target.value as "ext" | "int")}
-                  className="text-[10px] font-mono text-[#888] bg-[#111] border border-[#333] rounded-sm px-2 py-1 outline-none cursor-pointer hover:border-[#555] transition-colors"
-                  title="File open mode: ext (external windows) / int (internal floating)"
-                >
-                  <option value="ext">ext</option>
-                  <option value="int">int</option>
-                </select>
+                  {allFolders.map((folder) => (
+                    <FolderIcon
+                      key={folder.id}
+                      folder={folder}
+                      draggable={true}
+                      isDragging={dragFolderId === folder.id}
+                      onPointerDown={handlePointerDown}
+                      onDoubleClick={handleFolderDoubleClick}
+                    />
+                  ))}
+
+                  {openFolders.map((folder) => (
+                    <FolderWindow
+                      key={`window-${folder.id}`}
+                      folder={folder}
+                      zIndex={windowZMap[folder.id] || 10}
+                      onClose={handleWindowClose}
+                      onFocus={handleWindowFocus}
+                      onFileDoubleClick={(file) =>
+                        handleFileDoubleClick(file, folder.id)
+                      }
+                    />
+                  ))}
+
+                  <button
+                    className="absolute bottom-3 left-3 z-50 text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
+                    onClick={handleAutoArrange}
+                    title="Arrange folders in grid"
+                  >
+                    Arrange
+                  </button>
+                </div>
+
+                {dragFolderId &&
+                  dragPos &&
+                  dragRef.current &&
+                  (() => {
+                    const folder = state.folders.find(
+                      (f) => f.id === dragFolderId,
+                    );
+                    if (!folder) return null;
+                    return (
+                      <div
+                        className="fixed pointer-events-none z-[9999]"
+                        style={{
+                          left: dragPos.x - dragRef.current!.offsetX,
+                          top: dragPos.y - dragRef.current!.offsetY,
+                        }}
+                      >
+                        <div className="flex flex-col items-center opacity-80">
+                          <div
+                            className="w-[100px] h-[80px] flex items-center justify-center"
+                            style={{ filter: "grayscale(100%) contrast(1.3)" }}
+                          >
+                            <IconContent folderId={folder.id} />
+                          </div>
+                          <span className="mt-1 text-[12px] font-mono text-white text-center leading-tight max-w-[110px] truncate">
+                            {folder.name}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                <div className="absolute bottom-3 right-3 z-50">
+                  <select
+                    value={openMode}
+                    onChange={(e) =>
+                      setOpenMode(e.target.value as "ext" | "int")
+                    }
+                    className="text-[10px] font-mono text-[#888] bg-[#111] border border-[#333] rounded-sm px-2 py-1 outline-none cursor-pointer hover:border-[#555] transition-colors"
+                    title="File open mode: ext (external windows) / int (internal floating)"
+                  >
+                    <option value="ext">ext</option>
+                    <option value="int">int</option>
+                  </select>
+                </div>
+
+                {floatingWindows.map((win) => (
+                  <FloatingWindow
+                    key={win.id}
+                    title={win.title}
+                    zIndex={win.zIndex}
+                    onClose={() =>
+                      setFloatingWindows((prev) =>
+                        prev.filter((w) => w.id !== win.id),
+                      )
+                    }
+                    onFocus={() => handleFloatingWindowFocus(win.id)}
+                  >
+                    <iframe src={win.src} className="w-full h-full border-0" />
+                  </FloatingWindow>
+                ))}
+
+                <FolderGuideCursor targetPosition={cursorTarget} />
+                <RemoteCursors />
               </div>
-
-              {floatingWindows.map((win) => (
-                <FloatingWindow
-                  key={win.id}
-                  title={win.title}
-                  zIndex={win.zIndex}
-                  onClose={() =>
-                    setFloatingWindows((prev) =>
-                      prev.filter((w) => w.id !== win.id),
-                    )
-                  }
-                  onFocus={() => handleFloatingWindowFocus(win.id)}
-                >
-                  <iframe src={win.src} className="w-full h-full border-0" />
-                </FloatingWindow>
-              ))}
-
-              <FolderGuideCursor targetPosition={cursorTarget} />
-            </div>
+            </MultiplayerProvider>
           );
         })()}
       </AdminAuth>
