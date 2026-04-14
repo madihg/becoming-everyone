@@ -115,6 +115,16 @@ Pressing spacebar during live performance advances through FOLDER_SEQUENCE:
 
 **8. Credits After Folder 19** - DONE. `handleAllComplete` closes all windows, shows credits overlay: "Thank you / CultureHub LA / Stacy / Josephine Made / Geo Morjan Jihad / Bina Senator / Prop 46". Fade-in animation (2s).
 
+## UX Polish - COMPLETED (April 14, 2026)
+
+3 changes implemented and building clean.
+
+**1. Smart Sizing for Manual Opens** - DONE. `handleFileDoubleClick` now uses `getWindowLayout` + `openExternalWindowSized` so manual file double-clicks tile windows identically to the spacebar flow.
+
+**2. Persist Progress via localStorage** - DONE. `everOpenedIds` saved to `localStorage` on change, restored on page load. Refreshing the page resumes the spacebar sequence where you left off.
+
+**3. Reset Button** - DONE. Round arrow SVG button next to "Arrange" in lower left. `handleReset` closes all external windows, closes all folders, clears `everOpenedIds` (state + localStorage), resets guide dot to folder 1, hides credits.
+
 ## Key Files
 
 - `config/folders.json` - 19 folders config

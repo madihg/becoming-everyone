@@ -116,6 +116,23 @@ function closeAllExternalWindows() {
   openWindowRefs.length = 0;
 }
 
+function getWindowLayout(contents: FileItem[]) {
+  const viewable = contents.filter((f) =>
+    ["image", "video", "audio", "pdf"].includes(f.type),
+  );
+  const html = contents.filter((f) => f.type === "html");
+  const exec = contents.filter((f) => f.type === "executable");
+  let idx = 0;
+  const viewerIndex = viewable.length > 0 ? idx++ : -1;
+  const htmlMap = new Map(html.map((f) => [f.id, idx++]));
+  const execMap = new Map(exec.map((f) => [f.id, idx++]));
+  const windowCount = Math.max(
+    (viewable.length > 0 ? 1 : 0) + html.length + exec.length,
+    1,
+  );
+  return { windowCount, viewerIndex, htmlMap, execMap };
+}
+
 export default function Home() {
   const [state, setState] = useState<FolderState | null>(null);
   const [windowZMap, setWindowZMap] = useState<Record<string, number>>({});
@@ -144,8 +161,23 @@ export default function Home() {
   useEffect(() => {
     fetch("/api/folders")
       .then((r) => r.json())
-      .then((data: FolderState) => setState(data));
+      .then((data: FolderState) => {
+        setState(data);
+        try {
+          const stored = localStorage.getItem("everOpenedIds");
+          if (stored) {
+            const ids = JSON.parse(stored) as string[];
+            setEverOpenedIds(new Set(ids));
+          }
+        } catch {}
+      });
   }, []);
+
+  // Sync everOpenedIds to localStorage
+  useEffect(() => {
+    if (everOpenedIds.size === 0) return;
+    localStorage.setItem("everOpenedIds", JSON.stringify([...everOpenedIds]));
+  }, [everOpenedIds]);
 
   const persist = useCallback(async (newState: FolderState) => {
     setState(newState);
@@ -326,26 +358,32 @@ export default function Home() {
 
   const handleFileDoubleClick = useCallback(
     (file: FileItem, folderId: string) => {
+      if (!state) return;
+      const folder = state.folders.find((f) => f.id === folderId);
+      if (!folder) return;
+      const layout = getWindowLayout(folder.contents);
+
       if (openMode === "ext") {
         if (file.type === "html" || file.type === "executable") {
-          openExternalWindow(file.path);
+          const idx =
+            layout.htmlMap.get(file.id) ?? layout.execMap.get(file.id) ?? 0;
+          openExternalWindowSized(file.path, layout.windowCount, idx);
         } else if (
           file.type === "image" ||
           file.type === "video" ||
           file.type === "pdf" ||
           file.type === "audio"
         ) {
-          if (!state) return;
-          const folder = state.folders.find((f) => f.id === folderId);
-          if (!folder) return;
           const viewable = folder.contents
             .filter((f) => ["image", "video", "pdf", "audio"].includes(f.type))
             .sort((a, b) =>
               a.name.localeCompare(b.name, undefined, { numeric: true }),
             );
           const fileIndex = viewable.findIndex((f) => f.id === file.id);
-          openExternalWindow(
+          openExternalWindowSized(
             `/content/viewer?folder=${folderId}&index=${Math.max(0, fileIndex)}`,
+            layout.windowCount,
+            layout.viewerIndex,
           );
         }
       } else {
@@ -367,17 +405,16 @@ export default function Home() {
           file.type === "pdf" ||
           file.type === "audio"
         ) {
-          if (!state) return;
-          const folder = state.folders.find((f) => f.id === folderId);
-          if (!folder) return;
           const viewable = folder.contents
             .filter((f) => ["image", "video", "pdf", "audio"].includes(f.type))
             .sort((a, b) =>
               a.name.localeCompare(b.name, undefined, { numeric: true }),
             );
           const fileIndex = viewable.findIndex((f) => f.id === file.id);
-          openExternalWindow(
+          openExternalWindowSized(
             `/content/viewer?folder=${folderId}&index=${Math.max(0, fileIndex)}`,
+            layout.windowCount,
+            layout.viewerIndex,
           );
         }
       }
@@ -493,6 +530,32 @@ export default function Home() {
       });
     }
     setShowCredits(true);
+  }, [state]);
+
+  const handleReset = useCallback(() => {
+    closeAllExternalWindows();
+    if (state) {
+      const newState = {
+        ...state,
+        folders: state.folders.map((f) =>
+          f.isOpen ? { ...f, isOpen: false } : f,
+        ),
+      };
+      setState(newState);
+      state.folders.forEach((f) => {
+        if (f.isOpen) {
+          fetch(`/api/folders/${f.id}/open`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ isOpen: false }),
+          });
+        }
+      });
+    }
+    setEverOpenedIds(new Set());
+    localStorage.removeItem("everOpenedIds");
+    setNavigatingToFolder(null);
+    setShowCredits(false);
   }, [state]);
 
   const handleRenameScreen = useCallback(
@@ -703,13 +766,34 @@ export default function Home() {
                     />
                   ))}
 
-                  <button
-                    className="absolute bottom-3 left-3 z-50 text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
-                    onClick={handleAutoArrange}
-                    title="Arrange folders in grid"
-                  >
-                    Arrange
-                  </button>
+                  <div className="absolute bottom-3 left-3 z-50 flex gap-1">
+                    <button
+                      className="text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
+                      onClick={handleAutoArrange}
+                      title="Arrange folders in grid"
+                    >
+                      Arrange
+                    </button>
+                    <button
+                      className="text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
+                      onClick={handleReset}
+                      title="Reset sequence"
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 14 14"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M1.5 2.5v4h4" />
+                        <path d="M1.5 6.5A5.5 5.5 0 1 1 2.6 9.5" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
 
                 {dragFolderId &&

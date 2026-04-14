@@ -204,6 +204,7 @@ export default function DancePage() {
           // Long command - use visible countdown
           const totalSeconds = Math.floor(cmd.duration / 1000);
           setCountdown(totalSeconds);
+          setYellowedNumbers(new Set([totalSeconds]));
           let current = totalSeconds;
           countdownRef.current = setInterval(() => {
             setYellowedNumbers((prev) => {

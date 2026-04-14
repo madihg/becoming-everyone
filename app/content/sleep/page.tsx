@@ -77,7 +77,7 @@ export default function SleepPage() {
     <div className="h-screen w-screen bg-black flex items-center justify-center overflow-hidden">
       {currentIndex < 0 && (
         <div className="text-text-muted text-sm font-mono animate-pulse">
-          Press space to begin
+          Rest
         </div>
       )}
 
