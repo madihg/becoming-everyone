@@ -8,9 +8,60 @@ import PhysarumBackground from "@/components/physarum/PhysarumBackground";
 import FolderGuideCursor from "@/components/cursor/FolderGuideCursor";
 import RemoteCursors from "@/components/multiplayer/RemoteCursors";
 import AdminAuth from "@/components/auth/AdminAuth";
-import MultiplayerProvider from "@/components/multiplayer/MultiplayerProvider";
+import MultiplayerProvider, {
+  useMultiplayer,
+} from "@/components/multiplayer/MultiplayerProvider";
 import { FOLDER_SEQUENCE } from "@/config/folder-sequence";
 import type { FolderState, FileItem } from "@/types";
+
+function SpacebarController({
+  navigatingToFolder,
+  setNavigatingToFolder,
+  nextTargetId,
+  openFolderAndFiles,
+}: {
+  navigatingToFolder: string | null;
+  setNavigatingToFolder: (id: string | null) => void;
+  nextTargetId: string | null;
+  openFolderAndFiles: (folderId: string) => void;
+}) {
+  const { sendMessage, lastEvent } = useMultiplayer();
+
+  // Spacebar listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== " ") return;
+      if (
+        document.activeElement?.tagName === "INPUT" ||
+        document.activeElement?.tagName === "TEXTAREA" ||
+        document.activeElement?.tagName === "SELECT"
+      )
+        return;
+      e.preventDefault();
+      if (navigatingToFolder) return;
+      if (!nextTargetId) return;
+      setNavigatingToFolder(nextTargetId);
+      sendMessage({ type: "open_folder", folderId: nextTargetId });
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [navigatingToFolder, nextTargetId, setNavigatingToFolder, sendMessage]);
+
+  // Remote open_folder events
+  useEffect(() => {
+    if (!lastEvent || lastEvent.type !== "open_folder") return;
+    const folderId = lastEvent.folderId as string;
+    if (!folderId || navigatingToFolder) return;
+    setNavigatingToFolder(folderId);
+  }, [
+    lastEvent,
+    navigatingToFolder,
+    setNavigatingToFolder,
+    openFolderAndFiles,
+  ]);
+
+  return null;
+}
 
 let nextWindowSide: "left" | "right" = "right";
 
@@ -38,6 +89,9 @@ export default function Home() {
   >([]);
   const [everOpenedIds, setEverOpenedIds] = useState<Set<string>>(new Set());
   const [openMode, setOpenMode] = useState<"ext" | "int">("ext");
+  const [navigatingToFolder, setNavigatingToFolder] = useState<string | null>(
+    null,
+  );
 
   // Pointer-based drag
   const dragRef = useRef<{
@@ -292,6 +346,37 @@ export default function Home() {
     [state, floatingWindows, openMode],
   );
 
+  // Open a folder and auto-open all its files
+  const openFolderAndFiles = useCallback(
+    (folderId: string) => {
+      if (!state) return;
+      handleFolderDoubleClick(folderId);
+      const folder = state.folders.find((f) => f.id === folderId);
+      if (folder && folder.contents.length > 0) {
+        let viewerOpened = false;
+        for (const file of folder.contents) {
+          if (file.type === "html" || file.type === "executable") {
+            handleFileDoubleClick(file, folderId);
+          } else if (
+            !viewerOpened &&
+            ["image", "video", "audio", "pdf"].includes(file.type)
+          ) {
+            handleFileDoubleClick(file, folderId);
+            viewerOpened = true;
+          }
+        }
+      }
+    },
+    [state, handleFolderDoubleClick, handleFileDoubleClick],
+  );
+
+  // Called when guide dot arrives at target folder
+  const handleDotArrived = useCallback(() => {
+    if (!navigatingToFolder) return;
+    openFolderAndFiles(navigatingToFolder);
+    setNavigatingToFolder(null);
+  }, [navigatingToFolder, openFolderAndFiles]);
+
   const handleRenameScreen = useCallback(
     (tabId: string, name: string) => {
       if (!state || !name.trim()) return;
@@ -401,16 +486,17 @@ export default function Home() {
 
   if (!state) return <div className="h-screen w-screen bg-bg" />;
 
-  // Derive cursor target: first folder in sequence not yet opened
+  // Derive cursor target: navigating folder or first unopened in sequence
   const nextIdx = FOLDER_SEQUENCE.findIndex((id) => !everOpenedIds.has(id));
   const nextTargetId = nextIdx >= 0 ? FOLDER_SEQUENCE[nextIdx] : null;
-  const nextTargetFolder = nextTargetId
-    ? state.folders.find((f) => f.id === nextTargetId)
+  const cursorFolderId = navigatingToFolder ?? nextTargetId;
+  const cursorFolder = cursorFolderId
+    ? state.folders.find((f) => f.id === cursorFolderId)
     : null;
 
   // Compute viewport-absolute position for cursor target
   let cursorTarget: { x: number; y: number } | null = null;
-  if (nextTargetFolder) {
+  if (cursorFolder) {
     const tabId = state.tabs[0]?.id;
     const panel = tabId
       ? document.querySelector<HTMLElement>(`[data-tab-panel="${tabId}"]`)
@@ -418,8 +504,8 @@ export default function Home() {
     if (panel) {
       const rect = panel.getBoundingClientRect();
       cursorTarget = {
-        x: rect.left + nextTargetFolder.position.x + 50,
-        y: rect.top + nextTargetFolder.position.y + 40,
+        x: rect.left + cursorFolder.position.x + 50,
+        y: rect.top + cursorFolder.position.y + 40,
       };
     }
   }
@@ -580,7 +666,17 @@ export default function Home() {
                   </FloatingWindow>
                 ))}
 
-                <FolderGuideCursor targetPosition={cursorTarget} />
+                <FolderGuideCursor
+                  targetPosition={cursorTarget}
+                  navigating={navigatingToFolder !== null}
+                  onArrived={handleDotArrived}
+                />
+                <SpacebarController
+                  navigatingToFolder={navigatingToFolder}
+                  setNavigatingToFolder={setNavigatingToFolder}
+                  nextTargetId={nextTargetId}
+                  openFolderAndFiles={openFolderAndFiles}
+                />
                 <RemoteCursors />
               </div>
             </MultiplayerProvider>

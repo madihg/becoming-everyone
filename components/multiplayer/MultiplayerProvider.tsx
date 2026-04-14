@@ -15,10 +15,17 @@ interface CursorData {
   y: number;
 }
 
+interface CustomEvent {
+  type: string;
+  [key: string]: unknown;
+}
+
 interface MultiplayerContextValue {
   cursors: Record<string, CursorData>;
   sharedText: string;
   updateText: (text: string) => void;
+  sendMessage: (data: Record<string, unknown>) => void;
+  lastEvent: CustomEvent | null;
   connected: boolean;
 }
 
@@ -26,6 +33,8 @@ const MultiplayerContext = createContext<MultiplayerContextValue>({
   cursors: {},
   sharedText: "",
   updateText: () => {},
+  sendMessage: () => {},
+  lastEvent: null,
   connected: false,
 });
 
@@ -47,6 +56,7 @@ export default function MultiplayerProvider({
   const [cursors, setCursors] = useState<Record<string, CursorData>>({});
   const [sharedText, setSharedText] = useState("");
   const [connected, setConnected] = useState(false);
+  const [lastEvent, setLastEvent] = useState<CustomEvent | null>(null);
   const wsRef = useRef<PartySocket | null>(null);
   const throttleRef = useRef(0);
 
@@ -86,6 +96,16 @@ export default function MultiplayerProvider({
       if (data.type === "text_update") {
         setSharedText(data.text);
       }
+
+      // Custom events (non-cursor/text) - expose via lastEvent
+      if (
+        data.type !== "sync" &&
+        data.type !== "cursor_move" &&
+        data.type !== "cursor_leave" &&
+        data.type !== "text_update"
+      ) {
+        setLastEvent(data as CustomEvent);
+      }
     });
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -116,9 +136,20 @@ export default function MultiplayerProvider({
     wsRef.current?.send(JSON.stringify({ type: "text_update", text }));
   }, []);
 
+  const sendMessage = useCallback((data: Record<string, unknown>) => {
+    wsRef.current?.send(JSON.stringify(data));
+  }, []);
+
   return (
     <MultiplayerContext.Provider
-      value={{ cursors, sharedText, updateText, connected }}
+      value={{
+        cursors,
+        sharedText,
+        updateText,
+        sendMessage,
+        lastEvent,
+        connected,
+      }}
     >
       {children}
     </MultiplayerContext.Provider>

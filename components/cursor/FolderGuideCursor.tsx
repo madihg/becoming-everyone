@@ -4,13 +4,29 @@ import { useEffect, useRef } from "react";
 
 interface Props {
   targetPosition: { x: number; y: number } | null;
+  navigating?: boolean;
+  onArrived?: () => void;
 }
 
-export default function FolderGuideCursor({ targetPosition }: Props) {
+export default function FolderGuideCursor({
+  targetPosition,
+  navigating = false,
+  onArrived,
+}: Props) {
   const dotRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<number>(0);
   const currentPos = useRef({ x: 0, y: 0 });
   const initialized = useRef(false);
+  const arrivedRef = useRef(false);
+  const onArrivedRef = useRef(onArrived);
+  onArrivedRef.current = onArrived;
+
+  // Reset arrived flag when navigating starts
+  useEffect(() => {
+    if (navigating) {
+      arrivedRef.current = false;
+    }
+  }, [navigating]);
 
   useEffect(() => {
     if (!targetPosition || !dotRef.current) return;
@@ -25,16 +41,31 @@ export default function FolderGuideCursor({ targetPosition }: Props) {
     const animate = () => {
       time += 0.016;
 
-      // Lerp toward target center
-      const lerpSpeed = 0.03;
+      const isNavigating = navigating && !arrivedRef.current;
+      const lerpSpeed = isNavigating ? 0.12 : 0.03;
+
       currentPos.current.x +=
         (targetPosition.x - currentPos.current.x) * lerpSpeed;
       currentPos.current.y +=
         (targetPosition.y - currentPos.current.y) * lerpSpeed;
 
-      // Orbit around target
-      const orbitX = Math.cos(time * 1.2) * 35 + Math.sin(time * 0.7) * 10;
-      const orbitY = Math.sin(time * 0.9) * 25 + Math.cos(time * 1.5) * 8;
+      // Orbit only when not navigating
+      let orbitX = 0;
+      let orbitY = 0;
+      if (!isNavigating) {
+        orbitX = Math.cos(time * 1.2) * 35 + Math.sin(time * 0.7) * 10;
+        orbitY = Math.sin(time * 0.9) * 25 + Math.cos(time * 1.5) * 8;
+      }
+
+      // Check arrival during navigation
+      if (isNavigating) {
+        const dx = targetPosition.x - currentPos.current.x;
+        const dy = targetPosition.y - currentPos.current.y;
+        if (Math.hypot(dx, dy) < 3) {
+          arrivedRef.current = true;
+          onArrivedRef.current?.();
+        }
+      }
 
       const finalX = currentPos.current.x + orbitX;
       const finalY = currentPos.current.y + orbitY;
@@ -51,7 +82,7 @@ export default function FolderGuideCursor({ targetPosition }: Props) {
     return () => {
       if (animRef.current) cancelAnimationFrame(animRef.current);
     };
-  }, [targetPosition]);
+  }, [targetPosition, navigating]);
 
   if (!targetPosition) return null;
 

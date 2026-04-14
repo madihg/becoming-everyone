@@ -48,6 +48,13 @@ export default class CursorRoom implements Party.Server {
         [sender.id],
       );
     }
+
+    if (data.type === "open_folder") {
+      this.room.broadcast(
+        JSON.stringify({ type: "open_folder", folderId: data.folderId }),
+        [sender.id],
+      );
+    }
   }
 
   onClose(conn: Party.Connection) {
