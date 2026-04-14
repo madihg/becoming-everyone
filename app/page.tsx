@@ -19,11 +19,13 @@ function SpacebarController({
   setNavigatingToFolder,
   nextTargetId,
   openFolderAndFiles,
+  onAllComplete,
 }: {
   navigatingToFolder: string | null;
   setNavigatingToFolder: (id: string | null) => void;
   nextTargetId: string | null;
   openFolderAndFiles: (folderId: string) => void;
+  onAllComplete: () => void;
 }) {
   const { sendMessage, lastEvent } = useMultiplayer();
 
@@ -39,13 +41,22 @@ function SpacebarController({
         return;
       e.preventDefault();
       if (navigatingToFolder) return;
-      if (!nextTargetId) return;
+      if (!nextTargetId) {
+        onAllComplete();
+        return;
+      }
       setNavigatingToFolder(nextTargetId);
       sendMessage({ type: "open_folder", folderId: nextTargetId });
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [navigatingToFolder, nextTargetId, setNavigatingToFolder, sendMessage]);
+  }, [
+    navigatingToFolder,
+    nextTargetId,
+    setNavigatingToFolder,
+    sendMessage,
+    onAllComplete,
+  ]);
 
   // Remote open_folder events
   useEffect(() => {
@@ -64,6 +75,7 @@ function SpacebarController({
 }
 
 let nextWindowSide: "left" | "right" = "right";
+const openWindowRefs: Window[] = [];
 
 function openExternalWindow(url: string) {
   const w = Math.floor(screen.availWidth / 3);
@@ -71,11 +83,37 @@ function openExternalWindow(url: string) {
   const side = nextWindowSide;
   nextWindowSide = side === "right" ? "left" : "right";
   const left = side === "right" ? screen.availWidth - w : 0;
-  window.open(
+  const ref = window.open(
     url,
     "_blank",
     `width=${w},height=${h},left=${left},top=0,toolbar=no,menubar=no,location=no,status=no`,
   );
+  if (ref) openWindowRefs.push(ref);
+}
+
+function openExternalWindowSized(
+  url: string,
+  windowCount: number,
+  windowIndex: number,
+) {
+  const w = Math.floor(screen.availWidth / windowCount);
+  const h = screen.availHeight;
+  const left = windowIndex * w;
+  const ref = window.open(
+    url,
+    "_blank",
+    `width=${w},height=${h},left=${left},top=0,toolbar=no,menubar=no,location=no,status=no`,
+  );
+  if (ref) openWindowRefs.push(ref);
+}
+
+function closeAllExternalWindows() {
+  openWindowRefs.forEach((w) => {
+    try {
+      w.close();
+    } catch {}
+  });
+  openWindowRefs.length = 0;
 }
 
 export default function Home() {
@@ -92,6 +130,7 @@ export default function Home() {
   const [navigatingToFolder, setNavigatingToFolder] = useState<string | null>(
     null,
   );
+  const [showCredits, setShowCredits] = useState(false);
 
   // Pointer-based drag
   const dragRef = useRef<{
@@ -346,28 +385,84 @@ export default function Home() {
     [state, floatingWindows, openMode],
   );
 
-  // Open a folder and auto-open all its files
+  // Open a folder and auto-open all its files (spacebar flow)
   const openFolderAndFiles = useCallback(
     (folderId: string) => {
       if (!state) return;
-      handleFolderDoubleClick(folderId);
-      const folder = state.folders.find((f) => f.id === folderId);
-      if (folder && folder.contents.length > 0) {
-        let viewerOpened = false;
-        for (const file of folder.contents) {
-          if (file.type === "html" || file.type === "executable") {
-            handleFileDoubleClick(file, folderId);
-          } else if (
-            !viewerOpened &&
-            ["image", "video", "audio", "pdf"].includes(file.type)
-          ) {
-            handleFileDoubleClick(file, folderId);
-            viewerOpened = true;
-          }
+
+      // Close all external windows from previous folder
+      closeAllExternalWindows();
+
+      // Close all open folders and open the target in one state update
+      const newState = {
+        ...state,
+        folders: state.folders.map((f) => {
+          if (f.id === folderId) return { ...f, isOpen: true };
+          if (f.isOpen) return { ...f, isOpen: false };
+          return f;
+        }),
+      };
+      setState(newState);
+      setEverOpenedIds((prev) => new Set([...prev, folderId]));
+
+      const z = topZ + 1;
+      setTopZ(z);
+      setWindowZMap((prev) => ({ ...prev, [folderId]: z }));
+
+      // Persist open states
+      fetch(`/api/folders/${folderId}/open`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isOpen: true }),
+      });
+      state.folders.forEach((f) => {
+        if (f.isOpen && f.id !== folderId) {
+          fetch(`/api/folders/${f.id}/open`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ isOpen: false }),
+          });
         }
+      });
+
+      // Open files with smart sizing
+      const folder = state.folders.find((f) => f.id === folderId);
+      if (!folder || folder.contents.length === 0) return;
+
+      const viewableMedia = folder.contents.filter((f) =>
+        ["image", "video", "audio", "pdf"].includes(f.type),
+      );
+      const htmlFiles = folder.contents.filter((f) => f.type === "html");
+      const execFiles = folder.contents.filter((f) => f.type === "executable");
+
+      const windowCount =
+        (viewableMedia.length > 0 ? 1 : 0) +
+        htmlFiles.length +
+        execFiles.length;
+      if (windowCount === 0) return;
+
+      let windowIndex = 0;
+
+      if (viewableMedia.length > 0) {
+        openExternalWindowSized(
+          `/content/viewer?folder=${folderId}&index=0`,
+          windowCount,
+          windowIndex,
+        );
+        windowIndex++;
+      }
+
+      for (const file of htmlFiles) {
+        openExternalWindowSized(file.path, windowCount, windowIndex);
+        windowIndex++;
+      }
+
+      for (const file of execFiles) {
+        openExternalWindowSized(file.path, windowCount, windowIndex);
+        windowIndex++;
       }
     },
-    [state, handleFolderDoubleClick, handleFileDoubleClick],
+    [state, topZ],
   );
 
   // Called when guide dot arrives at target folder
@@ -376,6 +471,29 @@ export default function Home() {
     openFolderAndFiles(navigatingToFolder);
     setNavigatingToFolder(null);
   }, [navigatingToFolder, openFolderAndFiles]);
+
+  // Called when all 19 folders have been opened and spacebar pressed again
+  const handleAllComplete = useCallback(() => {
+    closeAllExternalWindows();
+    if (state) {
+      setState({
+        ...state,
+        folders: state.folders.map((f) =>
+          f.isOpen ? { ...f, isOpen: false } : f,
+        ),
+      });
+      state.folders.forEach((f) => {
+        if (f.isOpen) {
+          fetch(`/api/folders/${f.id}/open`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ isOpen: false }),
+          });
+        }
+      });
+    }
+    setShowCredits(true);
+  }, [state]);
 
   const handleRenameScreen = useCallback(
     (tabId: string, name: string) => {
@@ -401,12 +519,6 @@ export default function Home() {
     const panelW = panel ? panel.clientWidth : 900;
     const panelH = panel ? panel.clientHeight : 700;
 
-    // Categorize by type prefix
-    const pFolders = state.folders.filter((f) => f.id.match(/^\d+P/));
-    const oFolders = state.folders.filter((f) => f.id.match(/^\d+O/));
-    const rwFolders = state.folders.filter((f) => f.id.match(/^\d+[RW]/));
-
-    // Seeded random from folder id (consistent offsets across reloads)
     const seededRandom = (seed: string) => {
       let h = 0;
       for (let i = 0; i < seed.length; i++) {
@@ -415,58 +527,53 @@ export default function Home() {
       return ((h & 0x7fffffff) % 1000) / 1000;
     };
 
-    const colWidth = 115;
-    const rowHeight = 100;
+    const margin = 40;
+    const spacingX = 120;
+    const spacingY = 100;
+    const placed: { x: number; y: number }[] = [];
 
-    const layoutCluster = (
-      folders: typeof state.folders,
-      originX: number,
-      originY: number,
-      cols: number,
-    ) => {
-      const result = new Map<string, { x: number; y: number }>();
-      const sorted = [...folders].sort((a, b) => {
-        const numA = parseInt(a.id.match(/^(\d+)/)?.[1] || "999", 10);
-        const numB = parseInt(b.id.match(/^(\d+)/)?.[1] || "999", 10);
-        return numA - numB;
-      });
-      sorted.forEach((folder, i) => {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-        const r = seededRandom(folder.id);
-        const r2 = seededRandom(folder.id + "y");
-        const offsetX = (r - 0.5) * 24;
-        const offsetY = (r2 - 0.5) * 24;
-        result.set(folder.id, {
-          x: Math.max(10, originX + col * colWidth + offsetX),
-          y: Math.max(40, originY + row * rowHeight + offsetY),
-        });
-      });
-      return result;
-    };
-
-    // P cluster: left side
-    const pPositions = layoutCluster(pFolders, 30, 50, 2);
-    // O cluster: top-right
-    const oPositions = layoutCluster(oFolders, panelW * 0.6, 50, 2);
-    // R+W cluster: bottom-right
-    const rwPositions = layoutCluster(
-      rwFolders,
-      panelW * 0.55,
-      panelH * 0.45,
-      3,
+    // Place in FOLDER_SEQUENCE order for organic scatter
+    const ordered = FOLDER_SEQUENCE.map((id) =>
+      state.folders.find((f) => f.id === id),
+    ).filter(Boolean) as typeof state.folders;
+    const remaining = state.folders.filter(
+      (f) => !FOLDER_SEQUENCE.includes(f.id),
     );
+    const allToPlace = [...ordered, ...remaining];
 
-    const allPositions = new Map([
-      ...pPositions,
-      ...oPositions,
-      ...rwPositions,
-    ]);
+    const positions = new Map<string, { x: number; y: number }>();
+
+    for (const folder of allToPlace) {
+      const r1 = seededRandom(folder.id);
+      const r2 = seededRandom(folder.id + "y");
+      let x = margin + r1 * (panelW - 2 * margin - 80);
+      let y = margin + 40 + r2 * (panelH - 2 * margin - 70);
+
+      let attempts = 0;
+      while (attempts < 50) {
+        let collision = false;
+        for (const p of placed) {
+          if (Math.abs(p.x - x) < spacingX && Math.abs(p.y - y) < spacingY) {
+            collision = true;
+            break;
+          }
+        }
+        if (!collision) break;
+        const jr = seededRandom(folder.id + attempts.toString());
+        const jr2 = seededRandom(folder.id + "j" + attempts.toString());
+        x = margin + jr * (panelW - 2 * margin - 80);
+        y = margin + 40 + jr2 * (panelH - 2 * margin - 70);
+        attempts++;
+      }
+
+      placed.push({ x, y });
+      positions.set(folder.id, { x: Math.max(10, x), y: Math.max(40, y) });
+    }
 
     persist({
       ...state,
       folders: state.folders.map((f) => {
-        const pos = allPositions.get(f.id);
+        const pos = positions.get(f.id);
         return pos ? { ...f, position: pos } : f;
       }),
     });
@@ -676,8 +783,38 @@ export default function Home() {
                   setNavigatingToFolder={setNavigatingToFolder}
                   nextTargetId={nextTargetId}
                   openFolderAndFiles={openFolderAndFiles}
+                  onAllComplete={handleAllComplete}
                 />
                 <RemoteCursors />
+
+                {showCredits && (
+                  <div
+                    className="fixed inset-0 bg-bg z-[9999] flex items-center justify-center"
+                    style={{
+                      animation: "credits-fade-in 2s ease forwards",
+                      opacity: 0,
+                    }}
+                  >
+                    <div className="text-center font-mono text-white space-y-8">
+                      <p className="text-[32px]">Thank you</p>
+                      <div className="text-[20px] text-[#d1d5db] space-y-3">
+                        <p>CultureHub LA</p>
+                        <p>Stacy</p>
+                        <p>Josephine Made</p>
+                        <p>Geo Morjan Jihad</p>
+                        <p>Bina Senator</p>
+                      </div>
+                      <p className="text-[20px] text-[#FFE600]">Prop 46</p>
+                    </div>
+                    <style jsx>{`
+                      @keyframes credits-fade-in {
+                        to {
+                          opacity: 1;
+                        }
+                      }
+                    `}</style>
+                  </div>
+                )}
               </div>
             </MultiplayerProvider>
           );

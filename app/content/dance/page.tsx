@@ -10,11 +10,16 @@ export default function DancePage() {
   const [commandIndex, setCommandIndex] = useState(-1);
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [yellowedNumbers, setYellowedNumbers] = useState<Set<number>>(
+    new Set(),
+  );
   const [poseLoaded, setPoseLoaded] = useState(false);
   const [poseError, setPoseError] = useState<string | null>(null);
   const poseLandmarkerRef = useRef<any>(null);
   const animFrameRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize webcam
   useEffect(() => {
@@ -190,15 +195,40 @@ export default function DancePage() {
     if (commandIndex < 0 || commandIndex >= DANCE_SCRIPT.length) return;
 
     const cmd = DANCE_SCRIPT[commandIndex];
+    setCountdown(null);
+    setYellowedNumbers(new Set());
+
     const cleanup = typeText(cmd.text, () => {
       if (cmd.duration) {
-        timerRef.current = setTimeout(advanceCommand, cmd.duration);
+        if (cmd.duration >= 10000) {
+          // Long command - use visible countdown
+          const totalSeconds = Math.floor(cmd.duration / 1000);
+          setCountdown(totalSeconds);
+          let current = totalSeconds;
+          countdownRef.current = setInterval(() => {
+            setYellowedNumbers((prev) => {
+              const next = new Set(prev);
+              next.add(current);
+              return next;
+            });
+            current--;
+            setCountdown(current);
+            if (current <= 0) {
+              if (countdownRef.current) clearInterval(countdownRef.current);
+              advanceCommand();
+            }
+          }, 1000);
+        } else {
+          // Short command - use simple timeout
+          timerRef.current = setTimeout(advanceCommand, cmd.duration);
+        }
       }
     });
 
     return () => {
       cleanup();
       if (timerRef.current) clearTimeout(timerRef.current);
+      if (countdownRef.current) clearInterval(countdownRef.current);
     };
   }, [commandIndex, typeText, advanceCommand]);
 
@@ -244,11 +274,9 @@ export default function DancePage() {
 
       {/* Command panel - 30% */}
       <div className="flex-[3] border-l border-folder-border flex flex-col">
-        <div className="flex-1 p-6 flex flex-col justify-end overflow-hidden">
+        <div className="flex-1 p-6 flex flex-col justify-start overflow-hidden">
           {commandIndex < 0 ? (
-            <div className="text-text-muted/40 text-sm">
-              Press space to begin
-            </div>
+            <div className="text-text-muted/40 text-sm">override</div>
           ) : (
             <div className="space-y-6">
               {/* Show history of commands */}
@@ -265,20 +293,56 @@ export default function DancePage() {
 
               {/* Current command */}
               {currentCmd && (
-                <p
-                  className={`transition-all duration-300 ${
-                    currentCmd.type === "intro"
-                      ? "text-2xl text-white font-bold"
-                      : currentCmd.type === "feedback"
-                        ? "text-lg text-yellow"
-                        : "text-xl text-white leading-relaxed"
-                  }`}
-                >
-                  {displayedText}
-                  {isTyping && (
-                    <span className="inline-block w-[2px] h-[1em] bg-yellow ml-1 animate-pulse" />
+                <div>
+                  <p
+                    className={`transition-all duration-300 ${
+                      currentCmd.type === "intro"
+                        ? "text-2xl text-white font-bold"
+                        : currentCmd.type === "feedback"
+                          ? "text-lg text-yellow"
+                          : "text-xl text-white leading-relaxed"
+                    }`}
+                  >
+                    {displayedText}
+                    {isTyping && (
+                      <span className="inline-block w-[2px] h-[1em] bg-yellow ml-1 animate-pulse" />
+                    )}
+                  </p>
+
+                  {/* Countdown display for long commands */}
+                  {countdown !== null && (
+                    <div className="mt-4 flex flex-wrap gap-2 font-mono text-lg">
+                      {Array.from(
+                        {
+                          length: Math.floor((currentCmd.duration || 0) / 1000),
+                        },
+                        (_, i) => {
+                          const num =
+                            Math.floor((currentCmd.duration || 0) / 1000) - i;
+                          return (
+                            <span
+                              key={num}
+                              style={{
+                                color: yellowedNumbers.has(num)
+                                  ? "#FFE600"
+                                  : "#666",
+                              }}
+                            >
+                              {num}
+                            </span>
+                          );
+                        },
+                      )}
+                      <span
+                        style={{
+                          color: yellowedNumbers.has(0) ? "#FFE600" : "#666",
+                        }}
+                      >
+                        0
+                      </span>
+                    </div>
                   )}
-                </p>
+                </div>
               )}
             </div>
           )}

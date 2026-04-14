@@ -107,7 +107,7 @@ export default function AdminAuth({ children }: AdminAuthProps) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const text = `i've always wanted to become ${input}one`;
+    const text = `I've always wanted to become ${input}one`;
     const fontSize = 32;
     ctx.font = `${fontSize}px "Diatype Mono", monospace`;
     ctx.textAlign = "center";
@@ -175,7 +175,7 @@ export default function AdminAuth({ children }: AdminAuthProps) {
           <div className="text-center relative z-10">
             <p className="text-[32px] font-mono text-white leading-relaxed">
               <span className="select-none">
-                i&apos;ve always wanted to become{"\u00a0"}
+                I&apos;ve always wanted to become{"\u00a0"}
               </span>
               <span className="inline-flex items-baseline relative">
                 <span className="inline-flex">
@@ -225,7 +225,7 @@ export default function AdminAuth({ children }: AdminAuthProps) {
         >
           <p className="text-[32px] font-mono leading-relaxed flex flex-wrap justify-center items-baseline px-4">
             <span className="select-none">
-              i&apos;ve always wanted to become{"\u00a0"}
+              I&apos;ve always wanted to become{"\u00a0"}
             </span>
             <TypedBeforeOne
               value={input}

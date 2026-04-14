@@ -77,6 +77,44 @@ All 6 workstreams implemented and building clean.
 
 **6. Viewer Fixes** - DONE. Removed video loop, shrunk nav arrows (60x200px), hidden arrows for workout folder (7P3-lift).
 
+## Spacebar Advance - COMPLETED (April 14, 2026)
+
+Pressing spacebar during live performance advances through FOLDER_SEQUENCE:
+
+1. Yellow guide dot stops orbiting, darts toward next folder (lerp 0.12 vs 0.03)
+2. On arrival: folder opens, all files auto-open (viewer for first media file, external windows for HTML/executables)
+3. Broadcasts `open_folder` via PartyKit - all connected clients run same sequence
+4. Spacebar debounced during animation (blocked while `navigatingToFolder` is set)
+
+**Files modified:**
+
+- `party/main.ts` - added `open_folder` message broadcast handler
+- `components/multiplayer/MultiplayerProvider.tsx` - added `sendMessage()` + `lastEvent` to context
+- `components/cursor/FolderGuideCursor.tsx` - added `navigating` + `onArrived` props (fast dart mode)
+- `app/page.tsx` - `SpacebarController` component (keydown + remote events), `openFolderAndFiles`, `handleDotArrived`
+
+**Architecture note:** `SpacebarController` is a renderless component inside `<MultiplayerProvider room="folders">` so it can call `useMultiplayer()`. The parent `Home` component sits above the provider, so it can't use the hook directly.
+
+## Performance Polish - COMPLETED (April 14, 2026)
+
+8 workstreams implemented and building clean.
+
+**1. Capitalize "I"** - DONE. "I've" capitalized in AdminAuth.tsx (3 locations: canvas, input phase, color transition).
+
+**2. Auto-Close External Windows** - DONE. `openWindowRefs` tracks all `window.open()` refs. `closeAllExternalWindows()` called before each spacebar advance. Previous folder's FolderWindow also closes.
+
+**3. Updated folders.json** - DONE. Complete rewrite reflecting CH/HM file naming. CH files excluded from display. HM files with local paths. New slides for grieve (34 JPEGs). 12W3-poly now has content.
+
+**4. Smart Window Sizing** - DONE. `openExternalWindowSized(url, windowCount, windowIndex)` tiles windows: 1=full screen, 2=half, 3=third, etc. Pre-computed from folder contents (1 viewer + N HTML + N executables).
+
+**5. Organic Folder Scatter** - DONE. `handleAutoArrange` rewritten with seeded random + collision avoidance (120x100px spacing, 40px margins). Places in FOLDER_SEQUENCE order.
+
+**6. Dance Page Overhaul** - DONE. Text direction reversed (top to bottom). 2 prompts changed "Dance" to "Move". "Press space to begin" changed to "override". Visible countdown for long commands (numbers turn yellow).
+
+**7. Sleep Verification** - No changes needed (text already centered).
+
+**8. Credits After Folder 19** - DONE. `handleAllComplete` closes all windows, shows credits overlay: "Thank you / CultureHub LA / Stacy / Josephine Made / Geo Morjan Jihad / Bina Senator / Prop 46". Fade-in animation (2s).
+
 ## Key Files
 
 - `config/folders.json` - 19 folders config

@@ -17,7 +17,7 @@ export const DANCE_SCRIPT: DanceCommand[] = [
   { type: "command", text: "Dance.", duration: 1500 },
   {
     type: "command",
-    text: "Dance like you are trying to convince gravity to stay a little longer, to hold you like someone who still remembers your scent.",
+    text: "Move like you are trying to convince gravity to stay a little longer, to hold you like someone who still remembers your scent.",
     duration: 15000,
   },
   { type: "feedback", text: "Good body.", duration: 2500 },
@@ -31,7 +31,7 @@ export const DANCE_SCRIPT: DanceCommand[] = [
   { type: "command", text: "Dance.", duration: 1500 },
   {
     type: "command",
-    text: "Dance like a machine learning heartbreak for the first time.",
+    text: "Move like a machine learning heartbreak for the first time.",
     duration: 15000,
   },
   { type: "feedback", text: "Good body.", duration: 5000 },
