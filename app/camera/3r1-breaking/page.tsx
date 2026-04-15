@@ -77,10 +77,10 @@ export default function Camera3R1Breaking() {
           {/* Breaking news banner */}
           <div className="absolute top-0 left-0 right-0 bg-red-600 py-6 px-4 z-10">
             <div className="flex items-center gap-3">
-              <div className="bg-white text-red-600 px-3 py-1 font-display text-sm font-bold uppercase tracking-wider">
+              <div className="bg-white text-red-600 px-4 py-2 font-display text-xl font-bold uppercase tracking-wider">
                 Breaking News
               </div>
-              <div className="text-white font-mono text-xs uppercase tracking-wide">
+              <div className="text-white font-mono text-lg font-bold uppercase tracking-wide">
                 NBN • NEW BEIRUT 2046 • LIVE COVERAGE
               </div>
             </div>
@@ -89,7 +89,7 @@ export default function Camera3R1Breaking() {
           {/* Scrolling ticker at bottom */}
           <div className="absolute bottom-0 left-0 right-0 bg-red-600 py-6 overflow-hidden z-10">
             <div className="ticker-wrapper">
-              <div className="ticker-content font-mono text-white text-sm uppercase tracking-wide whitespace-nowrap">
+              <div className="ticker-content font-mono text-white text-xl font-bold uppercase tracking-wide whitespace-nowrap">
                 {tickerText}
                 {tickerText}
                 {tickerText}

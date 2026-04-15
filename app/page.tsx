@@ -802,13 +802,6 @@ export default function Home() {
                   <div className="absolute bottom-3 left-3 z-50 flex gap-1">
                     <button
                       className="text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
-                      onClick={handleAutoArrange}
-                      title="Arrange folders in grid"
-                    >
-                      Arrange
-                    </button>
-                    <button
-                      className="text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
                       onClick={handleGoBack}
                       title="Go back one folder"
                     >
@@ -830,19 +823,7 @@ export default function Home() {
                       onClick={handleReset}
                       title="Reset sequence"
                     >
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M2 8a6 6 0 1 1 1.5 4" />
-                        <path d="M2 12V8h4" />
-                      </svg>
+                      &#x21BB;
                     </button>
                   </div>
                 </div>
@@ -877,20 +858,6 @@ export default function Home() {
                       </div>
                     );
                   })()}
-
-                <div className="absolute bottom-3 right-3 z-50">
-                  <select
-                    value={openMode}
-                    onChange={(e) =>
-                      setOpenMode(e.target.value as "ext" | "int")
-                    }
-                    className="text-[10px] font-mono text-[#888] bg-[#111] border border-[#333] rounded-sm px-2 py-1 outline-none cursor-pointer hover:border-[#555] transition-colors"
-                    title="File open mode: ext (external windows) / int (internal floating)"
-                  >
-                    <option value="ext">ext</option>
-                    <option value="int">int</option>
-                  </select>
-                </div>
 
                 {floatingWindows.map((win) => (
                   <FloatingWindow

@@ -83,10 +83,10 @@ export default function Camera11R2Arms() {
             }}
           >
             <div className="flex items-center gap-3">
-              <div className="bg-white text-[#556B2F] px-3 py-1 font-display text-sm font-bold uppercase tracking-wider">
+              <div className="bg-white text-[#556B2F] px-4 py-2 font-display text-xl font-bold uppercase tracking-wider">
                 Press Briefing
               </div>
-              <div className="text-white font-mono text-xs uppercase tracking-wide">
+              <div className="text-white font-mono text-lg font-bold uppercase tracking-wide">
                 NBN • OFFICIAL STATEMENT - NEW BEIRUT 2046
               </div>
             </div>
@@ -101,7 +101,7 @@ export default function Camera11R2Arms() {
             }}
           >
             <div className="ticker-wrapper">
-              <div className="ticker-content font-mono text-white text-sm uppercase tracking-wide whitespace-nowrap">
+              <div className="ticker-content font-mono text-white text-xl font-bold uppercase tracking-wide whitespace-nowrap">
                 {tickerText}
                 {tickerText}
                 {tickerText}

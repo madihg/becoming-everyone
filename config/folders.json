@@ -11,8 +11,8 @@
       "name": "1P1-service",
       "tabId": "tab-1",
       "position": {
-        "x": 47.4,
-        "y": 594.25
+        "x": 47.62,
+        "y": 602.6650000000001
       },
       "isOpen": false,
       "contents": [
@@ -59,8 +59,8 @@
       "name": "2O1-anyone",
       "tabId": "tab-1",
       "position": {
-        "x": 675.66,
-        "y": 320.9
+        "x": 694.558,
+        "y": 324.842
       },
       "isOpen": false,
       "contents": [
@@ -77,8 +77,8 @@
       "name": "3R1-breaking",
       "tabId": "tab-1",
       "position": {
-        "x": 778.52,
-        "y": 143.25
+        "x": 800.476,
+        "y": 144.285
       },
       "isOpen": false,
       "contents": [
@@ -95,8 +95,8 @@
       "name": "4W1-children",
       "tabId": "tab-1",
       "position": {
-        "x": 636.44,
-        "y": 548.05
+        "x": 654.172,
+        "y": 555.7090000000001
       },
       "isOpen": false,
       "contents": [
@@ -113,8 +113,8 @@
       "name": "5P2-sleep",
       "tabId": "tab-1",
       "position": {
-        "x": 176.9,
-        "y": 379.20000000000005
+        "x": 180.97,
+        "y": 384.096
       },
       "isOpen": false,
       "contents": [
@@ -137,8 +137,8 @@
       "name": "6O2-what",
       "tabId": "tab-1",
       "position": {
-        "x": 176.16,
-        "y": 208.15
+        "x": 180.208,
+        "y": 210.247
       },
       "isOpen": false,
       "contents": [
@@ -155,8 +155,8 @@
       "name": "7P3-lift",
       "tabId": "tab-1",
       "position": {
-        "x": 127.32,
-        "y": 81.65
+        "x": 129.916,
+        "y": 81.677
       },
       "isOpen": false,
       "contents": [
@@ -179,8 +179,8 @@
       "name": "8W2-move",
       "tabId": "tab-1",
       "position": {
-        "x": 421.1,
-        "y": 514.5
+        "x": 432.43,
+        "y": 521.61
       },
       "isOpen": false,
       "contents": []
@@ -190,8 +190,8 @@
       "name": "9O3-win",
       "tabId": "tab-1",
       "position": {
-        "x": 294.55999999999995,
-        "y": 479.3
+        "x": 299.84200000000004,
+        "y": 484.157
       },
       "isOpen": false,
       "contents": [
@@ -208,8 +208,8 @@
       "name": "10P4-dance",
       "tabId": "tab-1",
       "position": {
-        "x": 431.46000000000004,
-        "y": 234.00000000000003
+        "x": 443.098,
+        "y": 236.52
       },
       "isOpen": false,
       "contents": [
@@ -226,8 +226,8 @@
       "name": "11R2-arms",
       "tabId": "tab-1",
       "position": {
-        "x": 587.6,
-        "y": 186.7
+        "x": 603.88,
+        "y": 188.446
       },
       "isOpen": false,
       "contents": [
@@ -244,8 +244,8 @@
       "name": "12W3-poly",
       "tabId": "tab-1",
       "position": {
-        "x": 303.44,
-        "y": 617.9
+        "x": 311.272,
+        "y": 626.702
       },
       "isOpen": false,
       "contents": [
@@ -262,8 +262,8 @@
       "name": "13P5-grieve",
       "tabId": "tab-1",
       "position": {
-        "x": 723.02,
-        "y": 421.55
+        "x": 743.326,
+        "y": 427.139
       },
       "isOpen": false,
       "contents": [
@@ -478,8 +478,8 @@
       "name": "14R3-critic",
       "tabId": "tab-1",
       "position": {
-        "x": 415.18,
-        "y": 389.65
+        "x": 426.334,
+        "y": 394.717
       },
       "isOpen": false,
       "contents": [
@@ -496,10 +496,10 @@
       "name": "15O4-agenda",
       "tabId": "tab-1",
       "position": {
-        "x": 49.62,
-        "y": 506.25
+        "x": 49.906,
+        "y": 513.225
       },
-      "isOpen": true,
+      "isOpen": false,
       "contents": [
         {
           "id": "15o4-img-1",
@@ -514,8 +514,8 @@
       "name": "16P6-arson",
       "tabId": "tab-1",
       "position": {
-        "x": 706,
-        "y": 330.8
+        "x": 725.8000000000001,
+        "y": 334.904
       },
       "isOpen": false,
       "contents": [
@@ -532,8 +532,8 @@
       "name": "17P7-neural",
       "tabId": "tab-1",
       "position": {
-        "x": 310.09999999999997,
-        "y": 142.15
+        "x": 300.60400000000004,
+        "y": 130.31
       },
       "isOpen": false,
       "contents": [
@@ -550,16 +550,16 @@
       "name": "18P8-yellow",
       "tabId": "tab-1",
       "position": {
-        "x": 530.62,
-        "y": 496.35
+        "x": 545.206,
+        "y": 503.163
       },
       "isOpen": false,
       "contents": [
         {
           "id": "18p8-vid-1",
-          "name": "HM1.mp4",
+          "name": "HM1.mov",
           "type": "video",
-          "path": "/folders/18P8-yellow/HM1.mp4"
+          "path": "/folders/18P8-yellow/HM1.mov"
         },
         {
           "id": "18p8-vid-2",
@@ -574,10 +574,10 @@
       "name": "19R4-found",
       "tabId": "tab-1",
       "position": {
-        "x": 301.21999999999997,
-        "y": 271.95
+        "x": 308.986,
+        "y": 275.091
       },
-      "isOpen": false,
+      "isOpen": true,
       "contents": [
         {
           "id": "19r4-html-1",
