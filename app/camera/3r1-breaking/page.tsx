@@ -39,7 +39,7 @@ export default function Camera3R1Breaking() {
   }, []);
 
   const tickerText =
-    "BREAKING NEWS • LIVE FROM NEW BEIRUT 2046 • RAPID PERSONALITY SHUFFLE OUTBREAK • OVER 100 QUARANTINED AT NATIONAL HEALTH INSTITUTE • DR. OMAR [LAST NAME] PATIENT ZERO CONFIRMED • WITNESSES REPORT IDENTITY GLITCHING PHENOMENA • TECH TYCOON JOINS QUEER LIBERATION RALLY • BARISTAS RECOMMEND ASHWAGANDHA OVER CAFFEINE • BODYBUILDERS REQUEST CUDDLES • NHI REPORTS NO MENTAL HEALTH HISTORY • FOLKS FLIPPING PERSONAS EVERY TEN MINUTES • ";
+    "BREAKING NEWS • LIVE FROM NEW BEIRUT 2046 • RAPID PERSONALITY SHUFFLE OUTBREAK • OVER 100 QUARANTINED AT NATIONAL HEALTH INSTITUTE • DR. OMAR DAMMA PATIENT ZERO CONFIRMED • WITNESSES REPORT IDENTITY GLITCHING PHENOMENA • TECH TYCOON JOINS QUEER LIBERATION RALLY • BARISTAS RECOMMEND ASHWAGANDHA OVER CAFFEINE • BODYBUILDERS REQUEST CUDDLES • NHI REPORTS NO MENTAL HEALTH HISTORY • FOLKS FLIPPING PERSONAS EVERY TEN MINUTES • ";
 
   return (
     <div className="fixed inset-0 bg-black overflow-hidden">
@@ -65,9 +65,9 @@ export default function Camera3R1Breaking() {
           />
 
           {/* NBN watermark */}
-          <div className="absolute top-16 right-4 z-20 opacity-20">
+          <div className="absolute top-16 right-4 z-20">
             <img
-              src="/markers/nbn/nbn-logo.svg"
+              src="/markers/nbn/NBN_blacktext_transparentbackground.png"
               alt=""
               className="w-24 h-24"
               draggable={false}
@@ -75,7 +75,7 @@ export default function Camera3R1Breaking() {
           </div>
 
           {/* Breaking news banner */}
-          <div className="absolute top-0 left-0 right-0 bg-red-600 py-2 px-4 z-10">
+          <div className="absolute top-0 left-0 right-0 bg-red-600 py-6 px-4 z-10">
             <div className="flex items-center gap-3">
               <div className="bg-white text-red-600 px-3 py-1 font-display text-sm font-bold uppercase tracking-wider">
                 Breaking News
@@ -87,7 +87,7 @@ export default function Camera3R1Breaking() {
           </div>
 
           {/* Scrolling ticker at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 bg-red-600 py-2 overflow-hidden z-10">
+          <div className="absolute bottom-0 left-0 right-0 bg-red-600 py-6 overflow-hidden z-10">
             <div className="ticker-wrapper">
               <div className="ticker-content font-mono text-white text-sm uppercase tracking-wide whitespace-nowrap">
                 {tickerText}

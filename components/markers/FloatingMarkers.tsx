@@ -12,52 +12,52 @@ const MARKERS: MarkerConfig[] = [
   {
     id: "phone",
     src: "/markers/phone.png",
-    style: { top: "5%", left: "5%", maxWidth: "16vw" },
+    style: { top: "3%", left: "2%", maxWidth: "12vw" },
   },
   {
     id: "webcam",
     src: "/markers/webcam.png",
-    style: { top: "3%", right: "25%", maxWidth: "18vw" },
+    style: { top: "2%", right: "30%", maxWidth: "13.5vw" },
   },
   {
     id: "weights",
     src: "/markers/weights.png",
-    style: { top: "5%", left: "30%", maxWidth: "20vw" },
+    style: { top: "3%", left: "22%", maxWidth: "15vw" },
   },
   {
     id: "drone",
     src: "/markers/drone.png",
-    style: { top: "3%", right: "5%", maxWidth: "18vw" },
+    style: { top: "2%", right: "2%", maxWidth: "13.5vw" },
   },
   {
     id: "candle",
     src: "/markers/candle.png",
-    style: { bottom: "15%", left: "5%", maxWidth: "11vw" },
+    style: { bottom: "18%", left: "2%", maxWidth: "8vw" },
   },
   {
     id: "nbn",
-    src: "/markers/nbn/nbn-logo.svg",
-    style: { top: "8%", right: "12%", maxWidth: "18vw" },
+    src: "/markers/nbn/NBN_whitetext_transparetnbackground.png",
+    style: { top: "6%", right: "15%", maxWidth: "9vw" },
   },
   {
     id: "dance",
     src: "/markers/dance.png",
-    style: { bottom: "5%", right: "25%", maxWidth: "18vw" },
+    style: { bottom: "3%", right: "30%", maxWidth: "13.5vw" },
   },
   {
     id: "heart",
     src: "/markers/heart.png",
-    style: { bottom: "5%", right: "5%", maxWidth: "18vw" },
+    style: { bottom: "3%", right: "2%", maxWidth: "13.5vw" },
   },
   {
     id: "mold",
     src: "/markers/mold.png",
-    style: { bottom: "5%", left: "3%", maxWidth: "22vw" },
+    style: { bottom: "3%", left: "2%", maxWidth: "16.5vw" },
   },
   {
     id: "earpiece",
     src: "/markers/earpiece.png",
-    style: { bottom: "12%", left: "25%", maxWidth: "16vw" },
+    style: { bottom: "15%", left: "20%", maxWidth: "12vw" },
   },
 ];
 

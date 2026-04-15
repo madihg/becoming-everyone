@@ -78,15 +78,20 @@ let nextWindowSide: "left" | "right" = "right";
 const openWindowRefs: Window[] = [];
 
 function openExternalWindow(url: string) {
-  const w = Math.floor(screen.availWidth / 3);
-  const h = Math.floor(screen.availHeight * 0.6);
+  const inset = 0.15;
+  const totalW = Math.floor(screen.availWidth * (1 - 2 * inset));
+  const totalH = Math.floor(screen.availHeight * (1 - 2 * inset));
+  const w = Math.floor(totalW / 3);
+  const h = Math.floor(totalH * 0.6);
   const side = nextWindowSide;
   nextWindowSide = side === "right" ? "left" : "right";
-  const left = side === "right" ? screen.availWidth - w : 0;
+  const leftOffset = Math.floor(screen.availWidth * inset);
+  const topOffset = Math.floor(screen.availHeight * inset);
+  const left = side === "right" ? leftOffset + totalW - w : leftOffset;
   const ref = window.open(
     url,
     "_blank",
-    `width=${w},height=${h},left=${left},top=0,toolbar=no,menubar=no,location=no,status=no`,
+    `width=${w},height=${h},left=${left},top=${topOffset},toolbar=no,menubar=no,location=no,status=no`,
   );
   if (ref) openWindowRefs.push(ref);
 }
@@ -96,13 +101,18 @@ function openExternalWindowSized(
   windowCount: number,
   windowIndex: number,
 ) {
-  const w = Math.floor(screen.availWidth / windowCount);
-  const h = screen.availHeight;
-  const left = windowIndex * w;
+  const inset = 0.15;
+  const totalW = Math.floor(screen.availWidth * (1 - 2 * inset));
+  const totalH = Math.floor(screen.availHeight * (1 - 2 * inset));
+  const w = Math.floor(totalW / windowCount);
+  const h = totalH;
+  const leftOffset = Math.floor(screen.availWidth * inset);
+  const topOffset = Math.floor(screen.availHeight * inset);
+  const left = leftOffset + windowIndex * w;
   const ref = window.open(
     url,
     "_blank",
-    `width=${w},height=${h},left=${left},top=0,toolbar=no,menubar=no,location=no,status=no`,
+    `width=${w},height=${h},left=${left},top=${topOffset},toolbar=no,menubar=no,location=no,status=no`,
   );
   if (ref) openWindowRefs.push(ref);
 }
@@ -558,6 +568,29 @@ export default function Home() {
     setShowCredits(false);
   }, [state]);
 
+  const handleGoBack = useCallback(() => {
+    let lastIdx = -1;
+    for (let i = FOLDER_SEQUENCE.length - 1; i >= 0; i--) {
+      if (everOpenedIds.has(FOLDER_SEQUENCE[i])) {
+        lastIdx = i;
+        break;
+      }
+    }
+    if (lastIdx <= 0) return;
+    const removed = FOLDER_SEQUENCE[lastIdx];
+    const newSet = new Set(everOpenedIds);
+    newSet.delete(removed);
+    setEverOpenedIds(newSet);
+    if (newSet.size > 0) {
+      localStorage.setItem("everOpenedIds", JSON.stringify([...newSet]));
+    } else {
+      localStorage.removeItem("everOpenedIds");
+    }
+    setShowCredits(false);
+    setNavigatingToFolder(null);
+    openFolderAndFiles(FOLDER_SEQUENCE[lastIdx - 1]);
+  }, [everOpenedIds, openFolderAndFiles]);
+
   const handleRenameScreen = useCallback(
     (tabId: string, name: string) => {
       if (!state || !name.trim()) return;
@@ -776,21 +809,39 @@ export default function Home() {
                     </button>
                     <button
                       className="text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
-                      onClick={handleReset}
-                      title="Reset sequence"
+                      onClick={handleGoBack}
+                      title="Go back one folder"
                     >
                       <svg
                         width="14"
                         height="14"
-                        viewBox="0 0 14 14"
+                        viewBox="0 0 16 16"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       >
-                        <path d="M1.5 2.5v4h4" />
-                        <path d="M1.5 6.5A5.5 5.5 0 1 1 2.6 9.5" />
+                        <polyline points="10,3 5,8 10,13" />
+                      </svg>
+                    </button>
+                    <button
+                      className="text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
+                      onClick={handleReset}
+                      title="Reset sequence"
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M2 8a6 6 0 1 1 1.5 4" />
+                        <path d="M2 12V8h4" />
                       </svg>
                     </button>
                   </div>

@@ -125,6 +125,30 @@ Pressing spacebar during live performance advances through FOLDER_SEQUENCE:
 
 **3. Reset Button** - DONE. Round arrow SVG button next to "Arrange" in lower left. `handleReset` closes all external windows, closes all folders, clears `everOpenedIds` (state + localStorage), resets guide dot to folder 1, hides credits.
 
+## Visual Polish + Projector Fixes - COMPLETED (April 15, 2026)
+
+10 workstreams implemented and building clean.
+
+**1. Smaller Markers** - DONE. All landing page markers 25% smaller, NBN 50% smaller. Repositioned to prevent overlaps.
+
+**2. Reset Button SVG** - DONE. Cleaner circular arrow using proper arc path.
+
+**3. Back Arrow Button** - DONE. Left chevron button between Arrange and Reset. `handleGoBack` removes last folder from `everOpenedIds`, opens previous folder's files. Guide dot naturally moves back.
+
+**4. Breaking News Borders 3x** - DONE. `py-2` -> `py-6` on top banner and bottom ticker for 3r1-breaking and 19r4-found.
+
+**5. Arms Camo Pattern** - DONE. Replaced flat `#556B2F` with repeating-linear-gradient camo (dark green, olive, brown, tan, black). 3x border height.
+
+**6. Window Insets 15%** - DONE. `openExternalWindowSized` and `openExternalWindow` now use 15% inset on all sides. Effective area = 70% of screen, centered. For projector edge cropping.
+
+**7. Dance Text** - DONE. All text sizes +30% (intro 4xl, feedback 2xl, regular 3xl). History text brighter (50% opacity). Panel starts 100px from top.
+
+**8. Grieve Slides Bigger** - DONE. Viewer images changed from `max-w-full max-h-full` to `w-full h-full` so slides scale up to fill the window.
+
+**9. NBN Logo Update** - DONE. New PNGs: black text on camera/viewer pages, white text on landing/folder pages. Removed `opacity-20` - now fully visible with transparent backgrounds.
+
+**10. Omar Damma** - DONE. All `[LAST NAME]` replaced with `DAMMA` in 3r1-breaking and 19r4-found ticker text.
+
 ## Key Files
 
 - `config/folders.json` - 19 folders config

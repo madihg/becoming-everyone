@@ -65,9 +65,9 @@ export default function Camera11R2Arms() {
           />
 
           {/* NBN watermark */}
-          <div className="absolute top-16 right-4 z-20 opacity-20">
+          <div className="absolute top-16 right-4 z-20">
             <img
-              src="/markers/nbn/nbn-logo.svg"
+              src="/markers/nbn/NBN_blacktext_transparentbackground.png"
               alt=""
               className="w-24 h-24"
               draggable={false}
@@ -75,7 +75,13 @@ export default function Camera11R2Arms() {
           </div>
 
           {/* Top banner */}
-          <div className="absolute top-0 left-0 right-0 bg-[#556B2F] py-2 px-4 z-10">
+          <div
+            className="absolute top-0 left-0 right-0 py-6 px-4 z-10"
+            style={{
+              background:
+                "repeating-linear-gradient(45deg, #2D3B1A 0px, #2D3B1A 10px, #556B2F 10px, #556B2F 20px, #5C4033 20px, #5C4033 30px, #8B7355 30px, #8B7355 35px, #1a1a1a 35px, #1a1a1a 40px)",
+            }}
+          >
             <div className="flex items-center gap-3">
               <div className="bg-white text-[#556B2F] px-3 py-1 font-display text-sm font-bold uppercase tracking-wider">
                 Press Briefing
@@ -87,7 +93,13 @@ export default function Camera11R2Arms() {
           </div>
 
           {/* Scrolling ticker at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 bg-[#556B2F] py-2 overflow-hidden z-10">
+          <div
+            className="absolute bottom-0 left-0 right-0 py-6 overflow-hidden z-10"
+            style={{
+              background:
+                "repeating-linear-gradient(45deg, #2D3B1A 0px, #2D3B1A 10px, #556B2F 10px, #556B2F 20px, #5C4033 20px, #5C4033 30px, #8B7355 30px, #8B7355 35px, #1a1a1a 35px, #1a1a1a 40px)",
+            }}
+          >
             <div className="ticker-wrapper">
               <div className="ticker-content font-mono text-white text-sm uppercase tracking-wide whitespace-nowrap">
                 {tickerText}

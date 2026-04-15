@@ -275,7 +275,7 @@ export default function DancePage() {
 
       {/* Command panel - 30% */}
       <div className="flex-[3] border-l border-folder-border flex flex-col">
-        <div className="flex-1 p-6 flex flex-col justify-start overflow-hidden">
+        <div className="flex-1 p-6 pt-[100px] flex flex-col overflow-hidden">
           {commandIndex < 0 ? (
             <div className="text-text-muted/40 text-sm">override</div>
           ) : (
@@ -284,8 +284,8 @@ export default function DancePage() {
               {DANCE_SCRIPT.slice(0, commandIndex).map((cmd, idx) => (
                 <p
                   key={idx}
-                  className={`text-text-muted/30 ${
-                    cmd.type === "feedback" ? "text-sm" : "text-base"
+                  className={`text-text-muted/50 ${
+                    cmd.type === "feedback" ? "text-base" : "text-lg"
                   }`}
                 >
                   {cmd.text}
@@ -298,10 +298,10 @@ export default function DancePage() {
                   <p
                     className={`transition-all duration-300 ${
                       currentCmd.type === "intro"
-                        ? "text-2xl text-white font-bold"
+                        ? "text-4xl text-white font-bold"
                         : currentCmd.type === "feedback"
-                          ? "text-lg text-yellow"
-                          : "text-xl text-white leading-relaxed"
+                          ? "text-2xl text-yellow"
+                          : "text-3xl text-white leading-relaxed"
                     }`}
                   >
                     {displayedText}

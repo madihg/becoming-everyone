@@ -116,7 +116,7 @@ function ViewerInner() {
             key={currentFile.id}
             src={encodeURI(currentFile.path)}
             alt={currentFile.name}
-            className="max-w-full max-h-full object-contain"
+            className="w-full h-full object-contain"
             draggable={false}
           />
         )}
@@ -135,9 +135,9 @@ function ViewerInner() {
 
             {/* NBN watermark for W-folder videos */}
             {folderId?.match(/^\d+W/) && (
-              <div className="absolute top-4 right-4 z-10 opacity-20 pointer-events-none">
+              <div className="absolute top-4 right-4 z-10 pointer-events-none">
                 <img
-                  src="/markers/nbn/nbn-logo.svg"
+                  src="/markers/nbn/NBN_blacktext_transparentbackground.png"
                   alt=""
                   className="w-20 h-20"
                   draggable={false}
