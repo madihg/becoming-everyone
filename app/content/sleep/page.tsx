@@ -74,7 +74,7 @@ export default function SleepPage() {
   }, [advanceLine]);
 
   return (
-    <div className="h-screen w-screen bg-black flex items-center justify-center overflow-hidden">
+    <div className="h-screen w-screen bg-black flex items-center justify-center">
       {currentIndex < 0 && (
         <div className="text-text-muted text-sm font-mono animate-pulse">
           Rest
@@ -83,25 +83,24 @@ export default function SleepPage() {
 
       {currentIndex >= 0 && (
         <div className="max-w-3xl w-full h-full relative px-16">
-          {/* Lines container - positioned so current line is at center */}
           <div
             ref={containerRef}
-            className="absolute left-16 right-16 transition-transform duration-1000 ease-out"
+            className="absolute left-16 right-16 transition-transform duration-[1200ms] ease-out"
             style={{
               top: "50%",
-              transform: `translateY(-${currentIndex * 3.2}rem)`,
+              transform: `translateY(-${currentIndex * 4}rem)`,
             }}
           >
             {SLEEP_SCRIPT.slice(0, currentIndex + 1).map((line, idx) => {
               const isVisible = visibleLines.includes(idx);
               const isCurrent = idx === currentIndex;
               const age = currentIndex - idx;
-              const opacity = isCurrent ? 1 : Math.max(0.1, 1 - age * 0.1);
+              const opacity = isCurrent ? 1 : Math.max(0.08, 1 - age * 0.12);
 
               return (
                 <div
                   key={idx}
-                  className="py-2"
+                  className="h-16 flex items-center justify-center"
                   style={{
                     opacity: isVisible ? opacity : 0,
                     transition: "opacity 1.5s ease-in-out",

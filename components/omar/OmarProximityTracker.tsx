@@ -114,13 +114,6 @@ export default function OmarProximityTracker({ dialogue }: Props) {
         className="absolute inset-0 w-full h-full object-contain"
       />
 
-      {/* Dialogue overlay */}
-      <div className="absolute bottom-20 left-0 right-0 flex justify-center z-10 pointer-events-none">
-        <p className="text-white text-3xl text-center max-w-2xl px-8 leading-relaxed">
-          {dialogue[dialogueIndex]}
-        </p>
-      </div>
-
       {!cameraReady && (
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-text-muted/50 text-sm">Starting camera...</span>

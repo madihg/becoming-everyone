@@ -34,7 +34,8 @@ export const DANCE_SCRIPT: DanceCommand[] = [
     text: "Move like a machine learning heartbreak for the first time.",
     duration: 15000,
   },
-  { type: "feedback", text: "Good body.", duration: 5000 },
+  { type: "feedback", text: "Good body.", duration: 2500 },
+  { type: "feedback", text: "GOOD BODY. REST NOW.", duration: 5000 },
 ];
 
 // BlazePose 33-keypoint skeleton connections

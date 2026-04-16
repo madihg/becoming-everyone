@@ -158,6 +158,7 @@ export default function Home() {
     null,
   );
   const [showCredits, setShowCredits] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Pointer-based drag
   const dragRef = useRef<{
@@ -623,12 +624,7 @@ export default function Home() {
       return ((h & 0x7fffffff) % 1000) / 1000;
     };
 
-    const margin = 40;
-    const spacingX = 120;
-    const spacingY = 100;
-    const placed: { x: number; y: number }[] = [];
-
-    // Place in FOLDER_SEQUENCE order for organic scatter
+    // Place in FOLDER_SEQUENCE order
     const ordered = FOLDER_SEQUENCE.map((id) =>
       state.folders.find((f) => f.id === id),
     ).filter(Boolean) as typeof state.folders;
@@ -636,34 +632,35 @@ export default function Home() {
       (f) => !FOLDER_SEQUENCE.includes(f.id),
     );
     const allToPlace = [...ordered, ...remaining];
+    const count = allToPlace.length;
+
+    // Grid-based placement covering full panel
+    const margin = 30;
+    const usableW = panelW - 2 * margin - 80;
+    const usableH = panelH - 2 * margin - 60;
+    const aspectRatio = usableW / usableH;
+    const cols = Math.ceil(Math.sqrt(count * aspectRatio));
+    const rows = Math.ceil(count / cols);
+    const cellW = usableW / cols;
+    const cellH = usableH / rows;
 
     const positions = new Map<string, { x: number; y: number }>();
 
-    for (const folder of allToPlace) {
-      const r1 = seededRandom(folder.id);
-      const r2 = seededRandom(folder.id + "y");
-      let x = margin + r1 * (panelW - 2 * margin - 80);
-      let y = margin + 40 + r2 * (panelH - 2 * margin - 70);
+    for (let i = 0; i < allToPlace.length; i++) {
+      const folder = allToPlace[i];
+      const col = i % cols;
+      const row = Math.floor(i / cols);
 
-      let attempts = 0;
-      while (attempts < 50) {
-        let collision = false;
-        for (const p of placed) {
-          if (Math.abs(p.x - x) < spacingX && Math.abs(p.y - y) < spacingY) {
-            collision = true;
-            break;
-          }
-        }
-        if (!collision) break;
-        const jr = seededRandom(folder.id + attempts.toString());
-        const jr2 = seededRandom(folder.id + "j" + attempts.toString());
-        x = margin + jr * (panelW - 2 * margin - 80);
-        y = margin + 40 + jr2 * (panelH - 2 * margin - 70);
-        attempts++;
-      }
+      // Center of cell + seeded jitter (30% of cell size)
+      const jitterX = (seededRandom(folder.id) - 0.5) * cellW * 0.3;
+      const jitterY = (seededRandom(folder.id + "y") - 0.5) * cellH * 0.3;
+      const x = margin + col * cellW + cellW / 2 + jitterX;
+      const y = margin + 40 + row * cellH + cellH / 2 + jitterY;
 
-      placed.push({ x, y });
-      positions.set(folder.id, { x: Math.max(10, x), y: Math.max(40, y) });
+      positions.set(folder.id, {
+        x: Math.max(10, Math.min(panelW - 90, x)),
+        y: Math.max(40, Math.min(panelH - 70, y)),
+      });
     }
 
     persist({
@@ -799,15 +796,15 @@ export default function Home() {
                     />
                   ))}
 
-                  <div className="absolute bottom-3 left-3 z-50 flex gap-1">
+                  <div className="absolute bottom-3 left-3 z-50 flex gap-2">
                     <button
-                      className="text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
+                      className="text-[16px] font-mono text-[#444] hover:text-[#888] transition-colors px-3 py-2 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
                       onClick={handleGoBack}
                       title="Go back one folder"
                     >
                       <svg
-                        width="14"
-                        height="14"
+                        width="18"
+                        height="18"
                         viewBox="0 0 16 16"
                         fill="none"
                         stroke="currentColor"
@@ -819,13 +816,110 @@ export default function Home() {
                       </svg>
                     </button>
                     <button
-                      className="text-[10px] font-mono text-[#444] hover:text-[#888] transition-colors px-2 py-1 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a]"
+                      className="text-[18px] font-mono text-[#444] hover:text-[#888] transition-colors px-3 py-2 border border-[#333] rounded-sm bg-[#111] hover:bg-[#1a1a1a] leading-none"
                       onClick={handleReset}
                       title="Reset sequence"
                     >
                       &#x21BB;
                     </button>
                   </div>
+
+                  {/* Hamburger menu button - top right */}
+                  <button
+                    className="absolute top-10 right-3 z-50 p-2 text-[#444] hover:text-[#888] transition-colors"
+                    onClick={() => setMenuOpen((v) => !v)}
+                    title="Show folders"
+                  >
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 22 22"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    >
+                      <line x1="3" y1="6" x2="19" y2="6" />
+                      <line x1="3" y1="11" x2="19" y2="11" />
+                      <line x1="3" y1="16" x2="19" y2="16" />
+                    </svg>
+                  </button>
+
+                  {/* Side menu panel */}
+                  <div
+                    className="fixed top-0 right-0 h-full w-[320px] bg-[#111] border-l border-[#333] z-[100] transition-transform duration-300 ease-in-out overflow-y-auto"
+                    style={{
+                      transform: menuOpen
+                        ? "translateX(0)"
+                        : "translateX(100%)",
+                    }}
+                  >
+                    <div className="p-4 pt-5">
+                      <div className="flex items-center justify-between mb-6">
+                        <span className="text-[13px] font-mono text-[#888] uppercase tracking-wider">
+                          Folders
+                        </span>
+                        <button
+                          className="text-[#444] hover:text-[#888] transition-colors p-1"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                          >
+                            <line x1="4" y1="4" x2="12" y2="12" />
+                            <line x1="12" y1="4" x2="4" y2="12" />
+                          </svg>
+                        </button>
+                      </div>
+                      {FOLDER_SEQUENCE.map((folderId) => {
+                        const folder = state.folders.find(
+                          (f) => f.id === folderId,
+                        );
+                        if (!folder) return null;
+                        const isOpened = everOpenedIds.has(folderId);
+                        return (
+                          <div key={folderId} className="mb-4">
+                            <button
+                              className="text-[13px] font-mono text-left hover:underline cursor-pointer"
+                              style={{ color: isOpened ? "#FFE600" : "#444" }}
+                              onClick={() => {
+                                openFolderAndFiles(folderId);
+                                setMenuOpen(false);
+                              }}
+                            >
+                              {folder.name}
+                            </button>
+                            {isOpened && folder.contents && (
+                              <div className="ml-3 mt-1 space-y-0.5">
+                                {folder.contents.map((file) => (
+                                  <p
+                                    key={file.id}
+                                    className="text-[11px] font-mono text-[#666]"
+                                  >
+                                    {file.name}
+                                  </p>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Click-outside overlay to close menu */}
+                  {menuOpen && (
+                    <div
+                      className="fixed inset-0 z-[99]"
+                      onClick={() => setMenuOpen(false)}
+                    />
+                  )}
                 </div>
 
                 {dragFolderId &&
@@ -897,16 +991,46 @@ export default function Home() {
                       opacity: 0,
                     }}
                   >
-                    <div className="text-center font-mono text-white space-y-8">
-                      <p className="text-[32px]">Thank you</p>
-                      <div className="text-[20px] text-[#d1d5db] space-y-3">
-                        <p>CultureHub LA</p>
-                        <p>Stacy</p>
-                        <p>Josephine Made</p>
-                        <p>Geo Morjan Jihad</p>
-                        <p>Bina Senator</p>
+                    <div className="text-center font-mono text-white max-w-2xl px-8 space-y-10">
+                      <div className="space-y-3">
+                        <p className="text-[42px] font-bold text-[#FFE600]">
+                          GLITCH
+                        </p>
+                        <p className="text-[18px] text-[#d1d5db]">
+                          Written and performed by Halim Madi
+                        </p>
                       </div>
-                      <p className="text-[20px] text-[#FFE600]">Prop 46</p>
+                      <div className="space-y-2">
+                        <p className="text-[16px] text-[#d1d5db]">
+                          As Omar Saliba - and:
+                        </p>
+                        <p className="text-[14px] text-[#999] leading-relaxed">
+                          The Service Artist / The Sleep Artist / The Dancer /
+                          The Tech Visionary / The Arsonist / The Neural Artist
+                          / The Army General / The Mother / Angela / Ali Youssef
+                          / Gaspard Neve
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[16px] text-[#d1d5db] font-bold">
+                          Cast
+                        </p>
+                        <p className="text-[15px] text-[#d1d5db]">
+                          Geo Morjane as Jihad &ldquo;but call me James&rdquo;
+                        </p>
+                        <p className="text-[15px] text-[#d1d5db]">
+                          Sabrina Wenske as The Senator
+                        </p>
+                      </div>
+                      <div className="space-y-2 pt-4">
+                        <p className="text-[14px] text-[#888]">
+                          Produced in residence at CultureHub LA
+                        </p>
+                        <p className="text-[13px] text-[#666]">
+                          Special thanks to Stacy Dawson Stearns, Raquel, and
+                          Jared
+                        </p>
+                      </div>
                     </div>
                     <style jsx>{`
                       @keyframes credits-fade-in {

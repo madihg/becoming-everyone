@@ -7,15 +7,9 @@ interface Props {
   onType: (char: string) => void;
   /** Reference to the input element so the cursor can animate toward it */
   inputRef: React.RefObject<HTMLInputElement | null>;
-  /** How long the cursor drifts before typing (ms) */
-  wanderDuration?: number;
 }
 
-export default function AutonomousCursor({
-  onType,
-  inputRef,
-  wanderDuration = 15000,
-}: Props) {
+export default function AutonomousCursor({ onType, inputRef }: Props) {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [visible, setVisible] = useState(false);
   const [phase, setPhase] = useState<"wander" | "approach" | "type" | "done">(
@@ -23,9 +17,7 @@ export default function AutonomousCursor({
   );
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const wanderRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef(0);
 
   // Initialize at a random position
   useEffect(() => {
@@ -35,7 +27,6 @@ export default function AutonomousCursor({
       y: padding + Math.random() * (window.innerHeight - padding * 2),
     });
     setVisible(true);
-    startTimeRef.current = Date.now();
   }, []);
 
   // Random wandering movement
@@ -60,24 +51,11 @@ export default function AutonomousCursor({
     }
   }, [phase, pickNewWaypoint]);
 
-  // Timer to transition from wander to approach
-  useEffect(() => {
-    timerRef.current = setTimeout(() => {
-      if (phaseRef.current === "wander") {
-        setPhase("approach");
-      }
-    }, wanderDuration);
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [wanderDuration]);
-
-  // Spacebar skips wander phase
+  // Spacebar triggers approach phase
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === " " && phaseRef.current === "wander") {
         e.preventDefault();
-        if (timerRef.current) clearTimeout(timerRef.current);
         if (wanderRef.current) clearTimeout(wanderRef.current);
         setPhase("approach");
       }

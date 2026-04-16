@@ -274,80 +274,87 @@ export default function DancePage() {
       </div>
 
       {/* Command panel - 30% */}
-      <div className="flex-[3] border-l border-folder-border flex flex-col">
-        <div className="flex-1 p-6 pt-[100px] flex flex-col overflow-hidden">
-          {commandIndex < 0 ? (
-            <div className="text-text-muted/40 text-sm">override</div>
-          ) : (
-            <div className="space-y-6">
-              {/* Show history of commands */}
-              {DANCE_SCRIPT.slice(0, commandIndex).map((cmd, idx) => (
-                <p
-                  key={idx}
-                  className={`text-text-muted/50 ${
-                    cmd.type === "feedback" ? "text-base" : "text-lg"
-                  }`}
-                >
-                  {cmd.text}
-                </p>
-              ))}
+      <div className="flex-[3] border-l border-folder-border flex flex-col relative">
+        {commandIndex < 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-text-muted/40 text-sm font-mono">override</div>
+          </div>
+        ) : (
+          <div className="flex-1 relative px-6">
+            <div
+              className="absolute left-6 right-6 transition-transform duration-[1200ms] ease-out"
+              style={{
+                top: "50%",
+                transform: `translateY(-${commandIndex * 5}rem)`,
+              }}
+            >
+              {DANCE_SCRIPT.slice(0, commandIndex + 1).map((cmd, idx) => {
+                const isCurrent = idx === commandIndex;
+                const age = commandIndex - idx;
+                const opacity = isCurrent ? 1 : Math.max(0.1, 1 - age * 0.15);
 
-              {/* Current command */}
-              {currentCmd && (
-                <div>
-                  <p
-                    className={`transition-all duration-300 ${
-                      currentCmd.type === "intro"
-                        ? "text-4xl text-white font-bold"
-                        : currentCmd.type === "feedback"
-                          ? "text-2xl text-yellow"
-                          : "text-3xl text-white leading-relaxed"
-                    }`}
+                return (
+                  <div
+                    key={idx}
+                    className="h-20 flex items-center"
+                    style={{
+                      opacity,
+                      transition: "opacity 1s ease-in-out",
+                    }}
                   >
-                    {displayedText}
-                    {isTyping && (
-                      <span className="inline-block w-[2px] h-[1em] bg-yellow ml-1 animate-pulse" />
-                    )}
-                  </p>
-
-                  {/* Countdown display for long commands */}
-                  {countdown !== null && (
-                    <div className="mt-4 flex flex-wrap gap-2 font-mono text-lg">
-                      {Array.from(
-                        {
-                          length: Math.floor((currentCmd.duration || 0) / 1000),
-                        },
-                        (_, i) => {
-                          const num =
-                            Math.floor((currentCmd.duration || 0) / 1000) - i;
-                          return (
-                            <span
-                              key={num}
-                              style={{
-                                color: yellowedNumbers.has(num)
-                                  ? "#FFE600"
-                                  : "#666",
-                              }}
-                            >
-                              {num}
-                            </span>
-                          );
-                        },
-                      )}
-                      <span
-                        style={{
-                          color: yellowedNumbers.has(0) ? "#FFE600" : "#666",
-                        }}
+                    <div className="w-full">
+                      <p
+                        className={`transition-all duration-300 text-lg leading-snug ${
+                          cmd.type === "feedback" ? "text-yellow" : "text-white"
+                        }`}
                       >
-                        0
-                      </span>
+                        {isCurrent ? displayedText : cmd.text}
+                        {isCurrent && isTyping && (
+                          <span className="inline-block w-[2px] h-[1em] bg-yellow ml-1 animate-pulse" />
+                        )}
+                      </p>
+
+                      {isCurrent && countdown !== null && (
+                        <div className="mt-4 flex flex-wrap gap-2 font-mono text-lg">
+                          {Array.from(
+                            {
+                              length: Math.floor((cmd.duration || 0) / 1000),
+                            },
+                            (_, i) => {
+                              const num =
+                                Math.floor((cmd.duration || 0) / 1000) - i;
+                              return (
+                                <span
+                                  key={num}
+                                  style={{
+                                    color: yellowedNumbers.has(num)
+                                      ? "#FFE600"
+                                      : "#666",
+                                  }}
+                                >
+                                  {num}
+                                </span>
+                              );
+                            },
+                          )}
+                          <span
+                            style={{
+                              color: yellowedNumbers.has(0)
+                                ? "#FFE600"
+                                : "#666",
+                            }}
+                          >
+                            0
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              )}
+                  </div>
+                );
+              })}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

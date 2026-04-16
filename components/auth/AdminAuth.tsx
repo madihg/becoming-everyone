@@ -37,73 +37,6 @@ function TypedBeforeOne({
   );
 }
 
-function drawOrganicLine(
-  ctx: CanvasRenderingContext2D,
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  time: number,
-) {
-  const segments = 16;
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const len = Math.hypot(dx, dy);
-  const nx = -dy / len;
-  const ny = dx / len;
-  const slowTime = time * 0.0004;
-
-  // Fat organic tube overlay
-  ctx.beginPath();
-  ctx.strokeStyle = "rgba(255, 230, 0, 0.06)";
-  ctx.lineWidth = 8;
-  ctx.lineCap = "round";
-  for (let i = 0; i <= segments; i++) {
-    const t = i / segments;
-    const envelope = Math.sin(t * Math.PI);
-    const sway =
-      Math.sin(t * Math.PI * 3 + slowTime) * 15 * envelope +
-      Math.sin(t * Math.PI * 5 + slowTime * 1.3) * 8 * envelope;
-    const px = x1 + dx * t + nx * sway;
-    const py = y1 + dy * t + ny * sway;
-    if (i === 0) ctx.moveTo(px, py);
-    else ctx.lineTo(px, py);
-  }
-  ctx.stroke();
-
-  // Thin bright line
-  ctx.beginPath();
-  ctx.strokeStyle = "rgba(255, 230, 0, 0.5)";
-  ctx.lineWidth = 1.5;
-  for (let i = 0; i <= segments; i++) {
-    const t = i / segments;
-    const envelope = Math.sin(t * Math.PI);
-    const sway =
-      Math.sin(t * Math.PI * 3 + slowTime) * 15 * envelope +
-      Math.sin(t * Math.PI * 5 + slowTime * 1.3) * 8 * envelope;
-    const px = x1 + dx * t + nx * sway;
-    const py = y1 + dy * t + ny * sway;
-    if (i === 0) ctx.moveTo(px, py);
-    else ctx.lineTo(px, py);
-  }
-  ctx.stroke();
-}
-
-function drawGlowBlob(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  radius: number,
-) {
-  const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-  gradient.addColorStop(0, "rgba(255, 230, 0, 0.15)");
-  gradient.addColorStop(1, "rgba(255, 230, 0, 0)");
-  ctx.fillStyle = gradient;
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.fill();
-}
-
 export default function AdminAuth({ children }: AdminAuthProps) {
   const [input, setInput] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -164,12 +97,12 @@ export default function AdminAuth({ children }: AdminAuthProps) {
       setTimeout(() => {
         setAnimationPhase("complete");
         setIsAuthenticated(true);
-      }, 6000);
+      }, 10000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input]);
 
-  // Physarum drawing animation
+  // Criss-cross line drawing animation
   useEffect(() => {
     if (animationPhase !== "drawPattern") return;
 
@@ -183,58 +116,70 @@ export default function AdminAuth({ children }: AdminAuthProps) {
     canvas.width = w;
     canvas.height = h;
 
-    // Generate waypoints spread across the viewport
-    const waypoints: { x: number; y: number }[] = [];
-    for (let i = 0; i < 9; i++) {
-      waypoints.push({
-        x: 100 + Math.random() * (w - 200),
-        y: 100 + Math.random() * (h - 200),
-      });
+    // 10 lines crossing the viewport edge-to-edge
+    const lines: { x1: number; y1: number; x2: number; y2: number }[] = [];
+    for (let i = 0; i < 10; i++) {
+      const edge = i % 4;
+      const t1 = (i * 0.13 + 0.1) % 1;
+      const t2 = (i * 0.17 + 0.3) % 1;
+      if (edge === 0) lines.push({ x1: t1 * w, y1: 0, x2: t2 * w, y2: h });
+      else if (edge === 1) lines.push({ x1: w, y1: t1 * h, x2: 0, y2: t2 * h });
+      else if (edge === 2) lines.push({ x1: t2 * w, y1: h, x2: t1 * w, y2: 0 });
+      else lines.push({ x1: 0, y1: t2 * h, x2: w, y2: t1 * h });
     }
 
-    let dotX = w / 2;
-    let dotY = h / 2;
-    let targetIdx = 0;
-    let prevSegX = dotX;
-    let prevSegY = dotY;
+    const msPerLine = 700;
+    let currentLine = 0;
+    let lineProgress = 0;
     const startTime = performance.now();
-    const reachedWaypoints: { x: number; y: number }[] = [];
 
-    // Start fade-out after 3.8s of drawing
+    // Start fade-out after 7.5s
     const fadeTimer = setTimeout(() => {
       setFadeOut(true);
-    }, 3800);
+    }, 7500);
 
     const animate = (now: number) => {
       const elapsed = now - startTime;
-      const target = waypoints[targetIdx];
+      currentLine = Math.min(Math.floor(elapsed / msPerLine), lines.length - 1);
+      lineProgress = Math.min(
+        (elapsed - currentLine * msPerLine) / msPerLine,
+        1,
+      );
 
-      // Lerp toward target
-      dotX += (target.x - dotX) * 0.05;
-      dotY += (target.y - dotY) * 0.05;
+      // Redraw all completed lines
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = "rgba(255, 230, 0, 0.5)";
+      ctx.lineWidth = 1;
+      ctx.lineCap = "round";
 
-      // Draw organic line from last drawn segment to current dot
-      const segDist = Math.hypot(dotX - prevSegX, dotY - prevSegY);
-      if (segDist > 4) {
-        drawOrganicLine(ctx, prevSegX, prevSegY, dotX, dotY, elapsed);
-        prevSegX = dotX;
-        prevSegY = dotY;
+      for (let i = 0; i < currentLine; i++) {
+        const l = lines[i];
+        ctx.beginPath();
+        ctx.moveTo(l.x1, l.y1);
+        ctx.lineTo(l.x2, l.y2);
+        ctx.stroke();
       }
 
-      // Check arrival at waypoint
-      if (Math.hypot(target.x - dotX, target.y - dotY) < 8) {
-        if (!reachedWaypoints.some((p) => p.x === target.x)) {
-          reachedWaypoints.push(target);
-          drawGlowBlob(ctx, target.x, target.y, 20);
-        }
-        targetIdx = (targetIdx + 1) % waypoints.length;
+      // Draw current line partially
+      if (currentLine < lines.length) {
+        const l = lines[currentLine];
+        const ex = l.x1 + (l.x2 - l.x1) * lineProgress;
+        const ey = l.y1 + (l.y2 - l.y1) * lineProgress;
+        ctx.beginPath();
+        ctx.moveTo(l.x1, l.y1);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+
+        setDotPos({ x: ex, y: ey });
       }
 
-      setDotPos({ x: dotX, y: dotY });
-      patternRafRef.current = requestAnimationFrame(animate);
+      if (elapsed < lines.length * msPerLine) {
+        patternRafRef.current = requestAnimationFrame(animate);
+      }
     };
 
-    setDotPos({ x: w / 2, y: h / 2 });
+    const l0 = lines[0];
+    setDotPos({ x: l0.x1, y: l0.y1 });
     patternRafRef.current = requestAnimationFrame(animate);
 
     return () => {
