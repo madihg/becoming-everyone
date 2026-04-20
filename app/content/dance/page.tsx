@@ -296,7 +296,7 @@ export default function DancePage() {
                 return (
                   <div
                     key={idx}
-                    className="h-20 flex items-center"
+                    className={`flex ${isCurrent ? "min-h-20 items-start pt-4" : "h-20 items-center"}`}
                     style={{
                       opacity,
                       transition: "opacity 1s ease-in-out",
@@ -306,7 +306,7 @@ export default function DancePage() {
                       <p
                         className={`transition-all duration-300 text-lg leading-snug ${
                           cmd.type === "feedback" ? "text-yellow" : "text-white"
-                        }`}
+                        } ${cmd.text === "Good Body. Rest Now." ? "font-bold" : ""}`}
                       >
                         {isCurrent ? displayedText : cmd.text}
                         {isCurrent && isTyping && (

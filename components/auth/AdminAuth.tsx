@@ -139,7 +139,7 @@ export default function AdminAuth({ children }: AdminAuthProps) {
     }, 7500);
 
     const animate = (now: number) => {
-      const elapsed = now - startTime;
+      const elapsed = Math.max(0, now - startTime);
       currentLine = Math.min(Math.floor(elapsed / msPerLine), lines.length - 1);
       lineProgress = Math.min(
         (elapsed - currentLine * msPerLine) / msPerLine,
