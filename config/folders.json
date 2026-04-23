@@ -14,8 +14,14 @@
         "x": 83.656,
         "y": 161.4225
       },
-      "isOpen": true,
+      "isOpen": false,
       "contents": [
+        {
+          "id": "1p1-aud-phone",
+          "name": "1P1-Phone-ringing.wav",
+          "type": "audio",
+          "path": "/folders/1P1-service/1P1-Phone-ringing.wav"
+        },
         {
           "id": "1p1-img-ch6",
           "name": "CH6.png",
@@ -68,7 +74,7 @@
         "x": 274.3704,
         "y": 139.803
       },
-      "isOpen": false,
+      "isOpen": true,
       "contents": [
         {
           "id": "2o1-html-1",
@@ -86,7 +92,7 @@
         "x": 432.7088,
         "y": 125.7525
       },
-      "isOpen": false,
+      "isOpen": true,
       "contents": [
         {
           "id": "3r1-html-1",
@@ -105,6 +111,12 @@
           "name": "3R1-breaking2-CH.wav",
           "type": "audio",
           "path": "/folders/3R1-breaking/3R1-breaking2-CH.wav"
+        },
+        {
+          "id": "3r1-vid-ch0408",
+          "name": "CH0408.mov",
+          "type": "video",
+          "path": "/folders/3R1-breaking/CH0408.mov"
         },
         {
           "id": "3r1-img-ch1",
@@ -215,6 +227,12 @@
           "path": "/content/lift"
         },
         {
+          "id": "7p3-vid-ch1",
+          "name": "CH1.mp4",
+          "type": "video",
+          "path": "/folders/7P3-lift/CH1.mp4"
+        },
+        {
           "id": "7p3-vid-1",
           "name": "HM1.mov",
           "type": "video",
@@ -231,7 +249,14 @@
         "y": 300.115
       },
       "isOpen": false,
-      "contents": []
+      "contents": [
+        {
+          "id": "8w2-vid-ch",
+          "name": "8W2 - CH.mov",
+          "type": "video",
+          "path": "/folders/8W2-move/8W2 - CH.mov"
+        }
+      ]
     },
     {
       "id": "9O3-win",
@@ -286,16 +311,52 @@
           "path": "/camera/11r2-arms"
         },
         {
+          "id": "11r2-aud-crowd",
+          "name": "11R2-crowd chatter.wav",
+          "type": "audio",
+          "path": "/folders/11R2-arms/11R2-crowd chatter.wav"
+        },
+        {
+          "id": "11r2-vid-ch1",
+          "name": "CH1.mp4",
+          "type": "video",
+          "path": "/folders/11R2-arms/CH1.mp4"
+        },
+        {
           "id": "11r2-img-ch1b",
           "name": "CH1B.png",
           "type": "image",
           "path": "/folders/11R2-arms/CH1B.png"
         },
         {
+          "id": "11r2-vid-ch2",
+          "name": "CH2.mp4",
+          "type": "video",
+          "path": "/folders/11R2-arms/CH2.mp4"
+        },
+        {
+          "id": "11r2-vid-ch3",
+          "name": "CH3.mp4",
+          "type": "video",
+          "path": "/folders/11R2-arms/CH3.mp4"
+        },
+        {
           "id": "11r2-img-ch4",
           "name": "CH4.png",
           "type": "image",
           "path": "/folders/11R2-arms/CH4.png"
+        },
+        {
+          "id": "11r2-vid-ch5",
+          "name": "CH5.mp4",
+          "type": "video",
+          "path": "/folders/11R2-arms/CH5.mp4"
+        },
+        {
+          "id": "11r2-vid-ch6",
+          "name": "CH6.mp4",
+          "type": "video",
+          "path": "/folders/11R2-arms/CH6.mp4"
         }
       ]
     },
@@ -327,6 +388,12 @@
       },
       "isOpen": false,
       "contents": [
+        {
+          "id": "13p5-vid-postgrief",
+          "name": "Post Grief breakout CH.mov",
+          "type": "video",
+          "path": "/folders/13P5-grieve/Post Grief breakout CH.mov"
+        },
         {
           "id": "13p5-slide-01",
           "name": "griefbots_keynote.001.jpeg",
@@ -544,6 +611,12 @@
       "isOpen": false,
       "contents": [
         {
+          "id": "14r3-vid-ch0408",
+          "name": "CH-0408.mov",
+          "type": "video",
+          "path": "/folders/14R3-critic/CH-0408.mov"
+        },
+        {
           "id": "14r3-vid-1",
           "name": "Report Critic-HM.mov",
           "type": "video",
@@ -604,6 +677,12 @@
       "isOpen": false,
       "contents": [
         {
+          "id": "16p6-vid-ch",
+          "name": "16P6 - CH.mov",
+          "type": "video",
+          "path": "/folders/16P6-arson/16P6 - CH.mov"
+        },
+        {
           "id": "16p6-vid-1",
           "name": "16P6 - HM.mov",
           "type": "video",
@@ -622,6 +701,18 @@
       "isOpen": false,
       "contents": [
         {
+          "id": "17p7-img-ch4",
+          "name": "CH4.png",
+          "type": "image",
+          "path": "/folders/17P7-neural/CH4.png"
+        },
+        {
+          "id": "17p7-img-ch5",
+          "name": "CH5.png",
+          "type": "image",
+          "path": "/folders/17P7-neural/CH5.png"
+        },
+        {
           "id": "17p7-vid-1",
           "name": "HM.mp4",
           "type": "video",
@@ -637,8 +728,14 @@
         "x": 399.3296,
         "y": 591.8985
       },
-      "isOpen": true,
+      "isOpen": false,
       "contents": [
+        {
+          "id": "18p8-vid-ch1",
+          "name": "CH1.mp4",
+          "type": "video",
+          "path": "/folders/18P8-yellow/CH1.mp4"
+        },
         {
           "id": "18p8-vid-1",
           "name": "HM1.mov",
