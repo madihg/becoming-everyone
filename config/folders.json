@@ -17,6 +17,12 @@
       "isOpen": true,
       "contents": [
         {
+          "id": "1p1-img-ch6",
+          "name": "CH6.png",
+          "type": "image",
+          "path": "/folders/1P1-service/CH6.png"
+        },
+        {
           "id": "1p1-img-1",
           "name": "HM1.png",
           "type": "image",
@@ -87,6 +93,48 @@
           "name": "breaking.html",
           "type": "html",
           "path": "/camera/3r1-breaking"
+        },
+        {
+          "id": "3r1-aud-1",
+          "name": "3R1-breaking-CH.wav",
+          "type": "audio",
+          "path": "/folders/3R1-breaking/3R1-breaking-CH.wav"
+        },
+        {
+          "id": "3r1-aud-2",
+          "name": "3R1-breaking2-CH.wav",
+          "type": "audio",
+          "path": "/folders/3R1-breaking/3R1-breaking2-CH.wav"
+        },
+        {
+          "id": "3r1-img-ch1",
+          "name": "CH1.png",
+          "type": "image",
+          "path": "/folders/3R1-breaking/CH1.png"
+        },
+        {
+          "id": "3r1-img-ch2",
+          "name": "CH2.png",
+          "type": "image",
+          "path": "/folders/3R1-breaking/CH2.png"
+        },
+        {
+          "id": "3r1-img-ch3",
+          "name": "CH3.png",
+          "type": "image",
+          "path": "/folders/3R1-breaking/CH3.png"
+        },
+        {
+          "id": "3r1-img-ch4",
+          "name": "CH4.png",
+          "type": "image",
+          "path": "/folders/3R1-breaking/CH4.png"
+        },
+        {
+          "id": "3r1-img-ch5",
+          "name": "CH5.png",
+          "type": "image",
+          "path": "/folders/3R1-breaking/CH5.png"
         }
       ]
     },
@@ -236,6 +284,18 @@
           "name": "arms.html",
           "type": "html",
           "path": "/camera/11r2-arms"
+        },
+        {
+          "id": "11r2-img-ch1b",
+          "name": "CH1B.png",
+          "type": "image",
+          "path": "/folders/11R2-arms/CH1B.png"
+        },
+        {
+          "id": "11r2-img-ch4",
+          "name": "CH4.png",
+          "type": "image",
+          "path": "/folders/11R2-arms/CH4.png"
         }
       ]
     },
@@ -501,6 +561,30 @@
       },
       "isOpen": false,
       "contents": [
+        {
+          "id": "15o4-img-ch2",
+          "name": "CH2.png",
+          "type": "image",
+          "path": "/folders/15O4-agenda/CH2.png"
+        },
+        {
+          "id": "15o4-img-ch3",
+          "name": "CH3.png",
+          "type": "image",
+          "path": "/folders/15O4-agenda/CH3.png"
+        },
+        {
+          "id": "15o4-img-ch4",
+          "name": "CH4.png",
+          "type": "image",
+          "path": "/folders/15O4-agenda/CH4.png"
+        },
+        {
+          "id": "15o4-img-ch5",
+          "name": "CH5.png",
+          "type": "image",
+          "path": "/folders/15O4-agenda/CH5.png"
+        },
         {
           "id": "15o4-img-1",
           "name": "HM.png",
