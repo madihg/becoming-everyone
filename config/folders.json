@@ -11,8 +11,8 @@
       "name": "1P1-service",
       "tabId": "tab-1",
       "position": {
-        "x": 83.656,
-        "y": 161.4225
+        "x": 105.76953125,
+        "y": 126.109375
       },
       "isOpen": false,
       "contents": [
@@ -74,7 +74,7 @@
         "x": 274.3704,
         "y": 139.803
       },
-      "isOpen": true,
+      "isOpen": false,
       "contents": [
         {
           "id": "2o1-html-1",
@@ -92,7 +92,7 @@
         "x": 432.7088,
         "y": 125.7525
       },
-      "isOpen": true,
+      "isOpen": false,
       "contents": [
         {
           "id": "3r1-html-1",
@@ -155,8 +155,8 @@
       "name": "4W1-children",
       "tabId": "tab-1",
       "position": {
-        "x": 575.9536,
-        "y": 157.7685
+        "x": 575.953125,
+        "y": 99.578125
       },
       "isOpen": false,
       "contents": [
@@ -218,7 +218,7 @@
         "x": 240.5808,
         "y": 265.8805
       },
-      "isOpen": false,
+      "isOpen": true,
       "contents": [
         {
           "id": "7p3-exe-1",

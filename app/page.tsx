@@ -993,8 +993,9 @@ export default function Home() {
                   >
                     <div className="text-center font-mono text-white max-w-2xl px-8 space-y-10">
                       <div className="space-y-3">
-                        <p className="text-[42px] font-bold text-[#FFE600]">
-                          GLITCH
+                        <p className="text-[32px] font-bold text-[#FFE600] leading-tight">
+                          I&apos;ve always wanted to become{"\u00a0"}
+                          <span className="flicker-every">every</span>one
                         </p>
                         <p className="text-[18px] text-[#d1d5db]">
                           Written and performed by Halim Madi
@@ -1005,10 +1006,10 @@ export default function Home() {
                           As Omar Saliba - and:
                         </p>
                         <p className="text-[14px] text-[#999] leading-relaxed">
-                          The Service Artist / The Sleep Artist / The Dancer /
-                          The Tech Visionary / The Arsonist / The Neural Artist
-                          / The Army General / The Mother / Angela / Ali Youssef
-                          / Gaspard Neve
+                          The Service Artist / Ali Youssef 7erba2 / The Sleep
+                          Artist / Axel Yom / The Dancer / The Tech Visionary /
+                          Theo Darass / The Arsonist / The Neural Artist / The
+                          Army General / The Mother
                         </p>
                       </div>
                       <div className="space-y-2">
@@ -1037,6 +1038,37 @@ export default function Home() {
                         to {
                           opacity: 1;
                         }
+                      }
+                      @keyframes flicker-every {
+                        0%,
+                        18%,
+                        20.5%,
+                        22%,
+                        55%,
+                        57%,
+                        79%,
+                        81%,
+                        100% {
+                          opacity: 1;
+                        }
+                        19% {
+                          opacity: 0.15;
+                        }
+                        21% {
+                          opacity: 0.55;
+                        }
+                        56% {
+                          opacity: 0.08;
+                        }
+                        80% {
+                          opacity: 0.3;
+                        }
+                        80.5% {
+                          opacity: 0.9;
+                        }
+                      }
+                      :global(.flicker-every) {
+                        animation: flicker-every 4.2s infinite steps(1, end);
                       }
                     `}</style>
                   </div>

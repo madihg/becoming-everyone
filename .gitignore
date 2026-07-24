@@ -35,9 +35,7 @@ next-env.d.ts
 # performance logs
 /performances
 
-# large video files - hosted on Vercel Blob
-*.mp4
-*.mov
+# blob upload artifacts
 blob-upload-results.json
 scripts/upload-*.mjs
 scripts/upload-*.sh
