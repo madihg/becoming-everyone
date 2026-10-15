@@ -1,0 +1,14 @@
+// The multiplayer server (party/main.ts), deployed to Cloudflare Workers with PartyServer.
+// Replaces partykit.json: hosted PartyKit shut down in October 2026.
+// Deploy: npm run party:deploy   Local: npm run party (ws://localhost:1999/parties/main/<room>)
+{
+  "name": "becoming-everyone",
+  "main": "party/main.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "durable_objects": {
+    "bindings": [{ "name": "Main", "class_name": "CursorRoom" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["CursorRoom"] }],
+  "dev": { "port": 1999 }
+}
