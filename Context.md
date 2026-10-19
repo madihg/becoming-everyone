@@ -8,7 +8,7 @@ Interactive theatre piece. 19 folders on a dark desktop interface, projected on 
 
 - **Framework**: Next.js 14 (App Router, "use client")
 - **Main page**: `/` - admin interface behind AdminAuth screen. Everyone gets full control.
-- **Multiplayer**: PartyKit (cloud) - shared cursors + collaborative text editing
+- **Multiplayer**: PartyServer on a Cloudflare Worker - shared cursors + collaborative text editing
 - **Persistence**: `config/folders.json` - server-side JSON file
 - **Design**: Diatype Mono Variable, black bg, #FFE600 yellow accent
 - **Window aesthetic**: Dark Mac OS 9 (horizontal pinstripes, close/zoom boxes)
@@ -27,14 +27,16 @@ All 5 workstreams implemented and building clean.
 
 **4. Visual Markers** - DONE. `components/markers/FloatingMarkers.tsx` - 7 markers (dumbbell, drone, flame PNGs + heart, physarum, candle SVGs + "(650)" text). B&W grainy filter, slow hover animation.
 
-**5. PartyKit Multiplayer** - CODE DONE, DEPLOY PENDING.
+**5. Multiplayer (PartyServer on Cloudflare)** - DONE, deployed 2026-10-19. Moved off hosted PartyKit, which shut down on 23 Oct 2026.
 
-- `party/main.ts` - server (cursor_move, text_update, cursor_leave)
-- `partykit.json` - config
-- `components/multiplayer/MultiplayerProvider.tsx` - context + WebSocket
+- `party/main.ts` - server (cursor_move, text_update, open_folder, cursor_leave), a PartyServer Durable Object, binding `Main`
+- `wrangler.jsonc` - config (replaces partykit.json); `party/tsconfig.json` - Workers types, excluded from the Next tsconfig
+- `components/multiplayer/MultiplayerProvider.tsx` - context + partysocket
 - `components/multiplayer/RemoteCursors.tsx` - render remote glowing dots
-- **Next step**: Run `npx partykit deploy` (needs GitHub OAuth login)
-- Default host: `becoming-everyone.halim.partykit.dev` (env: `NEXT_PUBLIC_PARTYKIT_HOST`)
+- Host: `becoming-everyone.madihg.workers.dev` (Cloudflare account 4d2dbee76cd08f83cecf852eaa5bdd12, workers.dev subdomain `madihg`); override with `NEXT_PUBLIC_PARTYKIT_HOST`
+- Local: `npm run party` (ws://localhost:1999). Deploy: `npm run party:deploy` (needs `npx wrangler login`)
+- Check: `node scripts/party-smoke.mjs [host]` runs 9 checks in a throwaway room (9/9 on the live host, 2026-10-19)
+- State is in memory only, as on PartyKit: shared text and cursors reset when the room empties
 
 ### Key Decisions
 
@@ -83,7 +85,7 @@ Pressing spacebar during live performance advances through FOLDER_SEQUENCE:
 
 1. Yellow guide dot stops orbiting, darts toward next folder (lerp 0.12 vs 0.03)
 2. On arrival: folder opens, all files auto-open (viewer for first media file, external windows for HTML/executables)
-3. Broadcasts `open_folder` via PartyKit - all connected clients run same sequence
+3. Broadcasts `open_folder` via the multiplayer server - all connected clients run same sequence
 4. Spacebar debounced during animation (blocked while `navigatingToFolder` is set)
 
 **Files modified:**
@@ -160,9 +162,9 @@ Pressing spacebar during live performance advances through FOLDER_SEQUENCE:
 - `components/cursor/FolderGuideCursor.tsx` - orbiting cursor (folder page)
 - `components/folders/FolderIcon.tsx` - symbolic per-folder icons with B&W grain
 - `components/markers/FloatingMarkers.tsx` - 8 B&W floating markers (incl. NBN)
-- `components/multiplayer/MultiplayerProvider.tsx` - PartyKit WebSocket context
+- `components/multiplayer/MultiplayerProvider.tsx` - partysocket WebSocket context
 - `components/multiplayer/RemoteCursors.tsx` - remote cursor rendering
-- `party/main.ts` - PartyKit server
+- `party/main.ts` - PartyServer multiplayer server (Cloudflare Worker)
 - `components/physarum/PhysarumBackground.tsx` - sequential yellow mold + traveling dots
 - `app/globals.css` - fonts, colors, animations
 - `public/markers/` - dumbbell.png, drone.png, flame.png, webcam.png

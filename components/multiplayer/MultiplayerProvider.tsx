@@ -44,7 +44,7 @@ export function useMultiplayer() {
 
 const PARTYKIT_HOST =
   process.env.NEXT_PUBLIC_PARTYKIT_HOST ??
-  "becoming-everyone.madihg.partykit.dev";
+  "becoming-everyone.madihg.workers.dev";
 
 export default function MultiplayerProvider({
   children,
